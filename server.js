@@ -16,6 +16,6 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('chat.message', function(data) {
         // Mirror the message.
-        socket.emit('chat.message', {message:data.message});
+        io.sockets.emit('chat.message', {message:data.message, from:socket.id});
     })
 });

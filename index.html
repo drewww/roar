@@ -9,7 +9,10 @@
 		
 		var socket = io.connect("http://localhost:8080");
 		socket.on('chat.message', function (data) {
-			$("#chat").html($("#chat").html() + "<br>" + data.message);
+			
+			messageHtml = "<div class='message'><div class='from'>" + data.from + "</div><div class='contents'>"+data.message+"</div></div><br>";
+			
+			$("#chat").html($("#chat").html() + messageHtml);
 		});
 		
 		$(document).ready( function() {
