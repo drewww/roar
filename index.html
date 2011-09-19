@@ -25,10 +25,17 @@
 			
 			$("#chat").html("");
 			$("#message").submit( function(event) {
-				console.log("sending message: " + $("#message-text").val());
-
-				socket.emit("chat.message", {message:$("#message-text").val()});
-				$("#message-text").val("");
+				
+				messageText = $("#message-text");
+				
+				// Stop if the message is empty.
+				if(messageText.val() == "") {
+					event.preventDefault();
+					return;
+				}
+				
+				socket.emit("chat.message", {message:messageText.val()});
+				messageText.val("");
 				event.preventDefault();
 			});
 			
