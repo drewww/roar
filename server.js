@@ -11,7 +11,7 @@ io.sockets.on('connection', function(socket) {
     
     // Sets up all the per-connection events that we need to think about.
     // For now, this is just a response to chat messages.   
-    socket.emit('chat.message', {message:"----Welcome to swarm!---------", from:"admin"});
+    socket.emit('chat.message', {message:"----Welcome to roar!---------", from:"admin"});
     
     
     socket.on('chat.message', function(data) {
