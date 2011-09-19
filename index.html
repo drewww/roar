@@ -14,7 +14,11 @@
 			
 			messageHtml = "<div class='message'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
 			
-			$("#chat").html($("#chat").html() + messageHtml);
+			chat = $("#chat");
+			chat.html($("#chat").html() + messageHtml);
+			
+			// Scroll it to the bottom. 
+			chat.scrollTop(chat.height());
 		});
 		
 		$(document).ready( function() {
