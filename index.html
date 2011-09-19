@@ -12,7 +12,13 @@
 		
 		socket.on('chat.message', function (data) {
 			
-			messageHtml = "<div class='message'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
+			if ("past" in data) {
+				pastClass = " past";
+			} else {
+				pastClass = "";
+			}
+			
+			messageHtml = "<div class='message" + pastClass + "'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
 			
 			appendToChat(messageHtml);
 		});
@@ -100,6 +106,10 @@
 			width: 100%;
 		}
 		
+		.past {
+			color: #777;
+		}
+		
 		#header {
 			background-color: #FF2B2A;
 			color: #ffffff;
@@ -112,7 +122,6 @@
 		.admin {
 			background-color: #ddd;
 			text-align: center;
-			border-top: 1px solid white;
 			border-bottom: 1px solid white;
 		}
 		
