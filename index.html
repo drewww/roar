@@ -14,11 +14,12 @@
 			
 			messageHtml = "<div class='message'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
 			
-			chat = $("#chat");
-			chat.html($("#chat").html() + messageHtml);
-			
-			// Scroll it to the bottom. 
-			chat.scrollTop(chat.height());
+			appendToChat(messageHtml);
+		});
+		
+		socket.on('admin.message', function(data) {
+			messageHtml = "<div class='admin message'>" + data.message + "</div>";
+			appendToChat(messageHtml);
 		});
 		
 		$(document).ready( function() {
@@ -50,7 +51,13 @@
 		});
 		
 		
-		
+		function appendToChat(messageHtml) {
+			chat = $("#chat");
+			chat.html(chat.html() + messageHtml);
+			
+			// Scroll it to the bottom. 
+			chat.scrollTop(chat.height());
+		}
 		
 	</script>
 	<style type="text/css" media="screen">
@@ -100,6 +107,13 @@
 			font-variant: small-caps;
 			font-size: 1.2em;
 			padding-left: 5px;
+		}
+		
+		.admin {
+			background-color: #ddd;
+			text-align: center;
+			border-top: 1px solid white;
+			border-bottom: 1px solid white;
 		}
 		
 

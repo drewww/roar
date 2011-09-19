@@ -11,7 +11,7 @@ io.sockets.on('connection', function(socket) {
     
     // Sets up all the per-connection events that we need to think about.
     // For now, this is just a response to chat messages.   
-    socket.emit('chat.message', {message:"----Welcome to roar!---------", from:"admin"});
+    socket.emit('admin.message', {message:"Welcome to roar!", from:"admin"});
     
     
     socket.on('chat.message', function(data) {
@@ -21,11 +21,11 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('chat.identity', function(data) {
         socket.name = data.name;
-        io.sockets.emit('chat.message', {message: socket.name + " has entered.", from:"admin"});
+        io.sockets.emit('admin.message', {message: socket.name + " has entered.", from:"admin"});
     });
     
     socket.on('disconnect', function() {
-       io.sockets.emit('chat.message', {message:"Someone has left.", from:"admin"});
+       io.sockets.emit('admin.message', {message:"Someone has left.", from:"admin"});
     });
 });
 
