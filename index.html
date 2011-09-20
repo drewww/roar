@@ -112,7 +112,9 @@
 				
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
-				console.log("Taken username.");
+				$("#identity-message").html("'"+data["username"]+"' is taken.");
+				$("#status-container").hide();
+				$("#identity-container").show();
 			}
 		}
 		
@@ -176,7 +178,10 @@
 			border-bottom: 1px solid white;
 		}
 		
-
+		#identity-message {
+			color: red;
+			margin: 0px;
+		}
 		
 	</style>
 </head>
@@ -192,6 +197,7 @@ roar
 </div>
 
 <div id="identity-container">
+	<p id="identity-message"></p>
 <input type="text" name="name" value="your name?" id="name">
 <input type="button" name="set_name" value="set name" id="set_name">
 </div>

@@ -58,7 +58,7 @@ io.sockets.on('connection', function(socket) {
                     socket.emit('admin.message', {message: "You have joined the chat.", from:"admin"});
                 });
             } else {
-                socket.emit("identify", {state:"TAKEN"})
+                socket.emit("identify", {state:"TAKEN", username:data["username"]});
             }
         });        
     });
@@ -75,8 +75,11 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('disconnect', function() {
-        io.sockets.emit('admin.message', {message:socket.name + " has left.", from:"admin"});
-        client.hdel("global:connectedUsers", socket.name);
+        // If they haven't registered a name yet, ignore them.
+        if("name" in socket) {
+            io.sockets.emit('admin.message', {message:socket.name + " has left.", from:"admin"});
+            client.hdel("global:connectedUsers", socket.name);
+        }
     });
 });
 
