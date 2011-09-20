@@ -38,7 +38,7 @@
 			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"]);
 			
 			// Each time we get a pulse, add a new div to the pulse container.
-			$("#pulse-container").prepend("<div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div>");
+			$("#pulse-container-words").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
 		});
 		
 		// Should we defer listening for these messages until we're in 
@@ -140,26 +140,44 @@
 		}
 
 		#container {
-			width: 420px;
+			width: 530px;
 			border: 1px solid #FF2B2A;
 			margin-left: auto;
 			margin-right: auto;
 		}
 		
-		#pulse-container {
+		.pulse-container{
 			float: left;
 			width: 110px;
 			margin-right: 8px;
-			background-color: #ccc;
+			background-color: #eee;
 			height: 500px;
 			overflow: hidden;
 		}
 		
-		.pulse-bar {
+		.pulse-row {
+			position: relative;
+			top: 0px;
+			left: 0px;
 			float: left;
+			width: 100%;
+			border-bottom: 1px solid #eee;
+		}
+		
+		.pulse-bar {
 			background-color: black;
 			clear: both;
 			height: 20px;
+		}
+		
+		.pulse-text {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			overflow: hidden;
+			height: 20p;
+			color: #999999;
+			width: 100%;
 		}
 		
 		#chat-container, #status-container, #identity-container{
@@ -215,7 +233,7 @@
 roar
 </div>
 
-<div id="pulse-container">
+<div id="pulse-container-volume" class="pulse-container">
 <br>
 </div>
 
@@ -235,4 +253,9 @@ roar
 <form id="message"><input type="text" name="message" value="" id="message-text"></form>
 </div>
 </div>
+
+<div id="pulse-container-words" class="pulse-container">
+</div>
+
 </body>
+</html>
