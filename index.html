@@ -62,7 +62,6 @@
 			$("#identity-container").hide();
 			$("#chat-container").hide();
 			
-			
 			$("#chat").html("");
 			$("#message").submit( function(event) {
 				
@@ -109,6 +108,7 @@
 				$("#status-container").hide();
 				$("#identity-container").hide();
 				$("#chat-container").show();
+				$("#message-text").focus();
 				
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
