@@ -38,7 +38,9 @@
 			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"]);
 			
 			// Each time we get a pulse, add a new div to the pulse container.
-			$("#pulse-container-words").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
+			$("#pulse-container-volume").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
+			
+			$("#pulse-container-words").prepend("<div class='pulse-row'>"+data["word"]+"</div>");
 		});
 		
 		// Should we defer listening for these messages until we're in 

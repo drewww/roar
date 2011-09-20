@@ -137,7 +137,7 @@ function _processPulse() {
         var windowActivity = messagesInWindow / 5;
         var relativeActivity = windowActivity / totalActivity;
         
-        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity};
+        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":"WORD"};
         console.log(dict);
         io.sockets.emit('pulse', dict);
         
