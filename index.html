@@ -40,7 +40,17 @@
 			// Each time we get a pulse, add a new div to the pulse container.
 			$("#pulse-container-volume").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
 			
-			$("#pulse-container-words").prepend("<div class='pulse-row'>"+data["word"]+"</div>");
+			// Show the top word, scaled by how big it is. We'll hardcode a 
+			// range here and say that we're going to go 0.5em -> 1.5em
+			// on a score scale from 1 -> 10.
+			var scaleFactor = data["word-score"]/15;
+			var fontSize = 0.5 + 1.5*(scaleFactor);
+			var weight = "normal";
+			if(scaleFactor > 0.6) {
+				weight = "bold";
+			}
+			
+			$("#pulse-container-words").prepend("<div class='pulse-row' style='font-size:"+fontSize+"em; font-weight:"+weight+";'>"+data["word"]+"</div>");
 		});
 		
 		// Should we defer listening for these messages until we're in 
