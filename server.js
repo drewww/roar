@@ -76,7 +76,7 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('disconnect', function() {
         // If they haven't registered a name yet, ignore them.
-        if("name" in socket) {
+        if(socket.name != undefined) {
             io.sockets.emit('admin.message', {message:socket.name + " has left.", from:"admin"});
             client.hdel("global:connectedUsers", socket.name);
         }
