@@ -35,7 +35,7 @@
 		});
 		
 		socket.on('pulse', function (data) {
-			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"]);
+			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"] + "; word(score): " + data["word"] + "(" + data["word-score"] + ")");
 			
 			// Each time we get a pulse, add a new div to the pulse container.
 			$("#pulse-container-volume").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
@@ -164,12 +164,13 @@
 			float: left;
 			width: 100%;
 			border-bottom: 1px solid #eee;
+			height: 20px;
 		}
 		
 		.pulse-bar {
 			background-color: black;
 			clear: both;
-			height: 20px;
+			height: 100%;
 		}
 		
 		.pulse-text {

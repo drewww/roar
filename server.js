@@ -117,9 +117,11 @@ function _processPulse() {
         
         var startTime = Date.now();
         
+        var popularWordsInWindow = {};
+        
         // data contains all the messages in the room queue.
         for(msgKey in res) {
-            msg = JSON.parse(res[msgKey]);
+            var msg = JSON.parse(res[msgKey]);
 
             totalMessages = totalMessages+1;
             
@@ -130,6 +132,32 @@ function _processPulse() {
             if(Date.now() - msg["timestamp"] < 5000) {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
+                
+                wordsInMessage = msg["message"].split(/[\s,.!?]+/);
+                
+                console.log("words in message:");
+                console.log(wordsInMessage);
+                // For each word in the message 
+                for(var wordIndex in wordsInMessage) {
+                    var word = wordsInMessage[wordIndex];
+                    
+                    if(word in popularWordsInWindow) {
+                        popularWordsInWindow[word] = popularWordsInWindow[word] + 1;
+                    } else {
+                        popularWordsInWindow[word] = 1;
+                    }
+                }
+            }
+        }
+
+        var topWord = " ";
+        var bestScore = 0;
+        for(var word in popularWordsInWindow) {
+            var wordScore = popularWordsInWindow[word];
+            
+            if(wordScore > bestScore) {
+                bestScore = wordScore;
+                topWord = word;
             }
         }
         
@@ -137,7 +165,7 @@ function _processPulse() {
         var windowActivity = messagesInWindow / 5;
         var relativeActivity = windowActivity / totalActivity;
         
-        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":"WORD"};
+        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
         console.log(dict);
         io.sockets.emit('pulse', dict);
         
