@@ -36,6 +36,9 @@
 		
 		socket.on('pulse', function (data) {
 			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"]);
+			
+			// Each time we get a pulse, add a new div to the pulse container.
+			$("#pulse-container").prepend("<div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div>");
 		});
 		
 		// Should we defer listening for these messages until we're in 
@@ -137,14 +140,31 @@
 		}
 
 		#container {
-			width: 300px;
-			border: 1px solid #bbb;
+			width: 420px;
+			border: 1px solid #FF2B2A;
 			margin-left: auto;
 			margin-right: auto;
 		}
 		
-		#chat-container {
-			
+		#pulse-container {
+			float: left;
+			width: 110px;
+			margin-right: 8px;
+			background-color: #ccc;
+			height: 500px;
+			overflow: hidden;
+		}
+		
+		.pulse-bar {
+			float: left;
+			background-color: black;
+			clear: both;
+			height: 20px;
+		}
+		
+		#chat-container, #status-container, #identity-container{
+			float:left;
+			width: 300px;
 		}
 		
 		#chat {
@@ -193,6 +213,10 @@
 <div id="container">
 <div id="header">
 roar
+</div>
+
+<div id="pulse-container">
+<br>
 </div>
 
 <div id="status-container">
