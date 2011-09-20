@@ -10,35 +10,25 @@
 		// TODO Add handling for the server being missing.
 		var socket = io.connect("http://localhost:8080");
 		
-		var username;
-		var userId;
-		
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
 			
-			if("roar-auth" in localStorage && "roar-id" in localStorage) {
+			
+			if("roar-username" in localStorage) {
 				// This client has logged in before. Present auth to the 
 				// server.
 				
-				socket.emit("identify", {auth:localStorage["roar-auth"], id:localStorage["roar-id"]});
+				socket.emit("identify", {username:localStorage["roar-username"]});
 				
 				// Now we need to start listening for an identify response.
-				socket.on('identify', function (data) {
-					// We'll expect this message to come back with a username
-					// and userId.
-					username = data["username"];
-					
-					$("#status-container").hide();
-					$("#chat-container").show();
-				});
+				socket.on('identify', _handleIdentityResponse);
 			} else {
 				// This client has not logged in before. Present the identify
 				// UI and ask them what they want their name to be. Then
 				// send that to the server. 
 				$("#status-container").hide();
 				$("#identity-container").show();
-				
 			}
 
 			
@@ -92,22 +82,8 @@
 			$("#set_name").click(function() {
 				socket.emit("identify", {username:$("#name").val()});
 				
-				$("#status-container").show();
-				$("#identity-container").hide();
-				
 				// Now we wait for the server to confirm it. 
-				socket.on("identify", function (data) {
-					console.log("Received 'identify' from the server:")
-					console.log(data);
-					
-					username = data["username"];
-					userId = data["userId"];
-					localStorage["roar-auth"] = data["auth"];
-					localStorage["roar-id"] = userId;
-					
-					$("#status-container").hide();
-					$("#chat-container").show();
-				});
+				socket.on("identify", _handleIdentityResponse);
 			});
 			
 		});
@@ -119,6 +95,25 @@
 			
 			// Scroll it to the bottom. 
 			chat.scrollTop(chat.height());
+		}
+		
+		function _handleIdentityResponse(data) {
+			// this is called with repsonses to requests for a specific user
+			// name. The server is either going to say "yes, you got it" or
+			// "nope, that one is taken".
+			if("state" in data && data["state"] == "OK") {
+				// Start up the chat side of things.
+				
+				localStorage["roar-username"] = data["username"];
+				
+				$("#status-container").hide();
+				$("#identity-container").hide();
+				$("#chat-container").show();
+				
+			} else if ("state" in data && data["state"] == "TAKEN") {
+				// Stay in the same mode.
+				console.log("Taken username.");
+			}
 		}
 		
 	</script>
