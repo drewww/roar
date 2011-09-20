@@ -10,6 +10,43 @@
 		// TODO Add handling for the server being missing.
 		var socket = io.connect("http://localhost:8080");
 		
+		var username;
+		var userId;
+		
+		
+		socket.on('connect', function(data) {
+			console.log("Connected to server.");
+			
+			if("roar-auth" in localStorage && "roar-id" in localStorage) {
+				// This client has logged in before. Present auth to the 
+				// server.
+				
+				socket.emit("identify", {auth:localStorage["roar-auth"], id:localStorage["roar-id"]});
+				
+				// Now we need to start listening for an identify response.
+				socket.on('identify', function (data) {
+					// We'll expect this message to come back with a username
+					// and userId.
+					username = data["username"];
+					
+					$("#status-container").hide();
+					$("#chat-container").show();
+				});
+			} else {
+				// This client has not logged in before. Present the identify
+				// UI and ask them what they want their name to be. Then
+				// send that to the server. 
+				$("#status-container").hide();
+				$("#identity-container").show();
+				
+			}
+
+			
+		});
+		
+		
+		// Should we defer listening for these messages until we're in 
+		// totally logged-in state? 
 		socket.on('chat.message', function (data) {
 			
 			if ("past" in data) {
@@ -30,6 +67,12 @@
 		
 		$(document).ready( function() {
 			
+			
+			$("#status-container").show();
+			$("#identity-container").hide();
+			$("#chat-container").hide();
+			
+			
 			$("#chat").html("");
 			$("#message").submit( function(event) {
 				
@@ -47,13 +90,26 @@
 			});
 			
 			$("#set_name").click(function() {
-				socket.emit("chat.identity", {name:$("#name").val()});
+				socket.emit("identify", {username:$("#name").val()});
+				
+				$("#status-container").show();
 				$("#identity-container").hide();
-				$("#chat-container").show();
+				
+				// Now we wait for the server to confirm it. 
+				socket.on("identify", function (data) {
+					console.log("Received 'identify' from the server:")
+					console.log(data);
+					
+					username = data["username"];
+					userId = data["userId"];
+					localStorage["roar-auth"] = data["auth"];
+					localStorage["roar-id"] = userId;
+					
+					$("#status-container").hide();
+					$("#chat-container").show();
+				});
 			});
 			
-			$("#identity-container").show();
-			$("#chat-container").hide();
 		});
 		
 		
@@ -134,6 +190,10 @@
 <div id="container">
 <div id="header">
 roar
+</div>
+
+<div id="status-container">
+	<p>Connecting...</p>
 </div>
 
 <div id="identity-container">

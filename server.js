@@ -1,7 +1,8 @@
 var app = require('express').createServer(),
     io = require('socket.io').listen(app),
     redis = require('redis'),
-    client = redis.createClient();
+    client = redis.createClient(),
+    crypto = require('crypto');
         
 app.listen(8080);
 
@@ -13,7 +14,10 @@ app.get('/', function(req, res) {
 // conneciton is actually alive.
 
 io.sockets.on('connection', function(socket) {
-        
+    
+    
+    // Do some user welcoming stuff. 
+    
     
     // Sets up all the per-connection events that we need to think about.
     // For now, this is just a response to chat messages.   
@@ -22,11 +26,51 @@ io.sockets.on('connection', function(socket) {
     // Is the number of sockets really the number of people? I guess so.
     // socket.emit('admin.message', {message: io.sockets.length + " people chatting."});
     
-    
+    socket.on('identify', function(data) {
+        // If it's got an auth section, check it. If not, generate a new 
+        // auth string and send it back.
+        if("auth" in data && "id" in data) {
+            // Check auth. Using the uid, see if it matches the auth key 
+            // for that user.
+            client.hgetall("users:" + data["id"], function (err, res) {
+                if(res["auth"] == data["auth"]) {
+                    // Good to go!
+                    socket.emit("identify", {username:res["username"]});
+                } else {
+                    socket.emit("identify", {username:null});
+                }
+                
+            });
+            
+            
+            
+        } else if("username" in data) {
+            // At this point, the user is requesting this name. Generate
+            // an auth string and send it down. 
+            // This is really awful security practice, but doesn't matter
+            // for this demo. 
+            hash = crypto.createHash('sha1');
+            hash.update(data["username"]);
+            hash.update('' + Date.now());
+            authString = hash.digest();
+            
+            // Now push this all into the database.
+            client.incr("global:nextUserId", function (err, res) {
+                
+                client.hset("users:" + res, "auth", authString);
+                client.hset("users:" + res, "username", data["username"]);
+                
+                socket.emit("identify", {"username":data["username"], "userId":res, "auth":authString});
+            });
+        } else {
+            console.log("Malformed 'identify' message. Missing username and auth.");
+        }
+        
+    })
     
     socket.on('chat.message', function(data) {
         // Mirror the message.
-        messageDict = {message:data.message, from:socket.name};
+        messageDict = {message:data.message, from:socket.name, timestamp:Date.now()};
         
         io.sockets.emit('chat.message', messageDict);
         
