@@ -89,17 +89,58 @@ client.on("error", function(err) {
 });
 
 client.once("ready", function(err) {
-    console.log("Connected to redis.");
-    
     client.hgetall("global:connectedUsers", function(err, res) {
         for(key in res) {
             client.hdel("global:connectedUsers", key);
         }
     });
     
-    console.log("Done cleaning up connected users list.");
-})
+    // Start the periodic data worker threads.
+    setTimeout(_processPulse, 5000);
+});
 
-// We're going to need a list that's got recent chat messages in it so we
-// can run analytics on it. Shouts are going to need to be a separate list
-// 
+
+function _processPulse() {
+    // In each loop, grab the whole message history (in room.messages) and
+    // generate a new pulse command.
+    
+    // The first phase is to measure relative volume. We do this by figuring
+    // out the messages/second across the entire data set. Then we look only
+    // at the last 5 seconds.
+    setTimeout(_processPulse, 5000);
+
+    
+    client.lrange("room.messages", 0, -1, function (err, res) {
+        
+        var totalMessages = 0;
+        var messagesInWindow = 0;
+        
+        var startTime = Date.now();
+        
+        // data contains all the messages in the room queue.
+        for(msgKey in res) {
+            msg = JSON.parse(res[msgKey]);
+
+            totalMessages = totalMessages+1;
+            
+            // This will find the earliest item in the group. I think
+            // guaranteed to be the first, but whatever. Be safe.
+            if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
+            
+            if(Date.now() - msg["timestamp"] < 5000) {
+                // The message is in our window.
+                messagesInWindow = messagesInWindow + 1;
+            }
+        }
+        
+        var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
+        var windowActivity = messagesInWindow / 5;
+        var relativeActivity = windowActivity / totalActivity;
+        
+        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity};
+        console.log(dict);
+        io.sockets.emit('pulse', dict);
+        
+    });
+}
+

@@ -34,6 +34,9 @@
 			
 		});
 		
+		socket.on('pulse', function (data) {
+			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"]);
+		});
 		
 		// Should we defer listening for these messages until we're in 
 		// totally logged-in state? 
