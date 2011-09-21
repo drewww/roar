@@ -159,7 +159,7 @@
 		}
 
 		#container {
-			width: 530px;
+			width: 520px;
 			border: 1px solid #FF2B2A;
 			margin-left: auto;
 			margin-right: auto;
@@ -168,8 +168,7 @@
 		.pulse-container{
 			float: left;
 			width: 110px;
-			margin-right: 8px;
-			background-color: #eee;
+			background-color: #f0f0f0;
 			height: 500px;
 			overflow: hidden;
 		}
@@ -205,9 +204,14 @@
 			width: 300px;
 		}
 		
+		#chat-container {
+/*			margin-left: 5px;;
+			margin-right: 5px;
+*/		}
+		
 		#chat {
 			width: 100%;
-			height: 500px;
+			height: 478px;
 			overflow-y: scroll;
 		}
 		
@@ -244,13 +248,17 @@
 			margin: 0px;
 		}
 		
+		.clear {
+			clear:both;
+		}
+		
 	</style>
 </head>
 <body id="index" onload="">
 
 <div id="container">
 <div id="header">
-roar
+ROAR
 </div>
 
 <div id="pulse-container-volume" class="pulse-container">
@@ -272,9 +280,11 @@ roar
 </div>
 <form id="message"><input type="text" name="message" value="" id="message-text"></form>
 </div>
-</div>
 
 <div id="pulse-container-words" class="pulse-container">
+</div>
+
+<br class="clear">
 </div>
 
 </body>
