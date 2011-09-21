@@ -123,6 +123,11 @@ function _processPulse() {
         for(msgKey in res) {
             var msg = JSON.parse(res[msgKey]);
 
+            // exclude messages that are older than ten minutes. This helps
+            // with cases where the server has been running for a while
+            // and chat stops, then restarts much later.
+            if(Date.now() - msg["timestamp"] > 60*10*1000) continue;
+
             totalMessages = totalMessages+1;
             
             // This will find the earliest item in the group. I think
@@ -135,8 +140,6 @@ function _processPulse() {
                 
                 wordsInMessage = msg["message"].split(/[\s,.!?]+/);
                 
-                console.log("words in message:");
-                console.log(wordsInMessage);
                 // For each word in the message 
                 for(var wordIndex in wordsInMessage) {
                     var word = wordsInMessage[wordIndex];
@@ -166,7 +169,7 @@ function _processPulse() {
         var relativeActivity = windowActivity / totalActivity;
         
         dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
-        console.log(dict);
+        // console.log(dict);
         io.sockets.emit('pulse', dict);
         
     });
