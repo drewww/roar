@@ -39,6 +39,13 @@
 			
 			// Each time we get a pulse, add a new div to the pulse container.
 			$("#pulse-container-volume").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
+			var numChildren = $("#pulse-container-volume").children().length;
+			if(numChildren > 25) {
+				// remove the second to last two. the last one is the <br>
+				$("#pulse-container-volume").children().last().remove();
+			}
+
+
 			
 			// Show the top word, scaled by how big it is. We'll hardcode a 
 			// range here and say that we're going to go 0.5em -> 1.5em
@@ -51,6 +58,12 @@
 			}
 			
 			$("#pulse-container-words").prepend("<div class='pulse-row' style='font-size:"+fontSize+"em; font-weight:"+weight+";'>"+data["word"]+"</div>");
+			
+			var numChildren = $("#pulse-container-words").children().length;
+			if(numChildren > 25) {
+				// remove the second to last two. the last one is the <br>
+				$("#pulse-container-words").children().last().remove();
+			}
 		});
 		
 		// Should we defer listening for these messages until we're in 
@@ -203,11 +216,6 @@
 			float:left;
 			width: 300px;
 		}
-		
-		#chat-container {
-/*			margin-left: 5px;;
-			margin-right: 5px;
-*/		}
 		
 		#chat {
 			width: 100%;
