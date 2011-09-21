@@ -112,6 +112,13 @@
 			
 			// Scroll it to the bottom. 
 			chat.scrollTop(chat.height());
+			// chat.animate({scrollTop: 100000000}, 100);
+			
+			// INT_MAX. I want this to really represent the current height,
+			// but I can't seem to find a property that represents the size 
+			// that it really wants to be if there were no scrollbars to 
+			// figure out how far down to push it. 
+			chat.scrollTop(Math.pow(2, 30));
 		}
 		
 		function _handleIdentityResponse(data) {
