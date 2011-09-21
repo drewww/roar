@@ -172,6 +172,9 @@ function _processPulse() {
             }
         }
         
+        // Require that something be said more than once to be displayed.
+        if (bestScore < 2) topWord = " ";
+        
         var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
         var windowActivity = messagesInWindow / 5;
         var relativeActivity = windowActivity / totalActivity;
