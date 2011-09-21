@@ -71,7 +71,7 @@ io.sockets.on('connection', function(socket) {
         
         // By pushing and trimming, we keep it from growing indefinitely 
         client.rpush("room.messages", JSON.stringify(messageDict));
-        client.ltrim("room.messages", 0, 100);
+        client.ltrim("room.messages", -100, -1);
     });
     
     socket.on('disconnect', function() {
