@@ -8,7 +8,7 @@ var app = require('express').createServer(),
 app.listen(8080);
 
 app.get('/', function(req, res) {
-    res.sendfile(__dirname + '/index.html');
+    res.sendfile(__dirname + '/templates/index.html');
 });
 
 // TODO Do some sort of blocking on accepting connections until the redis
