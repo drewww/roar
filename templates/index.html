@@ -25,6 +25,10 @@
 		
 		#roar-bar {
 			background-color: #928B33;
+			
+			background: -webkit-gradient(linear, left top, left bottom, from(#928B33), to(#413D1B)); /* for webkit browsers */
+			background: -moz-linear-gradient(top,  #928B33,  #413D1B); /* for firefox 3.6+ */
+			
 			position: fixed;
 			bottom: 20%;
 			
@@ -71,9 +75,16 @@
 			font-variant: small-caps;
 			font-weight: bold;
 			padding-top: 10px;
+			
+			text-shadow: 1px 1px 0px #111;
 		}
 		
-		
+		#roar-bar .button:active{
+/*			background-color: #413D1B;*/
+			
+			background: -webkit-gradient(linear, left top, left bottom, from(#413D1B), to(#928B33)); /* for webkit browsers */
+			background: -moz-linear-gradient(top,  #413D1B,  #928B33); /* for firefox 3.6+ */
+		}
 	</style>
 	
 </head>
