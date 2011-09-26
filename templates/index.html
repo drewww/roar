@@ -123,8 +123,24 @@
 			font-variant: small-caps;
 			font-weight: bold;
 			padding-top: 10px;
+			height: 40px;
 			
 			text-shadow: 1px 1px 0px #111;
+			
+/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+		}
+		
+		#roar-bar .disabled {
+			color: #888;
+		}
+		
+		#roar-bar .disabled:active {
+			background: inherit !important;
 		}
 		
 		#roar-bar .button:active{
@@ -134,9 +150,18 @@
 			background: -moz-linear-gradient(top,  #413D1B,  #928B33); /* for firefox 3.6+ */
 		}
 		
-		#identity-form input {
+		#roar-bar .button:hover {
+			cursor:pointer;
+		}
+		
+		#name {
 			width: 100px;
 			float: left;
+			margin-left: 110px;
+		}
+		
+		#submit-name {
+			magin-left: 10px;
 		}
 
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
@@ -159,14 +184,14 @@
 
 <form id="identity-form">
 	<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
-	<input type="button" name="submit_name" value="set nickname" id="submit_name">
+	<input type="button" name="submit_name" value="login" id="submit-name">
 </form>
 
 </div>
-<div id="chat-button" class="button">
+<div id="chat-button" class="button disabled">
 chat
 </div>
-<div id="shout-button" class="button">
+<div id="shout-button" class="button disabled">
 shout
 </div>
 
