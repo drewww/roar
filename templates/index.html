@@ -9,10 +9,39 @@
 		
 		var socket = io.connect("http://localhost:8080");
 		
+		socket.on('connect', function(data) {
+			console.log("Connected to server.");
+
+			if("roar-username" in localStorage) {
+				// This client has logged in before. Present auth to the 
+				// server.
+
+				socket.emit("identify", {username:localStorage["roar-username"]});
+
+				// Now we need to start listening for an identify response.
+				socket.on('identify', _handleIdentityResponse);
+			} else {
+				// This client has not logged in before. Present the identify
+				// UI and ask them what they want their name to be. Then
+				// send that to the server. 
+				$("#identity-container").show();
+			}
+		});
+		
 		$(document).ready(function() {
 			
-			$("#chat-form").submit(sendChat);
+			// Setup default visibility.
 			$("#chat-form").hide();
+			$("#identity-message").hide();
+			
+			// Setup event handlers.
+			$("#chat-form").submit(sendChat);
+			
+			$("#submit-name").click(function() {
+				socket.emit("identify", {username:$("#name").val()});
+				// Now we wait for the server to confirm it. 
+				socket.on("identify", _handleIdentityResponse);
+			});
 			
 			
 			// Manage default text.
@@ -53,6 +82,32 @@
 			chatTextElement.val("");
 			
 			if(event!=null) event.preventDefault();
+		}
+		
+		
+		function _handleIdentityResponse(data) {
+			console.log(" handling identity response");
+			console.log(data);
+			// this is called with repsonses to requests for a specific user
+			// name. The server is either going to say "yes, you got it" or
+			// "nope, that one is taken".
+			if("state" in data && data["state"] == "OK") {
+				// Start up the chat side of things.
+
+				localStorage["roar-username"] = data["username"];
+
+				$("#identity-form").hide();
+				$("#chat-form").show();
+				$("#chat-input").focus();
+				
+				$(".button").removeClass("disabled");
+
+			} else if ("state" in data && data["state"] == "TAKEN") {
+				// Stay in the same mode.
+				$("#identity-message").html("'"+data["username"]+"' is taken");
+				$("#identity-message").show();
+				$("#identity-form").show();
+			}
 		}
 		
 	</script>
@@ -100,15 +155,22 @@
 		
 		#chat {
 			width: 366px;
-			padding-left: 11px;
 			padding-top: 11px;
 			
 			font-size: 1.0em;
 		}
 		
+		#chat-form {
+			width: 320px;
+		}
+		
 		#chat-form input {
-			width: 350px;
-			
+			width: 100%;
+		}
+		
+		#identity-form, #chat-form {
+			margin-left: auto;
+			margin-right:auto;
 		}
 		
 		#name {
@@ -128,7 +190,7 @@
 			text-shadow: 1px 1px 0px #111;
 			
 /* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
-			-webkit-user-select: none;
+			-webkit-user-select: ;
 			-khtml-user-select: none;
 			-moz-user-select: none;
 			-o-user-select: none;
@@ -162,11 +224,24 @@
 		
 		#submit-name {
 			magin-left: 10px;
+			margin-bottom: 10px;
 		}
+
+		#identity-message {
+			background-color: #FEFAD1;
+			padding: 3px;
+			color: #333;
+			font-size: 0.5em;
+		}
+
 
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
+		
+		.clear {
+			clear: both;
+		}
 		
 	</style>
 	
@@ -179,12 +254,13 @@
 
 <div id="chat">
 <form id="chat-form">
-	<input type="text" name="chat-input" value="" id="chat-input">
+	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text">
 </form>
 
 <form id="identity-form">
 	<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
-	<input type="button" name="submit_name" value="login" id="submit-name">
+	<input type="button" name="submit_name" value="login" id="submit-name"><br>
+	<div id="identity-message"></div>
 </form>
 
 </div>
