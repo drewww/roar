@@ -28,6 +28,18 @@
 			}
 		});
 		
+		socket.on('message', function (data) {
+			if ("past" in data) {
+				pastClass = " past";
+			} else {
+				pastClass = "";
+			}
+
+			// messageHtml = "<div class='message" + pastClass + "'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
+
+			appendChat(data);
+		});
+		
 		$(document).ready(function() {
 			
 			// Setup default visibility.
@@ -84,6 +96,27 @@
 		}
 		
 		
+		function appendChat(message) {
+			
+			// Create the HTML.
+			if("admin" in message) {
+				// Make an admin message.
+				
+			} else {
+				// Make a normal message.
+				pastClass = "";
+				if("past" in message) pastclass = " past";
+				
+				messageHtml = "<div id='chat-"+message.timestamp +"' class='chat" + pastClass + "'><span class='from'>" + message.from + "</span>:<span class='contents'>"+message.text+"</span></div>";
+			}
+			
+			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
+			chatHistory = $("#chat-history");
+			chatHistory.html(chatHistory.html() + messageHtml);
+			
+			// setTimeout()
+		}
+		
 		function _handleIdentityResponse(data) {
 			
 			// this is called with repsonses to requests for a specific user
@@ -124,7 +157,7 @@
 			background: -moz-linear-gradient(top,  #928B33,  #413D1B); /* for firefox 3.6+ */
 			
 			position: fixed;
-			bottom: 20%;
+			bottom: 100px;
 			
 			width: 100%;
 			height: 50px;
@@ -136,7 +169,7 @@
 			border-top: 1px solid #B3B5B8;
 		}
 		
-		#roar-bar div {
+		#chat, #roar-bar .button, #logo {
 			border-right: 1px solid #B3B5B8;
 			height: 100%;
 			float: left;
@@ -152,7 +185,7 @@
 		}
 		
 		#chat {
-			width: 366px;
+			width: 380px;
 			padding-top: 11px;
 			
 			font-size: 1.0em;
@@ -171,10 +204,26 @@
 			margin-right:auto;
 		}
 		
-		#name {
+		#chat-history {
+			background-color: #FEFAD1;
+			border: #928B33;
+			color: #333;
 			
+			width: 380px;
+			
+			/* Have to do this because of #roar-bar div - maybe need to make
+			   that more specific? I like having chat history inside #roar-bar
+			   but I guess that other selector needs to exclude these pop-up
+			   divs. */
+/*			height: 100px !important;*/
+/*			height: 10px;*/
+			
+			position: fixed;
+			bottom: 151px;
+			left: 109px;
+			
+			opacity: 0.8;
 		}
-		
 
 		#roar-bar .button {
 			width: 70px;
@@ -249,6 +298,9 @@
 
 <div id="roar-bar">
 <div id="logo">ROAR</div>
+
+<div id="chat-history">
+</div>
 
 <div id="chat">
 <form id="chat-form">
