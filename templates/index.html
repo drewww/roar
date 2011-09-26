@@ -9,10 +9,51 @@
 		
 		var socket = io.connect("http://localhost:8080");
 		
-		$(document).ready function() {
-			console.log("Hello, world!");
-		}
+		$(document).ready(function() {
+			
+			$("#chat-form").submit(sendChat);
+			$("#chat-form").hide();
+			
+			
+			// Manage default text.
+			$(".default-text").focus(function(srcc)
+		    {
+		        if ($(this).val() == $(this)[0].title)
+		        {
+		            $(this).removeClass("default-text-active");
+		            $(this).val("");
+		        }
+		    });
+
+		    $(".default-text").blur(function()
+		    {
+		        if ($(this).val() == "")
+		        {
+		            $(this).addClass("default-text-active");
+		            $(this).val($(this)[0].title);
+		        }
+		    });
+			
+		    $(".default-text").blur();
+			
+			
+		});
 		
+		
+		function sendChat(event) {
+			
+			chatTextElement = $("#chat-text");
+			
+			if(chatTextElement.val() == "") {
+				if(event!=null) event.preventDefault();
+				return;
+			}
+			
+			socket.emit("message", {text:chatTextElement.val()});
+			chatTextElement.val("");
+			
+			if(event!=null) event.preventDefault();
+		}
 		
 	</script>
 	
@@ -61,13 +102,20 @@
 			width: 366px;
 			padding-left: 11px;
 			padding-top: 11px;
-		}
-		
-		#chat input {
-			width: 350px;
+			
 			font-size: 1.0em;
 		}
 		
+		#chat-form input {
+			width: 350px;
+			
+		}
+		
+		#name {
+			
+		}
+		
+
 		#roar-bar .button {
 			width: 70px;
 			text-align: center;
@@ -85,6 +133,16 @@
 			background: -webkit-gradient(linear, left top, left bottom, from(#413D1B), to(#928B33)); /* for webkit browsers */
 			background: -moz-linear-gradient(top,  #413D1B,  #928B33); /* for firefox 3.6+ */
 		}
+		
+		#identity-form input {
+			width: 100px;
+			float: left;
+		}
+
+		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
+	    .default-text { }
+	    .default-text-active { color: #a1a1a1; font-style: italic; }
+		
 	</style>
 	
 </head>
@@ -95,9 +153,15 @@
 <div id="logo">ROAR</div>
 
 <div id="chat">
-<form>
+<form id="chat-form">
 	<input type="text" name="chat-input" value="" id="chat-input">
 </form>
+
+<form id="identity-form">
+	<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
+	<input type="button" name="submit_name" value="set nickname" id="submit_name">
+</form>
+
 </div>
 <div id="chat-button" class="button">
 chat
