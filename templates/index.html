@@ -5,294 +5,58 @@
 	
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
 	<script src="/socket.io/socket.io.js"></script>
-	<script>
+	<script type="text/javascript" charset="utf-8">
 		
-		// TODO Add handling for the server being missing.
 		var socket = io.connect("http://localhost:8080");
 		
-		
-		socket.on('connect', function(data) {
-			console.log("Connected to server.");
-			
-			
-			if("roar-username" in localStorage) {
-				// This client has logged in before. Present auth to the 
-				// server.
-				
-				socket.emit("identify", {username:localStorage["roar-username"]});
-				
-				// Now we need to start listening for an identify response.
-				socket.on('identify', _handleIdentityResponse);
-			} else {
-				// This client has not logged in before. Present the identify
-				// UI and ask them what they want their name to be. Then
-				// send that to the server. 
-				$("#status-container").hide();
-				$("#identity-container").show();
-			}
-
-			
-		});
-		
-		socket.on('pulse', function (data) {
-			console.log("total: " + data["total"] + "; inWindow: " + data["inWindow"] + "; relative: " + data["relative"] + "; word(score): " + data["word"] + "(" + data["word-score"] + ")");
-			
-			// Each time we get a pulse, add a new div to the pulse container.
-			$("#pulse-container-volume").prepend("<div class='pulse-row'><div class='pulse-bar' style='width:" + (data["relative"]/10)*100 + "%;'></div></div>");
-			var numChildren = $("#pulse-container-volume").children().length;
-			if(numChildren > 25) {
-				// remove the second to last two. the last one is the <br>
-				$("#pulse-container-volume").children().last().remove();
-			}
-
-
-			
-			// Show the top word, scaled by how big it is. We'll hardcode a 
-			// range here and say that we're going to go 0.5em -> 1.5em
-			// on a score scale from 1 -> 10.
-			var scaleFactor = data["word-score"]/15;
-			var fontSize = 0.5 + 1.5*(scaleFactor);
-			var weight = "normal";
-			if(scaleFactor > 0.6) {
-				weight = "bold";
-			}
-			
-			$("#pulse-container-words").prepend("<div class='pulse-row' style='font-size:"+fontSize+"em; font-weight:"+weight+";'>"+data["word"]+"</div>");
-			
-			var numChildren = $("#pulse-container-words").children().length;
-			if(numChildren > 25) {
-				// remove the second to last two. the last one is the <br>
-				$("#pulse-container-words").children().last().remove();
-			}
-		});
-		
-		// Should we defer listening for these messages until we're in 
-		// totally logged-in state? 
-		socket.on('chat.message', function (data) {
-			
-			if ("past" in data) {
-				pastClass = " past";
-			} else {
-				pastClass = "";
-			}
-			
-			messageHtml = "<div class='message" + pastClass + "'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
-			
-			appendToChat(messageHtml);
-		});
-		
-		socket.on('admin.message', function(data) {
-			messageHtml = "<div class='admin message'>" + data.message + "</div>";
-			appendToChat(messageHtml);
-		});
-		
-		$(document).ready( function() {
-			
-			
-			$("#status-container").show();
-			$("#identity-container").hide();
-			$("#chat-container").hide();
-			
-			$("#chat").html("");
-			$("#message").submit( function(event) {
-				
-				messageText = $("#message-text");
-				
-				// Stop if the message is empty.
-				if(messageText.val() == "") {
-					event.preventDefault();
-					return;
-				}
-				
-				socket.emit("chat.message", {message:messageText.val()});
-				messageText.val("");
-				event.preventDefault();
-			});
-			
-			$("#set_name").click(function() {
-				socket.emit("identify", {username:$("#name").val()});
-				
-				// Now we wait for the server to confirm it. 
-				socket.on("identify", _handleIdentityResponse);
-			});
-			
-		});
-		
-		
-		function appendToChat(messageHtml) {
-			chat = $("#chat");
-			chat.html(chat.html() + messageHtml);
-			
-			// Scroll it to the bottom. 
-			chat.scrollTop(chat.height());
-			// chat.animate({scrollTop: 100000000}, 100);
-			
-			// INT_MAX. I want this to really represent the current height,
-			// but I can't seem to find a property that represents the size 
-			// that it really wants to be if there were no scrollbars to 
-			// figure out how far down to push it. 
-			chat.scrollTop(Math.pow(2, 30));
+		$(document).ready function() {
+			console.log("Hello, world!");
 		}
 		
-		function _handleIdentityResponse(data) {
-			// this is called with repsonses to requests for a specific user
-			// name. The server is either going to say "yes, you got it" or
-			// "nope, that one is taken".
-			if("state" in data && data["state"] == "OK") {
-				// Start up the chat side of things.
-				
-				localStorage["roar-username"] = data["username"];
-				
-				$("#status-container").hide();
-				$("#identity-container").hide();
-				$("#chat-container").show();
-				$("#message-text").focus();
-				
-			} else if ("state" in data && data["state"] == "TAKEN") {
-				// Stay in the same mode.
-				$("#identity-message").html("'"+data["username"]+"' is taken.");
-				$("#status-container").hide();
-				$("#identity-container").show();
-			}
-		}
 		
 	</script>
-	<style type="text/css" media="screen">
-		body {
-			font-family: Helvetica, sans-serif;
-		}
 	
-		.from {
-			font-weight: bold;
-			padding-left: 2px;
-		}
+	<style type="text/css" media="screen">
 		
-		.message .contents {
-			margin-left: 5px;
-		}
-
-		#container {
-			width: 520px;
-			border: 1px solid #FF2B2A;
-			margin-left: auto;
-			margin-right: auto;
-		}
-		
-		.pulse-container{
-			float: left;
-			width: 110px;
-			background-color: #f0f0f0;
-			height: 500px;
-			overflow: hidden;
-		}
-		
-		.pulse-row {
-			position: relative;
-			top: 0px;
-			left: 0px;
-			float: left;
-			width: 100%;
-			border-bottom: 1px solid #eee;
-			height: 20px;
-		}
-		
-		.pulse-bar {
+		body {
 			background-color: black;
-			clear: both;
-			height: 100%;
-		}
-		
-		.pulse-text {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			overflow: hidden;
-			height: 20p;
-			color: #999999;
-			width: 100%;
-		}
-		
-		#chat-container, #status-container, #identity-container{
-			float:left;
-			width: 300px;
-		}
-		
-		#chat {
-			width: 100%;
-			height: 478px;
-			overflow-y: scroll;
-		}
-		
-		#message-text {
-			width: 290px;
-		}
-		
-		.message {
-			float: left;
-			width: 100%;
-		}
-		
-		.past {
-			color: #777;
-		}
-		
-		#header {
-			background-color: #FF2B2A;
-			color: #ffffff;
-			font-weight: bold;
-			font-variant: small-caps;
-			font-size: 1.2em;
-			padding-left: 5px;
-		}
-		
-		.admin {
-			background-color: #ddd;
-			text-align: center;
-			border-bottom: 1px solid white;
-		}
-		
-		#identity-message {
-			color: red;
 			margin: 0px;
 		}
 		
-		.clear {
-			clear:both;
+		#roar-bar {
+			background-color: #928B33;
+			position: fixed;
+			bottom: 0%;
+			
+			width: 100%;
+			height: 50px;
+			
+			color: #FEFAD1;
+			
+			font-family: Helvetica, sans-serif;
+			
+			border-top: 1px solid #B3B5B8;
+		}
+		
+		#logo {
+			font-weight: bold;
+			font-size: 2em;
+			padding-top: 7px;
+			width: 108px;
+			border-right: 1px solid #B3B5B8;
+			text-align: center;
+			height: 100%;
 		}
 		
 	</style>
+	
 </head>
-<body id="index" onload="">
+<body>
 
-<div id="container">
-<div id="header">
-ROAR
-</div>
 
-<div id="pulse-container-volume" class="pulse-container">
-<br>
-</div>
+<div id="roar-bar">
+<div id="logo">ROAR</div>
 
-<div id="status-container">
-	<p>Connecting...</p>
-</div>
-
-<div id="identity-container">
-	<p id="identity-message"></p>
-<input type="text" name="name" value="your name?" id="name">
-<input type="button" name="set_name" value="set name" id="set_name">
-</div>
-
-<div id="chat-container">
-<div id="chat">
-</div>
-<form id="message"><input type="text" name="message" value="" id="message-text"></form>
-</div>
-
-<div id="pulse-container-words" class="pulse-container">
-</div>
-
-<br class="clear">
 </div>
 
 </body>
