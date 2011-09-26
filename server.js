@@ -51,7 +51,7 @@ io.sockets.on('connection', function(socket) {
                         console.log(res[msgIndex]);
                         msgObj = JSON.parse(res[msgIndex]);
                         msgObj["past"] = true;
-                        socket.emit('chat.message', msgObj);
+                        socket.emit('message', msgObj);
                     }
 
                     // Doing it here ensures that it appears after the past messages.
@@ -63,11 +63,11 @@ io.sockets.on('connection', function(socket) {
         });        
     });
     
-    socket.on('chat.message', function(data) {
+    socket.on('message', function(data) {
         // Mirror the message.
-        messageDict = {message:data.message, from:socket.name, timestamp:Date.now()};
+        messageDict = {text:data.text, from:socket.name, timestamp:Date.now()};
         
-        io.sockets.emit('chat.message', messageDict);
+        io.sockets.emit('message', messageDict);
         
         // By pushing and trimming, we keep it from growing indefinitely 
         client.rpush("room.messages", JSON.stringify(messageDict));
@@ -138,7 +138,7 @@ function _processPulse() {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 
-                wordsInMessage = msg["message"].split(/[\s,.!?]+/);
+                wordsInMessage = msg["text"].split(/[\s,.!?]+/);
                 
                 // For each word in the message 
                 for(var wordIndex in wordsInMessage) {

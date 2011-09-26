@@ -70,15 +70,14 @@
 		
 		
 		function sendChat(event) {
-			
-			chatTextElement = $("#chat-text");
+			chatTextElement = $("#chat-input");
 			
 			if(chatTextElement.val() == "") {
 				if(event!=null) event.preventDefault();
 				return;
 			}
 			
-			socket.emit("message", {text:chatTextElement.val()});
+			socket.emit("message", {"text":chatTextElement.val()});
 			chatTextElement.val("");
 			
 			if(event!=null) event.preventDefault();
@@ -86,8 +85,7 @@
 		
 		
 		function _handleIdentityResponse(data) {
-			console.log(" handling identity response");
-			console.log(data);
+			
 			// this is called with repsonses to requests for a specific user
 			// name. The server is either going to say "yes, you got it" or
 			// "nope, that one is taken".
