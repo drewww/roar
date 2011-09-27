@@ -29,14 +29,6 @@
 		});
 		
 		socket.on('message', function (data) {
-			if ("past" in data) {
-				pastClass = " past";
-			} else {
-				pastClass = "";
-			}
-
-			// messageHtml = "<div class='message" + pastClass + "'><span class='from'>" + data.from + "</span>:<span class='contents'>"+data.message+"</span></div>";
-
 			appendChat(data);
 		});
 		
@@ -45,6 +37,8 @@
 			// Setup default visibility.
 			$("#chat-form").hide();
 			$("#identity-message").hide();
+			$("#chat-history").hide();
+
 			
 			// Setup event handlers.
 			$("#chat-form").submit(sendChat);
@@ -55,6 +49,22 @@
 				socket.on("identify", _handleIdentityResponse);
 			});
 			
+			
+			$("#nickname").click(function() {
+				console.log("Change nickname now.");
+			});
+			
+			$("#show-history").click(function () {
+				if($("#chat-history").is(":visible")) {
+					// If it's visible, animate it to make it disappear.
+					$("#chat-history").animate({bottom:-300}, 500, function() {
+						$(this).hide();
+					});
+				} else {
+					$("#chat-history").show();
+					$("#chat-history").animate({bottom:151}, 500, null);
+				}
+			})
 			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
@@ -105,18 +115,33 @@
 			} else {
 				// Make a normal message.
 				pastClass = "";
-				if("past" in message) pastclass = " past";
+				if("past" in message) pastClass = " past";
 				
-				messageHtml = "<div id='chat-"+message.timestamp +"' class='chat" + pastClass + "'><span class='from'>" + message.from + "</span>: <span class='contents'>"+message.text+"</span></div>";
+				// We have two different versions because one of them (the
+				// live one) gets expired and removed from the DOM. The other
+				// one sticks around in a scrollable div for reviewing chat
+				// history. They need different IDs to not collide.
+				
+				
+				liveId = 'chat-live' + message.timestamp;
+				historyId = 'chat-' + message.timestamp;
+				
+				contentsHtml = "<span class='from'>" + message.from + "</span>: <span class='contents'>"+message.text+"</span>";
+				
+				liveMessageHtml = "<div id='" + liveId + "' class='chat" + pastClass + "'>" + contentsHtml + "</div>";
+				historyMessageHtml = "<div id='" + historyId + "' class='chat" + pastClass + "'>" + contentsHtml + "</div>";
 			}
 			
 			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
 			chatHistory = $("#chat-history");
-			chatHistory.html(chatHistory.html() + messageHtml);
+			chatHistory.html(chatHistory.html() + historyMessageHtml);
+			
+			liveChat = $("#chat-live");
+			liveChat.html(liveChat.html() + liveMessageHtml);
 			
 			// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
 			setTimeout(function() {
-				$("#chat-" + message.timestamp).animate({opacity:0.0}, 250, function() {
+				$("#chat-live" + message.timestamp).animate({opacity:0.0}, 250, function() {
 					$(this).remove();
 				})
 			}, 10000);
@@ -132,6 +157,8 @@
 
 				localStorage["roar-username"] = data["username"];
 
+				$("#nickname").html(data["username"]);
+				
 				$("#identity-form").hide();
 				$("#chat-form").show();
 				$("#chat-input").focus();
@@ -172,6 +199,8 @@
 			font-family: Helvetica, sans-serif;
 			
 			border-top: 1px solid #B3B5B8;
+			
+			z-index: 9999;
 		}
 		
 		#chat, #roar-bar .button, #logo {
@@ -190,18 +219,23 @@
 		}
 		
 		#chat {
-			width: 380px;
+			width: 450px;
 			padding-top: 11px;
 			
 			font-size: 1.0em;
 		}
 		
+		.past {
+			color: #777;
+		}
+		
 		#chat-form {
-			width: 320px;
+			width: 90%;
 		}
 		
 		#chat-form input {
-			width: 100%;
+			width: 275px;
+			float: left;
 		}
 		
 		#identity-form, #chat-form {
@@ -209,25 +243,34 @@
 			margin-right:auto;
 		}
 		
-		#chat-history {
+		#chat-live {
 			background-color: #FEFAD1;
 			border: #928B33;
 			color: #333;
 			
-			width: 380px;
-			
-			/* Have to do this because of #roar-bar div - maybe need to make
-			   that more specific? I like having chat history inside #roar-bar
-			   but I guess that other selector needs to exclude these pop-up
-			   divs. */
-/*			height: 100px !important;*/
-/*			height: 10px;*/
+			width: 450px;
 			
 			position: fixed;
 			bottom: 151px;
 			left: 109px;
 			
-			opacity: 0.8;
+			opacity: 1.0;
+		}
+
+		#chat-history {
+			background-color: #FEFAD1;
+			border: #928B33;
+			color: #333;
+			
+			overflow-y: scroll;
+			position:fixed;
+			
+			width: 450px;
+			height: 300px;
+			bottom: -200px;
+			left: 109px;
+			
+			z-index: -9999;
 		}
 
 		#roar-bar .button {
@@ -285,7 +328,21 @@
 			color: #333;
 			font-size: 0.5em;
 		}
+		
+		#nickname {
+			font-weight: bold;
+			font-size: 1.0em;
+			width: 50px;
+			float: left;
+		}
 
+		#show-history {
+			width: 30px;
+			height: 30px;
+			float: left;
+			margin-left: 10px;
+			background-color: grey;
+		}
 
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
@@ -306,10 +363,14 @@
 
 <div id="chat-history">
 </div>
+<div id="chat-live">
+</div>
 
 <div id="chat">
 <form id="chat-form">
+	<div id="nickname"></div>
 	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text">
+	<div id="show-history"></div>
 </form>
 
 <form id="identity-form">
