@@ -11,6 +11,10 @@ app.get('/', function(req, res) {
     res.sendfile(__dirname + '/templates/index.html');
 });
 
+app.get('/static/:file', function(req, res) {
+    res.sendfile(__dirname + '/static/' + req.params.file);
+});
+
 // TODO Do some sort of blocking on accepting connections until the redis
 // conneciton is actually alive.
 
