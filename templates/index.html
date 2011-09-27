@@ -107,14 +107,19 @@
 				pastClass = "";
 				if("past" in message) pastclass = " past";
 				
-				messageHtml = "<div id='chat-"+message.timestamp +"' class='chat" + pastClass + "'><span class='from'>" + message.from + "</span>:<span class='contents'>"+message.text+"</span></div>";
+				messageHtml = "<div id='chat-"+message.timestamp +"' class='chat" + pastClass + "'><span class='from'>" + message.from + "</span>: <span class='contents'>"+message.text+"</span></div>";
 			}
 			
 			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
 			chatHistory = $("#chat-history");
 			chatHistory.html(chatHistory.html() + messageHtml);
 			
-			// setTimeout()
+			// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
+			setTimeout(function() {
+				$("#chat-" + message.timestamp).animate({opacity:0.0}, 250, function() {
+					$(this).remove();
+				})
+			}, 10000);
 		}
 		
 		function _handleIdentityResponse(data) {
