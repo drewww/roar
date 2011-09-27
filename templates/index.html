@@ -95,6 +95,8 @@
 		    $(".default-text").blur();
 			
 			
+			updatePulse([{"word":"hello", "magnitude":0.8}, {"word":"world", "magnitude":0.6}]);
+			
 		});
 		
 		
@@ -202,6 +204,13 @@
 			// First pass: iterate through the pulse list and for each word
 			// in the list, create a div that represents it in a random loc.
 			
+			
+			// Set a dummy attribute on all the children of pulse. Remove it
+			// when we touch them. If it's still there at the end, remove
+			// the element.
+			
+			$("#pulse").children().attr("untouched", "true");
+			
 			for(var itemIndex in pulse) {
 				var pulseItem = pulse[itemIndex];
 				var pulseWord = pulseItem["word"];
@@ -209,14 +218,15 @@
 				
 				var wordId = "pulse-word-" + pulseWord;
 				
-				// If the 
+				// If the word already exists, find that element and update it
+				// Otherwise, create a new one.
 				var wordEl;
 				if($("#" + wordId).length) {
 					wordEl = $("#"+wordId);
 					
 					// If the word already exists, update its size.
 					wordEl.css("font-size", (pulseMagnitude*4 + 1.5) + "em");
-					
+					wordEl.removeAttr("untouched");
 				} else {
 					// If the word isn't on screen already, add it.
 					wordEl = $(document.createElement('div'));
@@ -229,11 +239,24 @@
 					wordEl.html(pulseWord);
 					$("#pulse").append(wordEl);
 				}
-				
-				// We're going to need some final thing to remove words that
-				// exist but aren't in the current list. This will be a tad
-				// but tricky.
 			}
+			
+			
+			// Now cycle through all the elements in pulse and remove any
+			// that haven't been touched - those have no magnitude
+			// otherwise they would have been in the update list.
+			var pulseWordEls = $("#pulse").children();
+			
+			pulseWordEls.map(function () {
+				var element = $(this);
+				
+				if(element.attr("untouched")!=null) {
+					// If the element still has the untouched attribute,
+					// nuke it.
+					element.remove();
+				}
+			});
+
 		}
 		
 	</script>
