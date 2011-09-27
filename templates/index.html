@@ -61,8 +61,15 @@
 						$(this).hide();
 					});
 				} else {
+					// First, clear out the live view so it doesn't get in
+					// the way.
+					$("#chat-live").children().remove();
+					
+					
 					$("#chat-history").show();
 					$("#chat-history").animate({bottom:151}, 500, null);
+					$("#chat-history").scrollTop(Math.pow(2, 30));
+					
 				}
 			})
 			
@@ -136,15 +143,26 @@
 			chatHistory = $("#chat-history");
 			chatHistory.html(chatHistory.html() + historyMessageHtml);
 			
-			liveChat = $("#chat-live");
-			liveChat.html(liveChat.html() + liveMessageHtml);
+			// Scroll chat history down to the bottom.
+			// INT_MAX. I want this to really represent the current height,
+			// but I can't seem to find a property that represents the size 
+			// that it really wants to be if there were no scrollbars to 
+			// figure out how far down to push it. 
+			chatHistory.scrollTop(Math.pow(2, 30));
 			
-			// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
-			setTimeout(function() {
-				$("#chat-live" + message.timestamp).animate({opacity:0.0}, 250, function() {
-					$(this).remove();
-				})
-			}, 10000);
+			// Check and see if the history view is showing. If it is,
+			// don't do live chat.
+			if(!chatHistory.is(":visible")) {
+				liveChat = $("#chat-live");
+				liveChat.html(liveChat.html() + liveMessageHtml);
+			
+				// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
+				setTimeout(function() {
+					$("#chat-live" + message.timestamp).animate({opacity:0.0}, 250, function() {
+						$(this).remove();
+					})
+				}, 8000);
+			}
 		}
 		
 		function _handleIdentityResponse(data) {
@@ -182,6 +200,10 @@
 			margin: 0px;
 		}
 		
+		#roar-container {
+			font-family: Helvetica, sans-serif;
+		}
+		
 		#roar-bar {
 			background-color: #928B33;
 			
@@ -196,7 +218,6 @@
 			
 			color: #FEFAD1;
 			
-			font-family: Helvetica, sans-serif;
 			
 			border-top: 1px solid #B3B5B8;
 			
@@ -357,12 +378,10 @@
 </head>
 <body>
 
-
+<div id="roar-container">
 <div id="roar-bar">
 <div id="logo">ROAR</div>
 
-<div id="chat-history">
-</div>
 <div id="chat-live">
 </div>
 
@@ -386,8 +405,11 @@ chat
 <div id="shout-button" class="button disabled">
 shout
 </div>
+</div>
 
 
+<div id="chat-history">
+</div>
 </div>
 
 </body>
