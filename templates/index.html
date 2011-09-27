@@ -191,6 +191,51 @@
 			}
 		}
 		
+		
+		// This function is the heart of the visualization system. Everytime
+		// we receive a message from the server with aggregate data about
+		// keywords across all rooms. Given the picture of the state, animate
+		// from where it is now to where it needs to be. What this function
+		// will receive is a list of word/score combos.
+		
+		function updatePulse(pulse) {
+			// First pass: iterate through the pulse list and for each word
+			// in the list, create a div that represents it in a random loc.
+			
+			for(var itemIndex in pulse) {
+				var pulseItem = pulse[itemIndex];
+				var pulseWord = pulseItem["word"];
+				var pulseMagnitude = pulseItem["magnitude"];
+				
+				var wordId = "pulse-word-" + pulseWord;
+				
+				// If the 
+				var wordEl;
+				if($("#" + wordId).length) {
+					wordEl = $("#"+wordId);
+					
+					// If the word already exists, update its size.
+					wordEl.css("font-size", (pulseMagnitude*4 + 1.5) + "em");
+					
+				} else {
+					// If the word isn't on screen already, add it.
+					wordEl = $(document.createElement('div'));
+					var size = pulseMagnitude*4 + 1.5;
+					wordEl.addClass("pulse-word");
+					wordEl.attr("id", wordId);
+					wordEl.css("top", Math.random()*1000);
+					wordEl.css("left", Math.random()*1000);
+					wordEl.css("font-size", size + "em");
+					wordEl.html(pulseWord);
+					$("#pulse").append(wordEl);
+				}
+				
+				// We're going to need some final thing to remove words that
+				// exist but aren't in the current list. This will be a tad
+				// but tricky.
+			}
+		}
+		
 	</script>
 	
 	<style type="text/css" media="screen">
@@ -295,7 +340,7 @@
 			bottom: -200px;
 			left: 109px;
 			
-			z-index: -9999;
+			z-index: 2;
 		}
 
 		#roar-bar .button {
@@ -378,6 +423,22 @@
 			border: 1px solid #333;
 		}
 
+		#pulse {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			background: rgba(1,1,1,0.0);
+			width: 100%;
+			height: 100%;
+		}
+		
+		.pulse-word {
+			position: fixed;
+			color: white;
+			text-shadow: 1px 1px 0px #111;
+			font-weight: bold;
+		}
+
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
@@ -425,7 +486,12 @@ shout
 
 <div id="chat-history">
 </div>
+
+<div id="pulse">
 </div>
+
+</div>
+
 
 </body>
 </html>
