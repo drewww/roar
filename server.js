@@ -177,13 +177,17 @@ function _processPulse() {
         }
         
         // Require that something be said more than once to be displayed.
-        if (bestScore < 2) topWord = " ";
+        if (bestScore < 2) topWord = "";
         
         var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
         var windowActivity = messagesInWindow / 5;
         var relativeActivity = windowActivity / totalActivity;
         
-        dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
+        
+        
+        dict = [{"word":topWord, "magnitude":bestScore/10}];
+        
+        // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
         // console.log(dict);
         io.sockets.emit('pulse', dict);
         

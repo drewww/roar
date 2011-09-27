@@ -32,6 +32,12 @@
 			appendChat(data);
 		});
 		
+		socket.on('pulse', function (data) {
+			console.log("pulse data");
+			console.log(data);
+			updatePulse(data);
+		});
+		
 		$(document).ready(function() {
 			
 			// Setup default visibility.
@@ -93,10 +99,6 @@
 		    });
 			
 		    $(".default-text").blur();
-			
-			
-			updatePulse([{"word":"hello", "magnitude":0.8}, {"word":"world", "magnitude":0.6}]);
-			
 		});
 		
 		
@@ -216,6 +218,8 @@
 				var pulseWord = pulseItem["word"];
 				var pulseMagnitude = pulseItem["magnitude"];
 				
+				if(pulseWord=="") continue;
+				
 				var wordId = "pulse-word-" + pulseWord;
 				
 				// If the word already exists, find that element and update it
@@ -233,8 +237,8 @@
 					var size = pulseMagnitude*4 + 1.5;
 					wordEl.addClass("pulse-word");
 					wordEl.attr("id", wordId);
-					wordEl.css("top", Math.random()*1000);
-					wordEl.css("left", Math.random()*1000);
+					wordEl.css("top", Math.random()*$(window).height);
+					wordEl.css("left", Math.random()*$(window).width);
 					wordEl.css("font-size", size + "em");
 					wordEl.html(pulseWord);
 					$("#pulse").append(wordEl);
