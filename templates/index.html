@@ -229,19 +229,35 @@
 					wordEl = $("#"+wordId);
 					
 					// If the word already exists, update its size.
-					wordEl.css("font-size", (pulseMagnitude*4 + 1.5) + "em");
+					var size = pulseMagnitude*4 + 1.5;
+					wordEl.animate({
+						fontSize: size + "em"
+					}, 500);
+					
 					wordEl.removeAttr("untouched");
 				} else {
 					// If the word isn't on screen already, add it.
 					wordEl = $(document.createElement('div'));
-					var size = pulseMagnitude*4 + 1.5;
-					wordEl.addClass("pulse-word");
 					wordEl.attr("id", wordId);
 					wordEl.css("top", Math.random()*($(window).height()-50));
 					wordEl.css("left", Math.random()*$(window).width());
-					wordEl.css("font-size", size + "em");
+					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
+					
+					// Create the element with default settings that make it
+					// invisible but in the right place, then animate
+					// it to the right size and opacity.
+					wordEl.css("opacity", 0.0);
+					wordEl.css("font-size", 0.4);
 					$("#pulse").append(wordEl);
+					
+					var size = pulseMagnitude*4 + 1.5;
+					
+					wordEl.animate({
+						opacity: 1.0,
+						fontSize: size + "em"
+					}, 500);
+					
 				}
 			}
 			
@@ -257,7 +273,12 @@
 				if(element.attr("untouched")!=null) {
 					// If the element still has the untouched attribute,
 					// nuke it.
-					element.remove();
+					element.animate({
+						opacity: 0.0,
+						fontSize: 0.4
+					}, 500, function() {
+						$(this).remove();
+					})
 				}
 			});
 
