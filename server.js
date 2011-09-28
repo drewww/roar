@@ -35,7 +35,6 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('identify', function(data) {
         
-        
         // eventually check this against redis to see if the name is taken
         client.hexists("global:connectedUsers", data["username"], function (err, res) {
             if(res == 0) { 
@@ -86,6 +85,60 @@ io.sockets.on('connection', function(socket) {
     // Handle change room commands.
     socket.on('room', function(data) {
         // Messages will be of the form: {"name":"room_name"}.
+        
+        // See if this socket is in a room already.
+        socket.get("room", function(err, roomName) {
+            if(roomName!=null) {
+                // We need to leave that room first.
+                // 1. Unsubscribe the socket.
+                // 2. Decrement the population count.
+                // 3. Potentially delete the channel if there's no one left.
+                socket.leave(roomName);
+                
+                client.hget("global:rooms", roomName, function (err, roomId) {
+                    
+                    client.hincrby("rooms:" + roomId, "population", -1,
+                        function (err, newPopulation) {
+                            if(newPopulation==0) {
+                                
+                                // Remove the room records.
+                                client.hdel("global:rooms", roomName);
+                                client.del("rooms:" + roomId);
+                            }
+                        });
+                });
+            }
+        });
+        
+        var roomName = data["name"];
+        socket.set("room", roomName, function() {
+            socket.join(roomName);
+           
+            // TODO send a room-change message.
+            
+            client.hexists("global:rooms", roomName, function (err, exists) {
+                if(exists) {
+                    // If we already know about this room, get the id and 
+                    // then increment the count.
+                    client.hget("global:rooms", roomName, function(err, roomId) {
+                        client.hincrby("rooms:" + roomId, "population", 1);
+                    })
+                    
+                } else {
+                    // otherwise, make a new hash for this room's info.
+                    client.incr("global:nextRoomId", function (err, roomId) {
+                        // Add an entry in the global rooms hash mapping the
+                        // room name to its id.
+                        client.hset("global:rooms", roomName, roomId);
+                        
+                        // Add a hash for the specific room id with room
+                        // metadata.
+                        client.hset("rooms:" + roomId, "name",roomName);
+                        client.hset("rooms:" + roomId, "population",1);
+                    });
+                }
+            });
+        });
         
     });
     
