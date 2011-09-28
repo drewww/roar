@@ -288,15 +288,15 @@
 					// If the element still has the untouched attribute,
 					// nuke it.
 					
-					// var newDimensions = getDimensionsForWord(wordEl.html(), 0.4);
-					// var leftDelta=(-wordEl.width()+newDimensions["width"])/2;
-					// var topDelta=(-wordEl.height()+newDimensions["height"])/2;
+					var newDimensions = getDimensionsForWord(element.html(), 0.4);
+					var leftDelta=(element.width()-newDimensions["width"])/2;
+					var topDelta=(element.height()-newDimensions["height"])/2;
 					
 					element.animate({
 						opacity: 0.0,
 						fontSize: 0.4,
-						// left: "+=" + leftDelta,
-						// top: "+=" + topDelta
+						left: "+=" + leftDelta,
+						top: "+=" + topDelta
 					}, 500, function() {
 						$(this).remove();
 					});
