@@ -33,8 +33,6 @@
 		});
 		
 		socket.on('pulse', function (data) {
-			console.log("pulse data");
-			console.log(data);
 			updatePulse(data);
 		});
 		
@@ -232,7 +230,7 @@
 					var size = pulseMagnitude*4 + 1.5;
 					wordEl.animate({
 						fontSize: size + "em"
-					}, 500);
+					}, 500, null, "easeOutBounce");
 					
 					wordEl.removeAttr("untouched");
 				} else {
@@ -256,7 +254,7 @@
 					wordEl.animate({
 						opacity: 1.0,
 						fontSize: size + "em"
-					}, 500);
+					}, 500, null, "easeOutBounce");
 					
 				}
 			}
@@ -278,7 +276,7 @@
 						fontSize: 0.4
 					}, 500, function() {
 						$(this).remove();
-					})
+					});
 				}
 			});
 
