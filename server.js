@@ -138,7 +138,7 @@ function _processPulse() {
             // guaranteed to be the first, but whatever. Be safe.
             if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
             
-            if(Date.now() - msg["timestamp"] < 5000) {
+            if(Date.now() - msg["timestamp"] < 10000) {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 

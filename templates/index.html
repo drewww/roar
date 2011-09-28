@@ -7,7 +7,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
-		var socket = io.connect("http://localhost:8080");
+		var socket = io.connect("http://18.111.38.229:8080");
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -557,7 +557,7 @@
 <div id="chat">
 <form id="chat-form">
 	<div id="nickname"></div>
-	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text">
+	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text" autocomplete="off">
 	<div id="show-history"></div>
 </form>
 
