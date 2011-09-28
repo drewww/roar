@@ -77,7 +77,6 @@ io.sockets.on('connection', function(socket) {
                 messageDict = {text:data.text, from:nickname,
                     timestamp:Date.now(), room:roomName};
 
-                // io.sockets.emit('message', messageDict);
                 io.sockets.in(roomName).emit('message', messageDict);
 
                 // By pushing and trimming, we keep it from growing indefinitely 
@@ -149,10 +148,13 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('disconnect', function() {
         // If they haven't registered a name yet, ignore them.
-        if(socket.name != undefined) {
-            io.sockets.emit('admin.message', {message:socket.name + " has left.", from:"admin"});
-            client.hdel("global:connectedUsers", socket.name);
-        }
+        
+        socket.get("nickname", function(err, nickname) {
+            if(nickname!=null) {
+                io.sockets.emit('admin.message', {message:nickname + " has left.", from:"admin"});
+                client.hdel("global:connectedUsers", nickname);
+            }
+        });
     });
 });
 
@@ -161,12 +163,25 @@ client.on("error", function(err) {
     console.log("ERR REDIS: " + err);
 });
 
+
+// Clean up some stateful variables that need to be empty on start.
+// Ideally, it'd be nice if this stuff could persist some but it seems
+// risky to me, so I don't really do it at all yet. Also, I'd like to
+// do this on shutdown, but I haven't found a way to capture that event
+// yet. 
 client.once("ready", function(err) {
     client.hgetall("global:connectedUsers", function(err, res) {
         for(key in res) {
             client.hdel("global:connectedUsers", key);
         }
     });
+    
+    client.hgetall("global:rooms", function(err, res) {
+        for(key in res) {
+            client.hdel("global:rooms", key);
+            client.del("rooms:" + res[key]);
+        }
+    })
     
     // Start the periodic data worker threads.
     setTimeout(_processPulse, 5000);

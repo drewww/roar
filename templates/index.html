@@ -74,7 +74,12 @@
 					$("#chat-history").scrollTop(Math.pow(2, 30));
 					
 				}
-			})
+			});
+			
+			$("#room-select-form").submit(function (event) {
+				joinRoom($("#room").val());
+				event.preventDefault();
+			});
 			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
@@ -206,6 +211,7 @@
 		}
 		
 		function joinRoom(roomName) {
+			$("#room").val(roomName);
 			socket.emit("room", {"name":roomName});
 		}
 		
@@ -368,6 +374,18 @@
 			float: left;
 		}
 		
+		#room-select {
+			border-left: 1px solid #B3B5B8;
+			height: 100%;
+			float: right;
+			
+			width: 250px;
+		}
+		
+/*		#room-select input {
+			width: ;
+		}
+*/		
 		#logo {
 			padding-top: 7px;
 			
@@ -590,6 +608,13 @@ chat
 <div id="shout-button" class="button disabled">
 shout
 </div>
+
+<div id="room-select">
+<form id="room-select-form">
+<label for="room">room</label><input type="text" name="room" value="" id="room">
+</form>
+</div>
+
 </div>
 
 
