@@ -227,8 +227,20 @@
 					
 					// If the word already exists, update its size.
 					var size = pulseMagnitude*4 + 1.5;
+					
+					var newDimensions = getDimensionsForWord(wordEl.html(), size);
+					
+					// To make it look like it's growing equally in either
+					// direction (instead of growing from the upper left 
+					// corner), figure out how much larger it'll be after
+					// growth and move left half of the difference.
+					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
+					var topDelta=(wordEl.height()-newDimensions["height"])/2;
+					
 					wordEl.animate({
-						fontSize: size + "em"
+						fontSize: size + "em",
+						left: "+=" + leftDelta,
+						top: "+=" + topDelta,
 					}, 500, null, "easeOutBounce");
 					
 					wordEl.removeAttr("untouched");
@@ -249,10 +261,15 @@
 					$("#pulse").append(wordEl);
 					
 					var size = pulseMagnitude*4 + 1.5;
+					var newDimensions = getDimensionsForWord(wordEl.html(), size);
+					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
+					var topDelta=(wordEl.height()-newDimensions["height"])/2;
 					
 					wordEl.animate({
 						opacity: 0.8,
-						fontSize: size + "em"
+						fontSize: size + "em",
+						left: "+=" + leftDelta,
+						top: "+=" + topDelta
 					}, 500, null, "easeOutBounce");
 					
 				}
@@ -270,9 +287,16 @@
 				if(element.attr("untouched")!=null) {
 					// If the element still has the untouched attribute,
 					// nuke it.
+					
+					// var newDimensions = getDimensionsForWord(wordEl.html(), 0.4);
+					// var leftDelta=(-wordEl.width()+newDimensions["width"])/2;
+					// var topDelta=(-wordEl.height()+newDimensions["height"])/2;
+					
 					element.animate({
 						opacity: 0.0,
-						fontSize: 0.4
+						fontSize: 0.4,
+						// left: "+=" + leftDelta,
+						// top: "+=" + topDelta
 					}, 500, function() {
 						$(this).remove();
 					});
