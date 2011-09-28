@@ -134,7 +134,7 @@ function _processPulse() {
 
             totalMessages = totalMessages+1;
             
-            // This will find the earliest item in the group. I think
+            // This will find the earliest item in the group. I think it's
             // guaranteed to be the first, but whatever. Be safe.
             if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
             
@@ -165,27 +165,34 @@ function _processPulse() {
             }
         }
 
-        var topWord = " ";
-        var bestScore = 0;
+
+        var popularWordsList = [];
         for(var word in popularWordsInWindow) {
             var wordScore = popularWordsInWindow[word];
             
-            if(wordScore > bestScore) {
-                bestScore = wordScore;
-                topWord = word;
+            
+            // Knock out words that are mentioned once, just for cleaner
+            // data.
+            if(wordScore > 1) {
+                popularWordsList.push({"word":word, "score":wordScore/20});
             }
         }
         
-        // Require that something be said more than once to be displayed.
-        if (bestScore < 2) topWord = "";
+        // Now sort the list by word score, so it's frequency sorted.
+        popularWordsList.sort(function(a, b) {
+            return a["score"] - b["score"];
+        });
+        popularWordsList.reverse();
         
+        // In a later pass, we'll use this to decide how many words to 
+        // send total.
         var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
         var windowActivity = messagesInWindow / 5;
         var relativeActivity = windowActivity / totalActivity;
         
-        
-        
-        dict = [{"word":topWord, "magnitude":bestScore/10}];
+        // Hardcoding this for now. Eventually we want to include more words
+        // when it's louder, and fewer words when it's quiet. 
+        dict = popularWordsList.slice(0, 5);
         
         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
         // console.log(dict);
