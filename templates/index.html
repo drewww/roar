@@ -29,6 +29,7 @@
 		});
 		
 		socket.on('message', function (data) {
+			console.log(data);
 			appendChat(data);
 		});
 		
@@ -121,39 +122,42 @@
 		
 		function appendChat(message) {
 			
-			// Create the HTML.
-			if("admin" in message) {
-				// Make an admin message.
-				
+			// Make a normal message.
+			classes = "";
+			if("past" in message) classes += " past";
+			
+			if("admin" in message) classes += " admin";
+			
+			// We have two different versions because one of them (the
+			// live one) gets expired and removed from the DOM. The other
+			// one sticks around in a scrollable div for reviewing chat
+			// history. They need different IDs to not collide.
+			
+
+			 if(!("timestamp" in message)) {
+			 	console.log("setting timestamp manually");
+			 	message.timestamp = Date.now();
+			 }
+
+			var liveId = 'chat-live-' + message.timestamp;
+			var historyId = 'chat-' + message.timestamp;
+			
+			var contentsEl;
+			if("admin" in message)  {
+				console.log("Handling an admin message.");
+				contentsEl = $("<span class='contents'></span>");
+				contentsEl.first().text(message.text);
 			} else {
-				// Make a normal message.
-				pastClass = "";
-				if("past" in message) pastClass = " past";
-				
-				// We have two different versions because one of them (the
-				// live one) gets expired and removed from the DOM. The other
-				// one sticks around in a scrollable div for reviewing chat
-				// history. They need different IDs to not collide.
-				
-				
-				liveId = 'chat-live-' + message.timestamp;
-				historyId = 'chat-' + message.timestamp;
-				
-				
-				var contentsEl = $("<span class='from'></span>: <span class='contents'></span>");
+				contentsEl = $("<span class='from'></span>: <span class='contents'></span>");
 				contentsEl.first().text(message.from);
 				contentsEl.last().text(message.text);
-				
-				var liveMessageEl = $("<div id='" + liveId + "' class='chat" + pastClass + "'></div>");
-				liveMessageEl.append(contentsEl.clone());
-				
-				var historyMessageEl = $("<div id='" + historyId + "' class='chat" + pastClass + "'></div>");
-				historyMessageEl.append(contentsEl.clone());
-
-				
-				// liveMessageHtml = "<div id='" + liveId + "' class='chat" + pastClass + "'>" + contentsEl[0] + "</div>";
-				// historyMessageHtml = "<div id='" + historyId + "' class='chat" + pastClass + "'>" + contentsEl[0] + "</div>";
 			}
+			
+			var liveMessageEl = $("<div id='" + liveId + "' class='chat" + classes + "'></div>");
+			liveMessageEl.append(contentsEl.clone());
+			
+			var historyMessageEl = $("<div id='" + historyId + "' class='chat" + classes + "'></div>");
+			historyMessageEl.append(contentsEl.clone());
 			
 			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
 			chatHistory = $("#chat-history");
@@ -213,6 +217,7 @@
 		function joinRoom(roomName) {
 			$("#room").val(roomName);
 			socket.emit("room", {"name":roomName});
+			$("#chat-input").focus();
 		}
 		
 		// This function is the heart of the visualization system. Everytime
@@ -406,6 +411,12 @@
 			color: #777;
 		}
 		
+		.admin {
+			background-color: #333;
+			color: #eee;
+			text-align: center;
+		}
+		
 		#chat-form {
 			width: 90%;
 		}
@@ -454,6 +465,7 @@
 			z-index: 2;
 		}
 
+		
 		#roar-bar .button {
 			width: 70px;
 			text-align: center;

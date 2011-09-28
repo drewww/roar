@@ -28,10 +28,6 @@ io.sockets.on('connection', function(socket) {
     
     // Sets up all the per-connection events that we need to think about.
     // For now, this is just a response to chat messages.   
-    socket.emit('admin.message', {message:"Welcome to roar!", from:"admin"});
-    
-    // Is the number of sockets really the number of people? I guess so.
-    // socket.emit('admin.message', {message: io.sockets.length + " people chatting."});
     
     socket.on('identify', function(data) {
         
@@ -45,8 +41,8 @@ io.sockets.on('connection', function(socket) {
                 // Eventually, put a pointer to the user id in here, or something.
                 client.hset("global:connectedUsers", data["username"], true);
 
-                socket.broadcast.emit('admin.message', {message: socket.name + " has entered.", from:"admin"});
-
+                // TODO defer this to room entry, maybe? Don't know which
+                // room to pull from.
                 client.lrange("room.messages", -10, -1, function (err, res) {
                     console.log("lrange returned");
                     console.log(res);
@@ -58,7 +54,7 @@ io.sockets.on('connection', function(socket) {
                     }
 
                     // Doing it here ensures that it appears after the past messages.
-                    socket.emit('admin.message', {message: "You have joined the chat.", from:"admin"});
+                    socket.emit('message', {text:"Welcome to roar!", admin:"true"});
                 });
             });
                 
@@ -89,6 +85,7 @@ io.sockets.on('connection', function(socket) {
     // Handle change room commands.
     socket.on('room', function(data) {
         // Messages will be of the form: {"name":"room_name"}.
+        var newRoomName = data["name"];
         
         // See if this socket is in a room already.
         socket.get("room", function(err, roomName) {
@@ -98,6 +95,18 @@ io.sockets.on('connection', function(socket) {
                 // 2. Decrement the population count.
                 // 3. Potentially delete the channel if there's no one left.
                 socket.leave(roomName);
+                
+                socket.emit('message', {text:
+                    "You have left room '"+roomName+"'.", admin:"true"});
+                
+                socket.get("nickname", function(err, nickname) {
+                    io.sockets.in(roomName).emit("message",
+                    {text:nickname + " has moved to " + newRoomName + ".",
+                    admin:"true"});
+                });
+                
+                
+                
                 
                 client.hget("global:rooms", roomName, function (err, roomId) {
                     
@@ -114,33 +123,58 @@ io.sockets.on('connection', function(socket) {
             }
         });
         
-        var roomName = data["name"];
-        socket.set("room", roomName, function() {
-            socket.join(roomName);
+        socket.set("room", newRoomName, function() {
+            
            
             // TODO send a room-change message.
-            
-            client.hexists("global:rooms", roomName, function (err, exists) {
+            var population;
+            client.hexists("global:rooms", newRoomName, function (err, exists) {
                 if(exists) {
                     // If we already know about this room, get the id and 
                     // then increment the count.
-                    client.hget("global:rooms", roomName, function(err, roomId) {
-                        client.hincrby("rooms:" + roomId, "population", 1);
-                    })
+                    client.hget("global:rooms", newRoomName, function(err, roomId) {
+                        client.hincrby("rooms:" + roomId, "population", 1,
+                            function(err, population) {
+                                socket.emit('message', {text:
+                                    "You have joined room '"+newRoomName+
+                                    "' with " + population +
+                                    " total people.", admin:"true"});
+                            });
+                    });
                     
                 } else {
                     // otherwise, make a new hash for this room's info.
                     client.incr("global:nextRoomId", function (err, roomId) {
                         // Add an entry in the global rooms hash mapping the
                         // room name to its id.
-                        client.hset("global:rooms", roomName, roomId);
+                        client.hset("global:rooms", newRoomName, roomId);
                         
                         // Add a hash for the specific room id with room
                         // metadata.
-                        client.hset("rooms:" + roomId, "name",roomName);
+                        client.hset("rooms:" + roomId, "name",newRoomName);
                         client.hset("rooms:" + roomId, "population",1);
+                        
+                        socket.emit('message', {text:
+                            "You have joined room '"+newRoomName+
+                            "' with 1 total person.", admin:"true"});
+                        
                     });
                 }
+                
+                socket.get("nickname", function(err, nickname) {
+                    // Kinda wanted to say where they came from here, but
+                    // that turns out to be a little tedious with the callback
+                    // structure. Figure out some way to cache that to make it
+                    // accessible?
+                    io.sockets.in(newRoomName).emit("message",
+                    {text:nickname + " has arrived.",
+                    admin:"true"});
+                });
+                
+                // doing this after the arrival broadcast message means
+                // it doens't go to that user, which is nice. We have separate
+                // arrival messages for them.
+                socket.join(newRoomName);
             });
         });
         
@@ -151,7 +185,7 @@ io.sockets.on('connection', function(socket) {
         
         socket.get("nickname", function(err, nickname) {
             if(nickname!=null) {
-                io.sockets.emit('admin.message', {message:nickname + " has left.", from:"admin"});
+                io.sockets.emit('message', {text:nickname + " has left.", admin:"true"});
                 client.hdel("global:connectedUsers", nickname);
             }
         });
