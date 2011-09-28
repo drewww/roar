@@ -7,7 +7,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
-		var socket = io.connect("http://18.111.38.229:8080");
+		var socket = io.connect("http://127.0.0.1:8080");
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -131,7 +131,7 @@
 				// history. They need different IDs to not collide.
 				
 				
-				liveId = 'chat-live' + message.timestamp;
+				liveId = 'chat-live-' + message.timestamp;
 				historyId = 'chat-' + message.timestamp;
 				
 				contentsHtml = "<span class='from'>" + message.from + "</span>: <span class='contents'>"+message.text+"</span>";
@@ -142,7 +142,7 @@
 			
 			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
 			chatHistory = $("#chat-history");
-			chatHistory.html(chatHistory.html() + historyMessageHtml);
+			chatHistory.append($(historyMessageHtml));
 			
 			// Scroll chat history down to the bottom.
 			// INT_MAX. I want this to really represent the current height,
@@ -155,11 +155,11 @@
 			// don't do live chat.
 			if(!chatHistory.is(":visible")) {
 				liveChat = $("#chat-live");
-				liveChat.html(liveChat.html() + liveMessageHtml);
+				liveChat.append($(liveMessageHtml));
 			
 				// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
 				setTimeout(function() {
-					$("#chat-live" + message.timestamp).animate({opacity:0.0}, 250, function() {
+					$("#chat-live-" + message.timestamp).animate({opacity:0.0}, 250, function() {
 						$(this).remove();
 					})
 				}, 8000);
