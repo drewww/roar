@@ -61,7 +61,7 @@
 			$("#show-history").click(function () {
 				if($("#chat-history").is(":visible")) {
 					// If it's visible, animate it to make it disappear.
-					$("#chat-history").animate({bottom:-300}, 500, function() {
+					$("#chat-history").animate({bottom:-300}, 500, function(){
 						$(this).hide();
 					});
 				} else {
@@ -69,9 +69,8 @@
 					// the way.
 					$("#chat-live").children().remove();
 					
-					
 					$("#chat-history").show();
-					$("#chat-history").animate({bottom:151}, 500, null);
+					$("#chat-history").animate({bottom:51}, 500, null);
 					$("#chat-history").scrollTop(Math.pow(2, 30));
 					
 				}
@@ -302,7 +301,7 @@
 			background: -moz-linear-gradient(top,  #928B33,  #413D1B); /* for firefox 3.6+ */
 			
 			position: fixed;
-			bottom: 100px;
+			bottom: 0px;
 			
 			width: 100%;
 			height: 50px;
@@ -368,7 +367,7 @@
 		#chat-live {
 			background-color: rgba(0,0,0,0.0);
 			position: fixed;
-			bottom: 151px;
+			bottom: 51px;
 			left: 109px;
 			
 			width: 450px;
