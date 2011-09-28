@@ -134,15 +134,25 @@
 				liveId = 'chat-live-' + message.timestamp;
 				historyId = 'chat-' + message.timestamp;
 				
-				contentsHtml = "<span class='from'>" + message.from + "</span>: <span class='contents'>"+message.text+"</span>";
 				
-				liveMessageHtml = "<div id='" + liveId + "' class='chat" + pastClass + "'>" + contentsHtml + "</div>";
-				historyMessageHtml = "<div id='" + historyId + "' class='chat" + pastClass + "'>" + contentsHtml + "</div>";
+				var contentsEl = $("<span class='from'></span>: <span class='contents'></span>");
+				contentsEl.first().text(message.from);
+				contentsEl.last().text(message.text);
+				
+				var liveMessageEl = $("<div id='" + liveId + "' class='chat" + pastClass + "'></div>");
+				liveMessageEl.append(contentsEl.clone());
+				
+				var historyMessageEl = $("<div id='" + historyId + "' class='chat" + pastClass + "'></div>");
+				historyMessageEl.append(contentsEl.clone());
+
+				
+				// liveMessageHtml = "<div id='" + liveId + "' class='chat" + pastClass + "'>" + contentsEl[0] + "</div>";
+				// historyMessageHtml = "<div id='" + historyId + "' class='chat" + pastClass + "'>" + contentsEl[0] + "</div>";
 			}
 			
 			// Append it. (is there a race condition here with removing elements? should I do this more formally with DOM operations?)
 			chatHistory = $("#chat-history");
-			chatHistory.append($(historyMessageHtml));
+			chatHistory.append(historyMessageEl);
 			
 			// Scroll chat history down to the bottom.
 			// INT_MAX. I want this to really represent the current height,
@@ -155,7 +165,7 @@
 			// don't do live chat.
 			if(!chatHistory.is(":visible")) {
 				liveChat = $("#chat-live");
-				liveChat.append($(liveMessageHtml));
+				liveChat.append(liveMessageEl);
 			
 				// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
 				setTimeout(function() {
