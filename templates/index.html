@@ -193,7 +193,10 @@
 				$("#chat-input").focus();
 				
 				$(".button").removeClass("disabled");
-
+				
+				// Join a default room.
+				joinRoom("General Chat");
+				
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
 				$("#identity-message").html("'"+data["username"]+"' is taken");

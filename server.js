@@ -72,13 +72,18 @@ io.sockets.on('connection', function(socket) {
 
         // Get the username.
         socket.get('nickname', function(err, nickname) {
-            messageDict = {text:data.text, from:nickname, timestamp:Date.now()};
+            socket.get("room" ,function(err, roomName) {
+                console.log("message from " + nickname + " to room " + roomName);
+                messageDict = {text:data.text, from:nickname,
+                    timestamp:Date.now(), room:roomName};
 
-            io.sockets.emit('message', messageDict);
+                // io.sockets.emit('message', messageDict);
+                io.sockets.in(roomName).emit('message', messageDict);
 
-            // By pushing and trimming, we keep it from growing indefinitely 
-            client.rpush("room.messages", JSON.stringify(messageDict));
-            client.ltrim("room.messages", -100, -1);
+                // By pushing and trimming, we keep it from growing indefinitely 
+                client.rpush("room.messages", JSON.stringify(messageDict));
+                client.ltrim("room.messages", -100, -1);
+            });
         });
     });
     
