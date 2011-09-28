@@ -237,7 +237,7 @@
 					wordEl = $(document.createElement('div'));
 					wordEl.attr("id", wordId);
 					wordEl.css("top", Math.random()*($(window).height()-50));
-					wordEl.css("left", Math.random()*$(window).width());
+					wordEl.css("left", Math.random()*$(window).width()-100);
 					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
 					
@@ -251,7 +251,7 @@
 					var size = pulseMagnitude*4 + 1.5;
 					
 					wordEl.animate({
-						opacity: 1.0,
+						opacity: 0.8,
 						fontSize: size + "em"
 					}, 500, null, "easeOutBounce");
 					
@@ -278,7 +278,15 @@
 					});
 				}
 			});
-
+		}
+		
+		function getDimensionsForWord(word, size) {
+			var buffer = $("#word-buffer");
+			buffer.html(word);
+			buffer.css("font-size", size + "em");
+			var size = {"width":buffer.width(), "height":buffer.height()};
+			buffer.html("");
+			return size;
 		}
 		
 	</script>
@@ -489,8 +497,17 @@
 			color: white;
 			text-shadow: 1px 1px 0px #111;
 			font-weight: bold;
+			opacity: 0.7;
 		}
 
+		#word-buffer {
+			position: fixed;
+			right: -10px;
+			bottom: -10px;
+			text-shadow: 1px 1px 0px #111;
+			font-weight: bold;
+		}
+		
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
@@ -540,6 +557,9 @@ shout
 </div>
 
 <div id="pulse">
+</div>
+
+<div id="word-buffer">
 </div>
 
 </div>
