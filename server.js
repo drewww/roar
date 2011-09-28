@@ -39,9 +39,9 @@ io.sockets.on('connection', function(socket) {
         // eventually check this against redis to see if the name is taken
         client.hexists("global:connectedUsers", data["username"], function (err, res) {
             if(res == 0) { 
-                socket.emit("identify", {state:"OK", username:data["username"]});
-
-                socket.name = data.username;
+                
+                socket.set('nickname', data.username, function() {
+                    socket.emit("identify", {state:"OK", username:data["username"]});
                 
                 // Eventually, put a pointer to the user id in here, or something.
                 client.hset("global:connectedUsers", data["username"], true);
@@ -61,6 +61,8 @@ io.sockets.on('connection', function(socket) {
                     // Doing it here ensures that it appears after the past messages.
                     socket.emit('admin.message', {message: "You have joined the chat.", from:"admin"});
                 });
+            });
+                
             } else {
                 socket.emit("identify", {state:"TAKEN", username:data["username"]});
             }
@@ -68,14 +70,23 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('message', function(data) {
-        // Mirror the message.
-        messageDict = {text:data.text, from:socket.name, timestamp:Date.now()};
+
+        // Get the username.
+        socket.get('nickname', function(err, nickname) {
+            messageDict = {text:data.text, from:nickname, timestamp:Date.now()};
+
+            io.sockets.emit('message', messageDict);
+
+            // By pushing and trimming, we keep it from growing indefinitely 
+            client.rpush("room.messages", JSON.stringify(messageDict));
+            client.ltrim("room.messages", -100, -1);
+        });
+    });
+    
+    // Handle change room commands.
+    socket.on('room', function(data) {
+        // Messages will be of the form: {"name":"room_name"}.
         
-        io.sockets.emit('message', messageDict);
-        
-        // By pushing and trimming, we keep it from growing indefinitely 
-        client.rpush("room.messages", JSON.stringify(messageDict));
-        client.ltrim("room.messages", -100, -1);
     });
     
     socket.on('disconnect', function() {
