@@ -86,47 +86,11 @@ io.sockets.on('connection', function(socket) {
     socket.on('room', function(data) {
         // Messages will be of the form: {"name":"room_name"}.
         var newRoomName = data["name"];
-        
-        // See if this socket is in a room already.
-        socket.get("room", function(err, roomName) {
-            if(roomName!=null) {
-                // We need to leave that room first.
-                // 1. Unsubscribe the socket.
-                // 2. Decrement the population count.
-                // 3. Potentially delete the channel if there's no one left.
-                socket.leave(roomName);
-                
-                socket.emit('message', {text:
-                    "You have left room '"+roomName+"'.", admin:"true"});
-                
-                socket.get("nickname", function(err, nickname) {
-                    io.sockets.in(roomName).emit("message",
-                    {text:nickname + " has moved to " + newRoomName + ".",
-                    admin:"true"});
-                });
-                
-                
-                
-                
-                client.hget("global:rooms", roomName, function (err, roomId) {
-                    
-                    client.hincrby("rooms:" + roomId, "population", -1,
-                        function (err, newPopulation) {
-                            if(newPopulation==0) {
-                                
-                                // Remove the room records.
-                                client.hdel("global:rooms", roomName);
-                                client.del("rooms:" + roomId);
-                            }
-                        });
-                });
-            }
-        });
+
+        leaveRoom(socket, newRoomName);
         
         socket.set("room", newRoomName, function() {
             
-           
-            // TODO send a room-change message.
             var population;
             client.hexists("global:rooms", newRoomName, function (err, exists) {
                 if(exists) {
@@ -181,14 +145,7 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('disconnect', function() {
-        // If they haven't registered a name yet, ignore them.
-        
-        socket.get("nickname", function(err, nickname) {
-            if(nickname!=null) {
-                io.sockets.emit('message', {text:nickname + " has left.", admin:"true"});
-                client.hdel("global:connectedUsers", nickname);
-            }
-        });
+        leaveRoom(socket, null);
     });
 });
 
@@ -221,6 +178,46 @@ client.once("ready", function(err) {
     setTimeout(_processPulse, 5000);
 });
 
+
+function leaveRoom(socket, newRoomName) {
+    // See if this socket is in a room already.
+    socket.get("room", function(err, roomName) {
+        if(roomName!=null) {
+            // We need to leave that room first.
+            // 1. Unsubscribe the socket.
+            // 2. Decrement the population count.
+            // 3. Potentially delete the channel if there's no one left.
+            socket.leave(roomName);
+            
+            socket.emit('message', {text:
+                "You have left room '"+roomName+"'.", admin:"true"});
+            
+            socket.get("nickname", function(err, nickname) {
+                if(newRoomName == null) {
+                    io.sockets.in(roomName).emit("message",
+                    {text:nickname + " has logged off.",
+                    admin:"true"});
+                } else {
+                    io.sockets.in(roomName).emit("message",
+                    {text:nickname + " has moved to " + newRoomName + ".",
+                    admin:"true"});
+                }
+            });
+            client.hget("global:rooms", roomName, function (err, roomId) {
+                
+                client.hincrby("rooms:" + roomId, "population", -1,
+                    function (err, newPopulation) {
+                        if(newPopulation==0) {
+                            
+                            // Remove the room records.
+                            client.hdel("global:rooms", roomName);
+                            client.del("rooms:" + roomId);
+                        }
+                    });
+            });
+        }
+    });
+}
 
 function _processPulse() {
     // In each loop, grab the whole message history (in room.messages) and
