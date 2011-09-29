@@ -146,6 +146,10 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('disconnect', function() {
         leaveRoom(socket, null);
+        
+        socket.get("nickname", function(err, nickname) {
+            client.hdel("global:connectedUsers", nickname);
+        });
     });
 });
 
