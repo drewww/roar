@@ -47,12 +47,10 @@
 			// Setup event handlers.
 			$("#chat-form").submit(sendChat);
 			
-			$("#submit-name").click(function() {
+			$("#submit-name").click(function(event) {
 				socket.emit("identify", {username:$("#name").val()});
-				// Now we wait for the server to confirm it. 
-				socket.on("identify", _handleIdentityResponse);
+				event.preventDefault();
 			});
-			
 			
 			$("#nickname").click(function() {
 				$("#nickname").hide();
@@ -133,17 +131,17 @@
 			if("past" in message) classes += " past";
 			
 			if("admin" in message) classes += " admin";
+			if("error" in message) classes += " error";
+			
+			 if(!("timestamp" in message)) {
+			 	message.timestamp = Date.now();
+			 }
 			
 			// We have two different versions because one of them (the
 			// live one) gets expired and removed from the DOM. The other
 			// one sticks around in a scrollable div for reviewing chat
 			// history. They need different IDs to not collide.
 			
-
-			 if(!("timestamp" in message)) {
-			 	message.timestamp = Date.now();
-			 }
-
 			var liveId = 'chat-live-' + message.timestamp;
 			var historyId = 'chat-' + message.timestamp;
 			
@@ -190,7 +188,8 @@
 		}
 		
 		function _handleIdentityResponse(data) {
-			
+			console.log("handling identity response: ");
+			console.log(data);
 			// this is called with repsonses to requests for a specific user
 			// name. The server is either going to say "yes, you got it" or
 			// "nope, that one is taken".
@@ -214,9 +213,11 @@
 				}
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
-				$("#identity-message").text("'"+data["username"]+"' is taken");
+				localAdminMessage("'"+data["username"]+"' is taken.", true);
 				$("#identity-message").show();
 				$("#identity-form").show();
+				$("#name").focus();
+				$("#name").text(data["username"]);
 			}
 		}
 		
@@ -337,6 +338,12 @@
 			});
 		}
 		
+		// Used to generate local error messages into the chat logs.
+		function localAdminMessage(message, isError) {
+			var msgDict = {text:message, admin:"true", error:isError};
+			appendChat(msgDict);
+		}
+		
 		function getDimensionsForWord(word, size) {
 			var buffer = $("#word-buffer");
 			buffer.html(word);
@@ -420,9 +427,13 @@
 		}
 		
 		.admin {
-			background-color: #333;
+			background-color: rgba(50, 50, 50, 0.8);
 			color: #eee;
 			text-align: center;
+		}
+		
+		.error {
+			color: #EE011D;
 		}
 		
 		#chat-form input {
@@ -450,7 +461,6 @@
 		#show-history.pressed {
 			background-color: #999;
 		}
-
 		
 		#identity-form, #chat-form {
 			margin-left: auto;
@@ -626,7 +636,6 @@
 	<form id="identity-form">
 		<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
 		<input type="button" name="submit_name" value="login" id="submit-name"><br>
-		<div id="identity-message"></div>
 	</form>
 </div>
 
