@@ -64,15 +64,15 @@ io.sockets.on('connection', function(socket) {
                             // Either we're going to need to keep separate recent
                             // lists for every room, or going to ditch this
                             // feature.
-                            client.lrange("room.messages", -10, -1, function (err, res) {
-                                console.log("lrange returned");
-                                console.log(res);
-                                for(msgIndex in res) {
-                                    console.log(res[msgIndex]);
-                                    msgObj = JSON.parse(res[msgIndex]);
-                                    msgObj["past"] = true;
-                                    socket.emit('message', msgObj);
-                                }
+                            // client.lrange("room.messages", -10, -1, function (err, res) {
+                            //     console.log("lrange returned");
+                            //     console.log(res);
+                            //     for(msgIndex in res) {
+                            //         console.log(res[msgIndex]);
+                            //         msgObj = JSON.parse(res[msgIndex]);
+                            //         msgObj["past"] = true;
+                            //         socket.emit('message', msgObj);
+                            //     }
 
                                 // Doing it here ensures that it appears after the past messages.
                                 socket.emit('message', {text:"Welcome to roar!", admin:"true"});
