@@ -188,8 +188,6 @@
 		}
 		
 		function _handleIdentityResponse(data) {
-			console.log("handling identity response: ");
-			console.log(data);
 			// this is called with repsonses to requests for a specific user
 			// name. The server is either going to say "yes, you got it" or
 			// "nope, that one is taken".
@@ -398,11 +396,18 @@
 			padding-left: 10px;
 		}
 		
+		#room-select label {
+			font-weight: bold;
+			text-align: right;
+			margin-right: 5px;
+		}
+		
 		#room-select {
 			border-left: 1px solid #B3B5B8;
 			height: 100%;
 			float: right;
-			
+			padding-top: 15px;
+			padding-left: 10px;
 			width: 250px;
 		}
 		
@@ -417,7 +422,7 @@
 		
 		#chat {
 			width: 345px;
-			padding-top: 11px;
+			padding-top: 15px;
 			
 			font-size: 1.0em;
 		}

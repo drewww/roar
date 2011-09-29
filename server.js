@@ -31,7 +31,6 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('identify', function(data) {
         
-        
         // Check and see if this socket already has a nick. If they do,
         // log it out and THEN add the new one in.
         socket.get("nickname", function(err, nickname) {
