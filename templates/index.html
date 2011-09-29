@@ -29,7 +29,6 @@
 		});
 		
 		socket.on('message', function (data) {
-			console.log(data);
 			appendChat(data);
 		});
 		
@@ -142,7 +141,6 @@
 			
 
 			 if(!("timestamp" in message)) {
-			 	console.log("setting timestamp manually");
 			 	message.timestamp = Date.now();
 			 }
 
@@ -151,7 +149,6 @@
 			
 			var contentsEl;
 			if("admin" in message)  {
-				console.log("Handling an admin message.");
 				contentsEl = $("<span class='contents'></span>");
 				contentsEl.first().text(message.text);
 			} else {
