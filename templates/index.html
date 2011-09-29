@@ -40,10 +40,10 @@
 		$(document).ready(function() {
 			
 			// Setup default visibility.
-			$("#chat-form").hide();
 			$("#identity-message").hide();
 			$("#chat-history").hide();
-
+			
+			$("#chat-input").attr("disabled", true);
 			
 			// Setup event handlers.
 			$("#chat-form").submit(sendChat);
@@ -65,6 +65,7 @@
 					$("#chat-history").animate({bottom:-300}, 500, function(){
 						$(this).hide();
 					});
+					$("#show-history").removeClass("pressed");
 				} else {
 					// First, clear out the live view so it doesn't get in
 					// the way.
@@ -74,6 +75,7 @@
 					$("#chat-history").animate({bottom:51}, 500, null);
 					$("#chat-history").scrollTop(Math.pow(2, 30));
 					
+					$("#show-history").addClass("pressed");
 				}
 			});
 			
@@ -198,7 +200,7 @@
 				$("#nickname").html(data["username"]);
 				
 				$("#identity-form").hide();
-				$("#chat-form").show();
+				$("#chat-input").attr("disabled", false);
 				$("#chat-input").focus();
 				
 				$(".button").removeClass("disabled");
@@ -373,10 +375,16 @@
 			z-index: 9999;
 		}
 		
-		#chat, #roar-bar .button, #logo {
+		#chat, #roar-bar .button, #logo, #identity {
 			border-right: 1px solid #B3B5B8;
 			height: 100%;
 			float: left;
+		}
+		
+		#identity {
+			border-right: 0px !important;
+			padding-top: 15px;
+			padding-left: 10px;
 		}
 		
 		#room-select {
@@ -387,10 +395,6 @@
 			width: 250px;
 		}
 		
-/*		#room-select input {
-			width: ;
-		}
-*/		
 		#logo {
 			padding-top: 7px;
 			
@@ -401,7 +405,7 @@
 		}
 		
 		#chat {
-			width: 450px;
+			width: 345px;
 			padding-top: 11px;
 			
 			font-size: 1.0em;
@@ -417,20 +421,37 @@
 			text-align: center;
 		}
 		
-		#chat-form {
-			width: 90%;
+		#chat-form input {
+			width: 295px;
+			float: left;
+			margin-left: 10px;
 		}
 		
-		#chat-form input {
-			width: 275px;
+		#show-history {
+			width: 25px;
+			height: 25px;
 			float: left;
+			margin-left: 5px;
+			background-image: url('static/comments.png');
+			background-repeat: no-repeat;
+			background-position: center;
+			
+			-moz-border-radius: 5px;
+			border-radius: 5px;
 		}
+		#show-history:hover {
+			background-color: #ccc;
+		}
+		
+		#show-history.pressed {
+			background-color: #999;
+		}
+
 		
 		#identity-form, #chat-form {
 			margin-left: auto;
 			margin-right:auto;
 		}
-		
 		
 		#chat-history {
 			background-color: rgba(254, 240, 209, 0.7);
@@ -438,7 +459,7 @@
 			color: #333;
 			
 			width: 450px;
-			
+			cursor:pointer;
 		}
 		
 		#chat-live {
@@ -507,7 +528,6 @@
 		#name {
 			width: 100px;
 			float: left;
-			margin-left: 110px;
 		}
 		
 		#submit-name {
@@ -525,16 +545,6 @@
 		#nickname {
 			font-weight: bold;
 			font-size: 1.0em;
-			width: 50px;
-			float: left;
-		}
-
-		#show-history {
-			width: 30px;
-			height: 30px;
-			float: left;
-			margin-left: 10px;
-			background-color: grey;
 		}
 
 		#stream-img {
@@ -600,18 +610,21 @@
 <div id="chat-live">
 </div>
 
+<div id="identity">
+	<div id="nickname"></div>
+	<form id="identity-form">
+		<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
+		<input type="button" name="submit_name" value="login" id="submit-name"><br>
+		<div id="identity-message"></div>
+	</form>
+</div>
+
 <div id="chat">
 <form id="chat-form">
-	<div id="nickname"></div>
 	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text" autocomplete="off">
 	<div id="show-history"></div>
 </form>
 
-<form id="identity-form">
-	<input type="text" name="name" title="your nickname?" value="" id="name"class="default-text">
-	<input type="button" name="submit_name" value="login" id="submit-name"><br>
-	<div id="identity-message"></div>
-</form>
 
 </div>
 <div id="chat-button" class="button disabled">
