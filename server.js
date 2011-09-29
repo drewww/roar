@@ -77,6 +77,9 @@ io.sockets.on('connection', function(socket) {
                                 // Doing it here ensures that it appears after the past messages.
                                 socket.emit('message', {text:"Welcome to roar!", admin:"true"});
                             });
+                            
+                            // push an initial room state down.
+                            _updateRooms(socket);
                         }
                     });
                 } else {
@@ -198,7 +201,11 @@ client.once("ready", function(err) {
     })
     
     // Start the periodic data worker threads.
-    setTimeout(_processPulse, 5000);
+    setTimeout(function() {
+        _processPulse();
+        _updateRooms(null);
+    }, 5000);
+
 });
 
 function releaseNickname(socket) {
@@ -247,16 +254,41 @@ function leaveRoom(socket, newRoomName) {
     });
 }
 
+// Send an update with summary information about the current roomlist
+// to populate client side room autocomplete information. 
+function _updateRooms(socket) {
+    // For each room we want to include the room name and the number
+    // of people in each room. This is all stored in redis, so we can
+    // just dump the contents of global:rooms and format it into one
+    // big JSON message to distribute.
+    
+    // if there's a socket passed in, it's a request to do a one-shot
+    // update.
+    if(socket==null) setTimeout(_updateRooms, 5000);
+    
+    client.hgetall("global:rooms", function(err, res) {
+        var allRoomData = [];
+        for(var roomName in res) {
+            var roomPop = res[roomName];
+            allRoomData.push({"name":roomName, "population":roomPop});
+        }
+
+        // Now broadcast this message to all clients.
+        if(socket==null) io.sockets.emit("rooms", allRoomData);
+        else socket.emit("rooms", allRoomData);
+    });
+}
+
 function _processPulse() {
+    
+    setTimeout(_processPulse, 5000);
+    
     // In each loop, grab the whole message history (in room.messages) and
     // generate a new pulse command.
     
     // The first phase is to measure relative volume. We do this by figuring
     // out the messages/second across the entire data set. Then we look only
     // at the last 5 seconds.
-    setTimeout(_processPulse, 5000);
-
-    
     client.lrange("room.messages", 0, -1, function (err, res) {
         
         var totalMessages = 0;

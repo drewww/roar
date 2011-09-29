@@ -3,11 +3,12 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>roar</title>
 	
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
 		var socket = io.connect("http://127.0.0.1:8080");
+		var rooms = [];
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -34,6 +35,13 @@
 		
 		socket.on('pulse', function (data) {
 			updatePulse(data);
+		});
+		
+		socket.on('rooms', function(data) {
+			rooms = data;
+			
+			// eventually there will be some generation that needs to happen
+			// here.
 		});
 		
 		$(document).ready(function() {
