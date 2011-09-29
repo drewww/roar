@@ -1,0 +1,11 @@
+ROAR - high volume chat for spectating live events
+==================================================
+
+The experience of being in a crowd is a visceral one. We feel a sense of connection and belonging through a shared experience like watching a sporting event, speech, or performance. Many of these shared experiences happen between people who aren't co-located, but none of our communication tools can create the kinds of feelings we get from being in the same place. ROAR is designed to allow very large groups of distributed spectators have meaningful conversations with strangers or friends while supporting a sense of presence of thousands of other spectators. ROAR is also interested in creating opportunities for collective action among spectators and providing flexible ways to share content among very large groups. These systems combine to let you feel the roar of the crowd even if you're alone.
+
+ROAR has a few dependencies. These are mostly tools I'd never used before and wanted to try, but they've worked great for me so far. Here they are:
+
+	- node.js v0.4.12
+		- socket.io v0.8 (`npm install socket.io`)
+		- redis v0.6.7 (`npm install redis`)
+	- redis v2.2.13
