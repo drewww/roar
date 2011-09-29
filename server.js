@@ -31,38 +31,62 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('identify', function(data) {
         
-        // eventually check this against redis to see if the name is taken
-        client.hexists("global:connectedUsers", data["username"], function (err, res) {
-            if(res == 0) { 
-                
-                socket.set('nickname', data.username, function() {
-                    socket.emit("identify", {state:"OK", username:data["username"]});
-                
-                // Eventually, put a pointer to the user id in here, or something.
-                client.hset("global:connectedUsers", data["username"], true);
-
-                // TODO defer this to room entry, maybe? Don't know which
-                // room to pull from.
-                client.lrange("room.messages", -10, -1, function (err, res) {
-                    console.log("lrange returned");
-                    console.log(res);
-                    for(msgIndex in res) {
-                        console.log(res[msgIndex]);
-                        msgObj = JSON.parse(res[msgIndex]);
-                        msgObj["past"] = true;
-                        socket.emit('message', msgObj);
-                    }
-
-                    // Doing it here ensures that it appears after the past messages.
-                    socket.emit('message', {text:"Welcome to roar!", admin:"true"});
-                });
-            });
-                
-            } else {
-                socket.emit("identify", {state:"TAKEN", username:data["username"]});
+        
+        // Check and see if this socket already has a nick. If they do,
+        // log it out and THEN add the new one in.
+        socket.get("nickname", function(err, nickname) {
+            
+            var hasPrevNickname = nickname!=null;
+            if(hasPrevNickname) {
+                releaseNickname(socket);
             }
-        });        
+            
+            // eventually check this against redis to see if the name is taken
+            client.hexists("global:connectedUsers", data["username"], function (err, res) {
+                
+                // if this is true, then the hash doesn't contain that name
+                // and it's free to be used.
+                if(res == 0) { 
+                    socket.set('nickname', data.username, function() {
+                        
+                        var isRename = false;
+                        if(hasPrevNickname) isRename=true;
+
+                        socket.emit("identify", {state:"OK",
+                            username:data["username"], rename:isRename});
+
+                        // Eventually, put a pointer to the user id in here, or something.
+                        client.hset("global:connectedUsers", data["username"], true);
+
+                        // Only send welcome messages if this is a logging-in
+                        // user, not if they're just changing their nick.
+                        if(!hasPrevNickname) {
+                            // TODO Need to fix this in light of the room model.
+                            // Either we're going to need to keep separate recent
+                            // lists for every room, or going to ditch this
+                            // feature.
+                            client.lrange("room.messages", -10, -1, function (err, res) {
+                                console.log("lrange returned");
+                                console.log(res);
+                                for(msgIndex in res) {
+                                    console.log(res[msgIndex]);
+                                    msgObj = JSON.parse(res[msgIndex]);
+                                    msgObj["past"] = true;
+                                    socket.emit('message', msgObj);
+                                }
+
+                                // Doing it here ensures that it appears after the past messages.
+                                socket.emit('message', {text:"Welcome to roar!", admin:"true"});
+                            });
+                        }
+                    });
+                } else {
+                    socket.emit("identify", {state:"TAKEN", username:data["username"]});
+                }
+            });
+        });
     });
+        
     
     socket.on('message', function(data) {
 
@@ -146,10 +170,7 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('disconnect', function() {
         leaveRoom(socket, null);
-        
-        socket.get("nickname", function(err, nickname) {
-            client.hdel("global:connectedUsers", nickname);
-        });
+        releaseNickname(socket);
     });
 });
 
@@ -182,6 +203,11 @@ client.once("ready", function(err) {
     setTimeout(_processPulse, 5000);
 });
 
+function releaseNickname(socket) {
+    socket.get("nickname", function(err, nickname) {
+        client.hdel("global:connectedUsers", nickname);
+    });
+}
 
 function leaveRoom(socket, newRoomName) {
     // See if this socket is in a room already.

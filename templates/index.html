@@ -56,7 +56,12 @@
 			
 			
 			$("#nickname").click(function() {
-				console.log("Change nickname now.");
+				$("#nickname").hide();
+				$("#identity-form").show();
+				$("#name").removeClass("default-text");
+				$("#name").removeClass("default-text-active");
+				
+				$("#name").val($("#nickname").html());
 			});
 			
 			$("#show-history").click(function () {
@@ -197,7 +202,8 @@
 
 				localStorage["roar-username"] = data["username"];
 
-				$("#nickname").html(data["username"]);
+				$("#nickname").text(data["username"]);
+				$("#nickname").show();
 				
 				$("#identity-form").hide();
 				$("#chat-input").attr("disabled", false);
@@ -206,11 +212,12 @@
 				$(".button").removeClass("disabled");
 				
 				// Join a default room.
-				joinRoom("General Chat");
-				
+				if(!data["rename"]) {
+					joinRoom("General Chat");
+				}
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
-				$("#identity-message").html("'"+data["username"]+"' is taken");
+				$("#identity-message").text("'"+data["username"]+"' is taken");
 				$("#identity-message").show();
 				$("#identity-form").show();
 			}
@@ -545,6 +552,13 @@
 		#nickname {
 			font-weight: bold;
 			font-size: 1.0em;
+			
+			border-radius: 5px;
+			-moz-border-radius: 5px;
+		}
+		
+		#nickname:hover {
+			background-color: #444;
 		}
 
 		#stream-img {
