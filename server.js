@@ -92,7 +92,6 @@ io.sockets.on('connection', function(socket) {
         // Get the username.
         socket.get('nickname', function(err, nickname) {
             socket.get("room" ,function(err, roomName) {
-                console.log("message from " + nickname + " to room " + roomName);
                 messageDict = {text:data.text, from:nickname,
                     timestamp:Date.now(), room:roomName};
 
