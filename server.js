@@ -114,29 +114,31 @@ io.sockets.on('connection', function(socket) {
             var population;
             client.hexists("global:rooms", newRoomName, function (err, exists) {
                 if(exists) {
-                    // If we already know about this room, get the id and 
-                    // then increment the count.
-                    client.hget("global:rooms", newRoomName, function(err, roomId) {
-                        client.hincrby("rooms:" + roomId, "population", 1,
-                            function(err, population) {
-                                socket.emit('message', {text:
-                                    "You have joined room '"+newRoomName+
-                                    "' with " + population +
-                                    " total people.", admin:"true"});
-                            });
-                    });
                     
+                    // If we already know about the room, increment the count
+                    client.hget("global:rooms", newRoomName, function (err, roomData) {
+                       var room = JSON.parse(roomData);
+                       
+                       // gonna need to test this
+                       room["population"] += 1;
+                       
+                       client.hset("global:rooms", newRoomName, function(err, res) {
+                           socket.emit('message', {text:
+                               "You have joined room '"+newRoomName+
+                               "' with " + room["population"] +
+                               " total people.", admin:"true"});                           
+                       });
+                    });
                 } else {
                     // otherwise, make a new hash for this room's info.
                     client.incr("global:nextRoomId", function (err, roomId) {
-                        // Add an entry in the global rooms hash mapping the
-                        // room name to its id.
-                        client.hset("global:rooms", newRoomName, roomId);
                         
-                        // Add a hash for the specific room id with room
-                        // metadata.
-                        client.hset("rooms:" + roomId, "name",newRoomName);
-                        client.hset("rooms:" + roomId, "population",1);
+                        var room = {};
+                        room["id"] = roomId;
+                        room["name"] = newRoomName;
+                        room["population"] = 1;
+
+                        client.hset("global:rooms", newRoomName, JSON.stringify(room));
                         
                         socket.emit('message', {text:
                             "You have joined room '"+newRoomName+
@@ -191,7 +193,6 @@ client.once("ready", function(err) {
     client.hgetall("global:rooms", function(err, res) {
         for(key in res) {
             client.hdel("global:rooms", key);
-            client.del("rooms:" + res[key]);
         }
     })
     
@@ -233,17 +234,18 @@ function leaveRoom(socket, newRoomName) {
                     admin:"true"});
                 }
             });
-            client.hget("global:rooms", roomName, function (err, roomId) {
+            
+            client.hget("global:rooms", roomName, function(err, roomData) {
+                var room = JSON.parse(roomData);
                 
-                client.hincrby("rooms:" + roomId, "population", -1,
-                    function (err, newPopulation) {
-                        if(newPopulation==0) {
-                            
-                            // Remove the room records.
-                            client.hdel("global:rooms", roomName);
-                            client.del("rooms:" + roomId);
-                        }
-                    });
+                room["population"] -= 1;
+                
+                if(room["population"]==0) {
+                    client.hdel("global:rooms", roomName);
+                } else {
+                    client.hset("global:rooms", roomName,
+                        JSON.stringify(room));
+                }
             });
         }
     });
@@ -264,8 +266,8 @@ function _updateRooms(socket) {
     client.hgetall("global:rooms", function(err, res) {
         var allRoomData = [];
         for(var roomName in res) {
-            var roomPop = res[roomName];
-            allRoomData.push({"name":"roomName", "population":roomPop});
+            var room = JSON.parse(res[roomName]);
+            allRoomData.push({"name":roomName, "population":room["population"]});
         }
 
         // Now broadcast this message to all clients.
