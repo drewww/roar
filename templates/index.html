@@ -53,6 +53,7 @@
 					.attr("title", roomName)
 					.click(function (event) {
 						$("#room").val($(this).attr("title"));
+						$("#room-select-form").submit();
 					})
 					.appendTo($("#top-rooms ul"));
 			}
@@ -108,6 +109,11 @@
 				joinRoom($("#room").val());
 				event.preventDefault();
 			});
+			
+			$("#identity-form").submit(function (event) {
+				socket.emit("identify", {username:$("#name").val()});
+				event.preventDefault();
+			})
 			
 			$("#room").focus(function (event) {
 				// show the room list
