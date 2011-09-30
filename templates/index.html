@@ -3,7 +3,7 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>roar</title>
 	
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+	<script src="/static/js/jquery-1.6.2.min.js" type="text/javascript"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
@@ -40,8 +40,21 @@
 		socket.on('rooms', function(data) {
 			rooms = data;
 			
-			// eventually there will be some generation that needs to happen
-			// here.
+			// Does this work? Check.
+			$("#top-rooms li").remove();
+			
+			for(roomIndex in rooms) {
+				var roomName = rooms[roomIndex].name;
+				var roomPop = rooms[roomIndex].population;
+				
+				var roomItem = $("<li></li>");
+				roomItem.text(roomName + "(" + roomPop + ")")
+					.attr("value", roomName)
+					.click(function (event) {
+						$("#room").val($(this).attr("value"));
+					})
+					.appendTo($("#top-rooms ul"));
+			}
 		});
 		
 		$(document).ready(function() {
@@ -49,6 +62,7 @@
 			// Setup default visibility.
 			$("#identity-message").hide();
 			$("#chat-history").hide();
+			$("#top-rooms").hide();
 			
 			$("#chat-input").attr("disabled", true);
 			
@@ -94,6 +108,16 @@
 				event.preventDefault();
 			});
 			
+			$("#room").focus(function (event) {
+				// show the room list
+				toggleRoomList(event);
+			});
+			
+			$("#room").blur(function (event) {
+				// hide the room list
+				toggleRoomList(event);
+			});
+			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
 		    {
@@ -116,6 +140,16 @@
 		    $(".default-text").blur();
 		});
 		
+		function toggleRoomList(event) {
+			if($("#top-rooms").is(":visible")) {
+				$("#top-rooms").animate({bottom:-300}, 500, function(){
+					$(this).hide();
+				});
+			} else {
+				$("#top-rooms").show();
+				$("#top-rooms").animate({bottom:51}, 500, null);
+			}
+		}
 		
 		function sendChat(event) {
 			chatTextElement = $("#chat-input");
@@ -466,6 +500,8 @@
 			
 			-moz-border-radius: 5px;
 			border-radius: 5px;
+			
+			cursor: pointer;
 		}
 		#show-history:hover {
 			background-color: #ccc;
@@ -478,15 +514,6 @@
 		#identity-form, #chat-form {
 			margin-left: auto;
 			margin-right:auto;
-		}
-		
-		#chat-history {
-			background-color: rgba(254, 240, 209, 0.7);
-			border: #928B33;
-			color: #333;
-			
-			width: 450px;
-			cursor:pointer;
 		}
 		
 		#chat-live {
@@ -502,13 +529,31 @@
 		}
 
 		#chat-history {
+			background-color: rgba(254, 240, 209, 0.7);
+			border: #928B33;
+			color: #333;
 			
 			overflow-y: scroll;
 			position:fixed;
 			
+			width: 450px;
 			height: 300px;
 			bottom: -200px;
 			left: 109px;
+			
+			z-index: 2;
+		}
+		
+		#top-rooms {
+			background-color: rgba(254, 240, 209, 0.7);
+			border: #928B33;
+			color: #333;
+			
+			position:fixed;
+			
+			width: 260px;
+			bottom: -200px;
+			right: 0%;
 			
 			z-index: 2;
 		}
@@ -675,6 +720,11 @@ shout
 
 </div>
 
+
+<div id="top-rooms">
+<h1>top rooms</h1>
+<ul></ul>
+</div>
 
 <div id="chat-history">
 </div>
