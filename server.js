@@ -120,9 +120,10 @@ io.sockets.on('connection', function(socket) {
                        var room = JSON.parse(roomData);
                        
                        // gonna need to test this
-                       room["population"] += 1;
+                       room["population"] = room["population"]+1;
                        
-                       client.hset("global:rooms", newRoomName, function(err, res) {
+                       client.hset("global:rooms", newRoomName,
+                            JSON.stringify(room), function(err, res) {
                            socket.emit('message', {text:
                                "You have joined room '"+newRoomName+
                                "' with " + room["population"] +
@@ -238,7 +239,7 @@ function leaveRoom(socket, newRoomName) {
             client.hget("global:rooms", roomName, function(err, roomData) {
                 var room = JSON.parse(roomData);
                 
-                room["population"] -= 1;
+                room["population"] = room["population"] - 1;
                 
                 if(room["population"]==0) {
                     client.hdel("global:rooms", roomName);

@@ -7,7 +7,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
-		var socket = io.connect("http://127.0.0.1:8080");
+		var socket = io.connect("http://revisionist:8080");
 		var rooms = [];
 		
 		socket.on('connect', function(data) {
@@ -19,8 +19,6 @@
 
 				socket.emit("identify", {username:localStorage["roar-username"]});
 
-				// Now we need to start listening for an identify response.
-				socket.on('identify', _handleIdentityResponse);
 			} else {
 				// This client has not logged in before. Present the identify
 				// UI and ask them what they want their name to be. Then
@@ -28,6 +26,9 @@
 				$("#identity-container").show();
 			}
 		});
+
+		// Now we need to start listening for an identify response.
+		socket.on('identify', _handleIdentityResponse);
 		
 		socket.on('message', function (data) {
 			appendChat(data);
