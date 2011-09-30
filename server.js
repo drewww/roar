@@ -2,7 +2,8 @@ var app = require('express').createServer(),
     io = require('socket.io').listen(app),
     redis = require('redis'),
     client = redis.createClient(),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    express = require('express');
     // process = require('process');
         
 app.listen(8080);
@@ -11,15 +12,11 @@ app.get('/', function(req, res) {
     res.sendfile(__dirname + '/templates/index.html');
 });
 
-app.get('/static/:file', function(req, res) {
-    res.sendfile(__dirname + '/static/' + req.params.file);
-});
+app.use(app.router);
+app.use("/static", express.static(__dirname + '/static'));
 
 // TODO Do some sort of blocking on accepting connections until the redis
 // conneciton is actually alive.
-
-
-
 io.sockets.on('connection', function(socket) {
     
     
@@ -73,15 +70,13 @@ io.sockets.on('connection', function(socket) {
                             //         msgObj["past"] = true;
                             //         socket.emit('message', msgObj);
                             //     }
-
-                                // Doing it here ensures that it appears after the past messages.
+                            // Doing it here ensures that it appears after the past messages.
                                 socket.emit('message', {text:"Welcome to roar!", admin:"true"});
-                            });
+                            }
                             
                             // push an initial room state down.
                             _updateRooms(socket);
-                        }
-                    });
+                        });
                 } else {
                     socket.emit("identify", {state:"TAKEN", username:data["username"]});
                 }
