@@ -265,7 +265,7 @@ function _updateRooms(socket) {
         var allRoomData = [];
         for(var roomName in res) {
             var roomPop = res[roomName];
-            allRoomData.push({"name":roomName, "population":roomPop});
+            allRoomData.push({"name":"roomName", "population":roomPop});
         }
 
         // Now broadcast this message to all clients.

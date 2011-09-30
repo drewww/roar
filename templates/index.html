@@ -48,10 +48,10 @@
 				var roomPop = rooms[roomIndex].population;
 				
 				var roomItem = $("<li></li>");
-				roomItem.text(roomName + "(" + roomPop + ")")
-					.attr("value", roomName)
+				roomItem.text(roomName + " (" + roomPop + ")")
+					.attr("title", roomName)
 					.click(function (event) {
-						$("#room").val($(this).attr("value"));
+						$("#room").val($(this).attr("title"));
 					})
 					.appendTo($("#top-rooms ul"));
 			}
@@ -115,7 +115,7 @@
 			
 			$("#room").blur(function (event) {
 				// hide the room list
-				toggleRoomList(event);
+				setTimeout(toggleRoomList, 50);
 			});
 			
 			// Manage default text.
@@ -556,6 +556,17 @@
 			right: 0%;
 			
 			z-index: 2;
+		}
+		
+		#top-rooms li {
+			background-color: #ddd;
+			cursor: pointer;
+			
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
 		}
 
 		
