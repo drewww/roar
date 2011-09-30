@@ -59,6 +59,11 @@
 			}
 		});
 		
+		socket.on('shout', function(data) {
+			console.log("HEY");
+			console.log(data);
+		});
+		
 		$(document).ready(function() {
 			
 			// Setup default visibility.
@@ -156,6 +161,10 @@
 				$("#top-rooms").show();
 				$("#top-rooms").animate({bottom:51}, 500, null);
 			}
+		}
+		
+		function sendShout(text) {
+			socket.emit("shout", {"text":text});
 		}
 		
 		function sendChat(event) {

@@ -167,6 +167,67 @@ io.sockets.on('connection', function(socket) {
         
     });
     
+    
+    socket.on('shout', function (data) {
+        // {text:(shout_text)}
+        
+        // create the shout datastructure
+        client.incr("global:nextShoutId", function (err, shoutId) {
+            
+            var shoutKey = "shout:" + shoutId;
+            var shoutInfo = {};
+            
+            client.hset(shoutKey, "text", data["text"]);
+            client.hset(shoutKey, "timestamp", Date.now());
+            client.hset(shoutKey, "votes", 1);
+            client.hset(shoutKey, "room-votes", "{}");
+            socket.get("nickname", function(err, nickname) {
+                client.hset(shoutKey, "from", nickname, function(err, res) {
+                    
+                    // Now that the whole datastructure is saved, push it to
+                    // the room.
+                    
+                    // 1. Update the datastructure to show how many votes it
+                    //    has from each room.
+                    // 2. Send the message to people in that room about the
+                    //    shout.
+                    socket.get("room", function(err, room) {
+                        client.hget(shoutKey, "room-votes", function(err, res) {
+                            var roomVotes = JSON.parse(res);
+
+                            var roomVoteCount = 0;
+                            if(room in roomVotes) {
+                                roomVoteCount = roomVotes[room];
+                            }
+                            
+                            roomVotes[room] = roomVoteCount+1;
+                            
+                            client.hset(shoutKey, "room-votes",
+                                JSON.stringify(roomVotes));
+                            
+                            
+                            client.hgetall(shoutKey, function(err, res) {
+                                // Feels silly to bounce off redis like this,
+                                // but whatever.
+                                io.sockets.in(room).emit("shout", res);
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+    
+    socket.on('shout.vote', function (data) {
+        // {shout_id:(id)}
+        
+        // increment the shout vote counter in the appropriate shout
+        // datastructure
+        
+        // check for shout promotion
+        
+    });
+    
     socket.on('disconnect', function() {
         leaveRoom(socket, null);
         releaseNickname(socket);
