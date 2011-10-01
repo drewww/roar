@@ -73,8 +73,9 @@
 					.append($("<div class='votes'>" + data["votes"]
 						+ "</div>"))
 					.append($("<div class='vote-button'>+1</div>")
+						.attr("shout-id", data["id"])
 						.click(function (event) {
-							console.log("vote click!");
+							voteForShout($(this).attr("shout-id"));
 						})
 						)
 					)
