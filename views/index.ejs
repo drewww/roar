@@ -76,6 +76,12 @@
 						.attr("shout-id", data["id"])
 						.click(function (event) {
 							voteForShout($(this).attr("shout-id"));
+							
+							// Premeptively increment the value locally, so
+							// there's clear local feedback and we don't need
+							// to wait for confirmation from the server.
+							var voteCount=$(this).parent().children().first();
+							voteCount.text(parseInt(voteCount.text())+1);
 						})
 						)
 					)
