@@ -7,7 +7,7 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/javascript" charset="utf-8">
 		
-		var socket = io.connect("http://revisionist:8080");
+		var socket = io.connect("http://localhost:8080");
 		var rooms = [];
 		
 		socket.on('connect', function(data) {
@@ -168,7 +168,7 @@
 		}
 		
 		function voteForShout(shoutId) {
-			socket.emit("shout", {"shout_id":shoutId});
+			socket.emit("shout.vote", {"shout_id":shoutId});
 		}
 		
 		function sendChat(event) {
