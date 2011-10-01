@@ -205,6 +205,7 @@ io.sockets.on('connection', function(socket) {
             var shoutKey = "shout:" + shoutId;
             var shoutInfo = {};
             
+            client.hset(shoutKey, "id", shoutId);
             client.hset(shoutKey, "text", data["text"]);
             client.hset(shoutKey, "timestamp", Date.now());
             client.hset(shoutKey, "votes", 0);
@@ -219,11 +220,12 @@ io.sockets.on('connection', function(socket) {
                     //    has from each room.
                     // 2. Send the message to people in that room about the
                     //    shout.
-                    voteForShout(socket, shoutId);
-                    
-                    socket.get("room", function(err, room) {
-                        spreadShoutToRoom(room, shoutId);
+                    voteForShout(socket, shoutId, function() {
+                        socket.get("room", function(err, room) {
+                            spreadShoutToRoom(room, shoutId);
+                        });
                     });
+                    
                 });
             });
         });
@@ -231,7 +233,7 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('shout.vote', function (data) {
         // {shout_id:(id)}
-        voteForShout(socket, data["shout_id"]);
+        voteForShout(socket, data["shout_id"], null);
     });
     
     socket.on('disconnect', function() {
@@ -284,7 +286,7 @@ function spreadShoutToRoom(room, shoutId) {
     
 }
 
-function voteForShout(socket, shoutId) {
+function voteForShout(socket, shoutId, callback) {
     var shoutKey = "shout:" + shoutId;
     
     socket.get("room", function(err, room) {
@@ -305,6 +307,10 @@ function voteForShout(socket, shoutId) {
             client.hincrby(shoutKey, "votes", 1);
             
             // now check for shout promotion
+            
+            
+            // Do the callback.
+            if(callback!=null) setTimeout(callback, 0);
         });
     });
 }
