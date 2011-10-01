@@ -167,6 +167,10 @@
 			socket.emit("shout", {"text":text});
 		}
 		
+		function voteForShout(shoutId) {
+			socket.emit("shout", {"shout_id":shoutId});
+		}
+		
 		function sendChat(event) {
 			chatTextElement = $("#chat-input");
 			

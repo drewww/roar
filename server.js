@@ -179,7 +179,7 @@ io.sockets.on('connection', function(socket) {
             
             client.hset(shoutKey, "text", data["text"]);
             client.hset(shoutKey, "timestamp", Date.now());
-            client.hset(shoutKey, "votes", 1);
+            client.hset(shoutKey, "votes", 0);
             client.hset(shoutKey, "room-votes", "{}");
             socket.get("nickname", function(err, nickname) {
                 client.hset(shoutKey, "from", nickname, function(err, res) {
@@ -191,27 +191,10 @@ io.sockets.on('connection', function(socket) {
                     //    has from each room.
                     // 2. Send the message to people in that room about the
                     //    shout.
+                    voteForShout(socket, shoutId);
+                    
                     socket.get("room", function(err, room) {
-                        client.hget(shoutKey, "room-votes", function(err, res) {
-                            var roomVotes = JSON.parse(res);
-
-                            var roomVoteCount = 0;
-                            if(room in roomVotes) {
-                                roomVoteCount = roomVotes[room];
-                            }
-                            
-                            roomVotes[room] = roomVoteCount+1;
-                            
-                            client.hset(shoutKey, "room-votes",
-                                JSON.stringify(roomVotes));
-                            
-                            
-                            client.hgetall(shoutKey, function(err, res) {
-                                // Feels silly to bounce off redis like this,
-                                // but whatever.
-                                io.sockets.in(room).emit("shout", res);
-                            });
-                        });
+                        spreadShoutToRoom(room, shoutId);
                     });
                 });
             });
@@ -220,12 +203,7 @@ io.sockets.on('connection', function(socket) {
     
     socket.on('shout.vote', function (data) {
         // {shout_id:(id)}
-        
-        // increment the shout vote counter in the appropriate shout
-        // datastructure
-        
-        // check for shout promotion
-        
+        voteForShout(socket, data["shout_id"]);
     });
     
     socket.on('disconnect', function() {
@@ -233,6 +211,8 @@ io.sockets.on('connection', function(socket) {
         releaseNickname(socket);
     });
 });
+
+
 
 // Redis setup.
 client.on("error", function(err) {
@@ -265,6 +245,41 @@ client.once("ready", function(err) {
     }, 5000);
 
 });
+
+function spreadShoutToRoom(room, shoutId) {
+    // now spread the shout
+    client.hgetall("shout:" + shoutId, function(err, res) {
+        // Feels silly to bounce off redis like this,
+        // but whatever.
+        io.sockets.in(room).emit("shout", res);
+    });
+    
+}
+
+function voteForShout(socket, shoutId) {
+    var shoutKey = "shout:" + shoutId;
+    
+    socket.get("room", function(err, room) {
+        client.hget(shoutKey, "room-votes", function(err, res) {
+            var roomVotes = JSON.parse(res);
+
+            var roomVoteCount = 0;
+            if(room in roomVotes) {
+                roomVoteCount = roomVotes[room];
+            }
+            
+            roomVotes[room] = roomVoteCount+1;
+            
+            client.hset(shoutKey, "room-votes",
+                JSON.stringify(roomVotes));
+                
+            // boost the total vote count by 1.
+            client.hincrby(shoutKey, "votes", 1);
+            
+            // now check for shout promotion
+        });
+    });
+}
 
 function releaseNickname(socket) {
     socket.get("nickname", function(err, nickname) {
