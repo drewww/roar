@@ -67,8 +67,8 @@
 			var shoutEl = $("<div></div>")
 				.attr("id", "shout-" + data["id"])
 				.addClass("shout")
-				.append($("<span class='from'>" + data["from"] + "</span>"))
-				.append($("<span class='text'>" + data["text"] + "</span>"))
+				.append($("<div class='from'>" + data["from"] + "</div>"))
+				.append($("<div class='text'>" + data["text"] + "</div>"))
 				.append($("<div class='votes-container'></div>")
 					.append($("<div class='votes'>" + data["votes"]
 						+ "</div>"))
@@ -85,6 +85,7 @@
 						})
 						)
 					)
+				.append($("<br class='clear'>"))
 				.appendTo($("#shout-live"));
 		});
 		
@@ -513,6 +514,10 @@
 			font-size: 1.0em;
 		}
 		
+		.chat {
+			padding-left: 5px;
+		}
+		
 		.past {
 			color: #777;
 		}
@@ -559,17 +564,25 @@
 			margin-left: auto;
 			margin-right:auto;
 		}
-		
-		#chat-live {
+
+		#chat-container {
 			background-color: rgba(0,0,0,0.0);
 			position: fixed;
 			bottom: 51px;
 			left: 109px;
-			
 			width: 450px;
+		}
+		
+		#chat-live {
 			color: #FEFAD1;
 			text-shadow: 1px 1px 0px #111;
-			padding-left: 5px;
+			width: 100%;
+			float: left;
+		}
+
+		#shout-live {
+			float: left;
+			width: 100%;
 		}
 
 		#chat-history {
@@ -628,6 +641,7 @@
 			-moz-user-select: none;
 			-o-user-select: none;
 			user-select: none;
+			
 			padding: 5px;
 			margin-right: 5px;
 			margin-left: 5px;
@@ -706,6 +720,53 @@
 			background-color: #444;
 		}
 
+		.shout {
+			background-color: rgba(254, 240, 209, 0.7);
+			border: 1px solid #928B33;
+			color: black;
+			text-shadow: none;
+		}
+		
+		.shout .from, .shout .text {
+			float: left;
+		}
+		
+		.shout .from {
+			margin-right: 2px;
+		}
+		
+		.shout .text {
+			max-width: 370px;
+		}
+		
+		.shout .from:after {
+			content:': ';
+		}
+		
+		.shout .votes-container {
+			float: right;
+		}
+
+		.votes-container .votes {
+			float: left;
+			font-style: italic;
+			margin-right: 5px;
+		}
+		
+		.votes-container .vote-button {
+			float: left;
+			background-color: rgba(254, 240, 209, 1.0);
+			border: 1px solid #928B33;
+			cursor: pointer;
+			
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+		}
+
+
 		#stream-img {
 			display: block;
 			margin-left: auto;
@@ -766,8 +827,9 @@
 <div id="roar-bar">
 <div id="logo">ROAR</div>
 
+<div id="chat-container">
 <div id="chat-live">
-
+</div>
 <div id="shout-live">
 </div>
 </div>
