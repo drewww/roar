@@ -60,9 +60,6 @@
 		});
 		
 		socket.on('shout', function(data) {
-			
-			console.log(data);
-			
 			// Create a shout div.
 			var shoutEl = $("<div></div>")
 				.attr("id", "shout-" + data["id"])
@@ -88,6 +85,11 @@
 				.append($("<br class='clear'>"))
 				.appendTo($("#shout-live"));
 		});
+		
+		socket.on('shout.vote', function(data) {
+			// get the appropriate vote dom node and update it.
+			$("#shout-" + data["id"] + " .votes").text(data["votes"]);
+		})
 		
 		$(document).ready(function() {
 			

@@ -282,6 +282,16 @@ function spreadShoutToRoom(room, shoutId) {
         // Feels silly to bounce off redis like this,
         // but whatever.
         io.sockets.in(room).emit("shout", res);
+        
+        // Join everyone in that room to future shout notifications.
+        //// This little dance is a way to get at the actual sockets in a
+        //// given room to do something with them. Kinda want to abstract
+        //// this into some kind of syntactic sugar, but not sure how exactly.
+        var socketsInRoom = io.sockets.in(room).sockets;
+        for(socketId in socketsInRoom) {
+            var socket = socketsInRoom[socketId];
+            socket.join("shout:" + shoutId);
+        }
     });
     
 }
@@ -304,13 +314,20 @@ function voteForShout(socket, shoutId, callback) {
                 JSON.stringify(roomVotes));
                 
             // boost the total vote count by 1.
-            client.hincrby(shoutKey, "votes", 1);
-            
-            // now check for shout promotion
-            
-            
-            // Do the callback.
-            if(callback!=null) setTimeout(callback, 0);
+            client.hincrby(shoutKey, "votes", 1, function (err, curVoteCount){
+                // notify everyone listening to that shout of the vote.
+
+                // don't need to send this if this is the first vote.
+                if(curVoteCount > 1) {
+                    io.sockets.in(shoutKey).emit("shout.vote", {"id":shoutId,
+                        "votes":curVoteCount});
+                }
+                    
+                // now check for shout promotion
+                
+                // Do the callback.
+                if(callback!=null) setTimeout(callback, 0);
+            });
         });
     });
 }
