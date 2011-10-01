@@ -3,13 +3,41 @@ var app = require('express').createServer(),
     redis = require('redis'),
     client = redis.createClient(),
     crypto = require('crypto'),
-    express = require('express');
+    express = require('express'),
+    program = require('commander');
     // process = require('process');
-        
-app.listen(8080);
+    
+
+program.version('0.1')
+    .option('-V, --verbose', 'Enable verbose logging.')
+    .option('-p, --port', 'Set the server port (default 8080)')
+    .parse(process.argv);
+    
+
+var server = "localhost";
+if(program.args.length==1) {
+    server = program.args[0];
+} else if(program.args.length==0) {
+    console.log("Defaulting to 'localhost' for server.");
+} else {
+    console.log("Too many command line arguments. Expected 0 or 1.")
+}
+var port = 8080;
+if(program.port) {
+    port = program.port;
+}
+
+io.set("log level", 2);
+if(program.verbose) {
+    io.set("log level", 3);
+}
+
+
+app.listen(port);
 
 app.get('/', function(req, res) {
-    res.sendfile(__dirname + '/templates/index.html');
+    res.render('index.ejs', {layout:false, locals:{"server":server,
+        "port":port}});
 });
 
 app.use(app.router);
