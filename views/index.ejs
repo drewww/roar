@@ -77,8 +77,11 @@
 							// Premeptively increment the value locally, so
 							// there's clear local feedback and we don't need
 							// to wait for confirmation from the server.
-							var voteCount=$(this).parent().children().first();
-							voteCount.text(parseInt(voteCount.text())+1);
+							// var voteCount=$(this).parent().children().first();
+							// voteCount.text(parseInt(voteCount.text())+1);
+							// (disabled for now - server responds super-fast, and that means we only have to validate on the server side.)
+							
+							$(this).addClass("disabled");
 						})
 						)
 					)
