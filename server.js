@@ -319,36 +319,67 @@ function voteForShout(socket, shoutId, callback) {
     
     // TODO Need to make sure asking for invalid shouts doesn't bring the
     // house down.
-    socket.get("room", function(err, room) {
-        client.hget(shoutKey, "room-votes", function(err, res) {
-            var roomVotes = JSON.parse(res);
+    // TODO if we're worried about memory at some point, clean out this
+    // socket attribute. Could do it on-vote sometimes - check against a list
+    // of current valid shouts. For now, though, it's NBD.
+    socket.get("votes", function(err, votes) {
+        var votesList = JSON.parse(votes);
 
-            var roomVoteCount = 0;
-            if(room in roomVotes) {
-                roomVoteCount = roomVotes[room];
+        // If this socket hasn't voted for anything yet, init it.
+        if( votesList == null) votesList = [];
+        
+        // Figure out if the shoutId they're trying to vote for is in this
+        // list.
+        var inVotesList = false;
+        for(var voteIndex in votesList) {
+            console.log("in vote index:  " + voteIndex);
+            if (shoutId+"" ===votesList[voteIndex]) {
+                inVotesList = true;
+                break;
             }
-            
-            roomVotes[room] = roomVoteCount+1;
-            
-            client.hset(shoutKey, "room-votes",
-                JSON.stringify(roomVotes));
-                
-            // boost the total vote count by 1.
-            client.hincrby(shoutKey, "votes", 1, function (err, curVoteCount){
-                // notify everyone listening to that shout of the vote.
+        }
+        
+        if(inVotesList) {
+            socket.emit('message',
+                {text:"You've already voted for that shout", admin:"true"});
+        } else {
+            // Allow the vote.
+            socket.get("room", function(err, room) {
+                client.hget(shoutKey, "room-votes", function(err, res) {
+                    var roomVotes = JSON.parse(res);
 
-                // don't need to send this if this is the first vote.
-                if(curVoteCount > 1) {
-                    io.sockets.in(shoutKey).emit("shout.vote", {"id":shoutId,
-                        "votes":curVoteCount});
-                }
-                    
-                // now check for shout promotion
-                
-                // Do the callback.
-                if(callback!=null) setTimeout(callback, 0);
+                    var roomVoteCount = 0;
+                    if(room in roomVotes) {
+                        roomVoteCount = roomVotes[room];
+                    }
+
+                    roomVotes[room] = roomVoteCount+1;
+
+                    client.hset(shoutKey, "room-votes",
+                        JSON.stringify(roomVotes));
+
+                    // boost the total vote count by 1.
+                    client.hincrby(shoutKey, "votes", 1,
+                        function (err, curVoteCount){
+                            // notify everyone listening to that shout of the vote.
+
+                            // don't need to send this if this is the first vote.
+                        if(curVoteCount > 1) {
+                            io.sockets.in(shoutKey).emit("shout.vote",
+                                {"id":shoutId, "votes":curVoteCount});
+                        }
+                        // Mark this socket as having voted.
+                        votesList.push(shoutId +"");
+                        socket.set("votes", JSON.stringify(votesList));
+
+                        // now check for shout promotion
+
+                        // Do the callback.
+                        if(callback!=null) setTimeout(callback, 0);
+                    });
+                });
             });
-        });
+        }
     });
 }
 
@@ -416,6 +447,7 @@ function _checkShoutExpiration() {
                     // 1. notify clients
                     // 2. copy record of shout to shout history
                     // 3. delete original keys
+                    // 4. remove all sockets listening to that shout
                     var shoutId = shoutKey.split(":")[1];
                     io.sockets.in(shoutKey).emit("shout.expire",
                         {"id":shoutId});
@@ -430,6 +462,16 @@ function _checkShoutExpiration() {
                                 client.ltrim("global:shouts", -100, -1);
                             });
                     });
+                    
+                    // Remove the sockets listening to that shout.
+                    // Probably not strictly necessary but keeps the socket.io
+                    // datastructures clean from stuff that we're not using
+                    // at all.
+                    var subscribedSockets = io.sockets.in(shoutKey).sockets;
+                    for(var index in subscribedSockets) {
+                        var socket = subscribedSockets[index];
+                        socket.leave(shoutKey);
+                    }
                 }
             });
         }
