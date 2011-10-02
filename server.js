@@ -209,6 +209,8 @@ io.sockets.on('connection', function(socket) {
             client.hset(shoutKey, "id", shoutId);
             client.hset(shoutKey, "text", data["text"]);
             client.hset(shoutKey, "timestamp", Date.now());
+            
+            // Set expiration five seconds out - that'll give the 
             client.hset(shoutKey, "votes", 0);
             client.hset(shoutKey, "room-votes", "{}");
             socket.get("nickname", function(err, nickname) {
@@ -270,16 +272,21 @@ client.once("ready", function(err) {
     })
     
     // Start the periodic data worker threads.
+    // TODO split this into separate settimeouts to stagger them to avoid
+    // them all running at the same time and competing?
     setTimeout(function() {
         _processPulse();
         _updateRooms(null);
+        _checkShoutExpiration();
+        
     }, 5000);
 
 });
 
 function spreadShoutToRoom(room, shoutId) {
     // now spread the shout
-    client.hgetall("shout:" + shoutId, function(err, res) {
+    var shoutKey = "shout:" + shoutId;
+    client.hgetall(shoutKey, function(err, res) {
         // Feels silly to bounce off redis like this,
         // but whatever.
         io.sockets.in(room).emit("shout", res);
@@ -293,13 +300,25 @@ function spreadShoutToRoom(room, shoutId) {
             var socket = socketsInRoom[socketId];
             socket.join("shout:" + shoutId);
         }
+        
+        // Manage the timeouts. If no expiration is set, set it to now+1 min.
+        // If a timeout is set (and we're expanding to a new room), give the
+        // shout another minute of life.
+        client.hget(shoutKey, "expiration", function (err, res) {
+           if(res==null) {
+               client.hset(shoutKey, "expiration", Date.now() + 60000);
+           } else {
+               client.hincrby(shoutKey, "expiration", 60000);
+           }
+        });
     });
-    
 }
 
 function voteForShout(socket, shoutId, callback) {
     var shoutKey = "shout:" + shoutId;
     
+    // TODO Need to make sure asking for invalid shouts doesn't bring the
+    // house down.
     socket.get("room", function(err, room) {
         client.hget(shoutKey, "room-votes", function(err, res) {
             var roomVotes = JSON.parse(res);
@@ -380,6 +399,45 @@ function leaveRoom(socket, newRoomName) {
     });
 }
 
+function _checkShoutExpiration() {
+    
+    setTimeout(_checkShoutExpiration, 5000);
+    // Loop through each of the shout keys. See if they've passed their 
+    // expiration. If they have, send a message on that shout channel to 
+    // expire that shout. Remove all its associated keys + info + transition
+    // the data to a backup queue.
+    client.keys("shout:*", function (err, res) {
+        for(var index in res) {
+            var shoutKey = res[index];
+            
+            client.hget(shoutKey, "expiration", function(err, expirationDate){
+                if(Date.now() > expirationDate) {
+                    // Do the expiration process:
+                    // 1. notify clients
+                    // 2. copy record of shout to shout history
+                    // 3. delete original keys
+                    var shoutId = shoutKey.split(":")[1];
+                    io.sockets.in(shoutKey).emit("shout.expire",
+                        {"id":shoutId});
+                    
+                    client.hgetall(shoutKey, function(err, shoutData) {
+                        client.rpush("global:shouts",
+                            JSON.stringify(shoutData), function (err, res) {
+                                client.del(shoutKey);
+                                
+                                // Keeps max shout history at 100 to avoid
+                                // accumulating infinite data.
+                                client.ltrim("global:shouts", -100, -1);
+                            });
+                    });
+                }
+            });
+        }
+    });
+}
+
+// TODO Switch this to an on-demand sort of thing to save on bandwidth. Also,
+// think about heavily caching the room list in a dedicated key at some point.
 // Send an update with summary information about the current roomlist
 // to populate client side room autocomplete information. 
 function _updateRooms(socket) {

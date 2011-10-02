@@ -89,7 +89,13 @@
 		socket.on('shout.vote', function(data) {
 			// get the appropriate vote dom node and update it.
 			$("#shout-" + data["id"] + " .votes").text(data["votes"]);
-		})
+		});
+		
+		socket.on('shout.expire', function(data) {
+			// TODO animate this.
+			$("#shout-" + data["id"]).remove();
+		});
+
 		
 		$(document).ready(function() {
 			
