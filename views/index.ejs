@@ -109,6 +109,9 @@
 			// Setup event handlers.
 			$("#chat-form").submit(sendChat);
 			
+			$("#chat-button").click(sendChat);
+			$("#shout-button").click(sendShout);
+			
 			$("#submit-name").click(function(event) {
 				socket.emit("identify", {username:$("#name").val()});
 				event.preventDefault();
@@ -196,8 +199,13 @@
 			}
 		}
 		
-		function sendShout(text) {
-			socket.emit("shout", {"text":text});
+		function sendShout() {
+			var chatTextElement = $("#chat-input");
+			
+			if(chatTextElement.val()=="") return;
+			
+			socket.emit("shout", {"text":chatTextElement.val()});
+			chatTextElement.val("");
 		}
 		
 		function voteForShout(shoutId) {
@@ -205,7 +213,7 @@
 		}
 		
 		function sendChat(event) {
-			chatTextElement = $("#chat-input");
+			var chatTextElement = $("#chat-input");
 			
 			if(chatTextElement.val() == "") {
 				if(event!=null) event.preventDefault();
