@@ -10,7 +10,7 @@ var app = require('express').createServer(),
 
 program.version('0.1')
     .option('-V, --verbose', 'Enable verbose logging.')
-    .option('-p, --port', 'Set the server port (default 8080)')
+    .option('-p, --port [num]', 'Set the server port (default 8080)')
     .parse(process.argv);
     
 
@@ -24,6 +24,7 @@ if(program.args.length==1) {
 }
 var port = 8080;
 if(program.port) {
+    console.log("Setting port to " + program.port);
     port = program.port;
 }
 
