@@ -64,7 +64,7 @@
 			var shoutEl = $("<div></div>")
 				.attr("id", "shout-" + data["id"])
 				.addClass("shout")
-				.append($("<div class='from'>" + data["from"] + "</div>"))
+				.append($("<div class='from'></div>").text(data["from"]))
 				.append($("<div class='text'>" + data["text"] + "</div>"))
 				.append($("<div class='votes-container'></div>")
 					.append($("<div class='votes'>" + data["votes"]
