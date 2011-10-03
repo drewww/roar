@@ -36,23 +36,23 @@ for(var messageNodeIndex in messageNodes) {
     // limits its diversity of production. try it both ways.
     var words = messageNode.text().split(/[\s]+/);
     
+    // For each message, grab a special case for initial conditions. We need
+    // a separate probability chart for which 2-grams start utterances. So
+    // for each message always grab the first two words (or one word if thats
+    // all there is) and put it in the empty string value.
+    var subsequentWords = {};
+    if(words.length==1) {
+        model = addWordInstanceToModel("", words[0], model);
+    } else {
+        model = addWordInstanceToModel("", words[0] + " " + words[1], model);
+    }
+    
     // assuming 2-grams for now.
     for(var i=0; i<words.length-1; i++) {
         // loop through all the words with a two word window.
         var curWords = words[i] + " " + words[i+1];
         
-        var subsequentWords = {}
-        if(curWords in model) {
-            var subsequentWords = model[curWords];
-        }
-        
-        var score = 0;
-        if(words[i+2] in subsequentWords) {
-            score = subsequentWords[words[i+2]];
-        }
-        score++;
-        subsequentWords[words[i+2]] = score;
-        model[curWords] = subsequentWords;
+        model = addWordInstanceToModel(curWords, words[i+2], model);
     }
 }
 
@@ -62,13 +62,13 @@ var normalizedModel = {}
 for(var words in model) {
     var followingWords = model[words];
     
-    console.log("processing '" + words + "'");
+    // console.log("processing '" + words + "'");
     var totalOptions = 0.0;
     for(var followingWord in followingWords) {
         var followingWordCount = followingWords[followingWord];
         
         totalOptions = totalOptions+followingWordCount;
-        console.log("\t" + followingWord + ": " + followingWordCount + "("+totalOptions + ")");
+        // console.log("\t" + followingWord + ": " + followingWordCount + "("+totalOptions + ")");
     }
         
     
@@ -84,4 +84,21 @@ for(var words in model) {
 
 
 
+function addWordInstanceToModel(curWords, followingWord, model) {
+    var subsequentWords = {}
+    if(curWords in model) {
+        var subsequentWords = model[curWords];
+    }
+    
+    var score = 0;
+    if(words[i+2] in subsequentWords) {
+        score = subsequentWords[words[i+2]];
+    }
+    score++;
+    subsequentWords[words[i+2]] = score;
+
+    model[curWords] = subsequentWords;
+    
+    return model;
+}
 
