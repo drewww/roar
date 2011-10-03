@@ -597,8 +597,9 @@ function _processPulse() {
         
         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
         // console.log(dict);
-        io.sockets.emit('pulse', dict);
-        
+        io.sockets.emit('pulse', {"words":dict,
+            "activity":{"total":totalActivity, "window":windowActivity,
+            "relative":relativeActivity});
     });
 }
 

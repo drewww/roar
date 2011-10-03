@@ -348,8 +348,9 @@
 			
 			$("#pulse").children().attr("untouched", "true");
 			
-			for(var itemIndex in pulse) {
-				var pulseItem = pulse[itemIndex];
+			var pulseWords = pulse["words"];
+			for(var itemIndex in pulseWords) {
+				var pulseItem = pulseWords[itemIndex];
 				var pulseWord = pulseItem["word"];
 				var pulseMagnitude = pulseItem["score"];
 				
