@@ -72,16 +72,16 @@ for(var words in model) {
     }
         
     
-    var normalizedFollowingWords = {};
+    var normalizedFollowingWords = [];
+    var cumulativeProb = 0.0;
     for(var followingWord in followingWords) {
-        normalizedFollowingWords[followingWord] = (followingWords[followingWord]+0.0) / totalOptions;
+        cumulativeProb += (followingWords[followingWord]+0.0) / totalOptions;
+        normalizedFollowingWords.push({"word":followingWord, "prob":cumulativeProb});
     }
     
     normalizedModel[words] = normalizedFollowingWords;
 }
 
-
- console.log(normalizedModel);
 
 
 
