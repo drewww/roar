@@ -56,6 +56,28 @@ for(var messageNodeIndex in messageNodes) {
     }
 }
 
-console.log(model);
-
 // now normalize the model.
+
+var normalizedModel = {}
+for(var words in model) {
+    var followingWords = model[words];
+    
+    var totalOptions = 0.0;
+    for(var followingWord in followingWords) {
+        var followingWordCount = words[followingWord];
+        
+        totalOptions = totalOptions+followingWordCount;
+    }
+    
+    var normalizedFollowingWords = {};
+    for(var followingWord in followingWords) {
+        normalizedFollowingWords[followingWord] = (followingWords[followingWord]+0.0) / totalOptions;
+    }
+    normalizedModel[words] = normalizedFollowingWords;
+}
+
+
+console.log(normalizedModel);
+
+
+
