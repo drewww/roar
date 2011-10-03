@@ -35,7 +35,7 @@ for(var messageNodeIndex in messageNodes) {
     // if you leave it in, it generates more specific results but probably
     // limits its diversity of production. try it both ways.
     var words = messageNode.text().split(/[\s]+/);
-    
+
     // For each message, grab a special case for initial conditions. We need
     // a separate probability chart for which 2-grams start utterances. So
     // for each message always grab the first two words (or one word if thats
@@ -82,6 +82,17 @@ for(var words in model) {
     normalizedModel[words] = normalizedFollowingWords;
 }
 
+model=normalizedModel;
+
+// console.log(model["just like"]);
+console.log(generateUtterance());
+
+
+
+
+
+
+
 
 
 function addWordInstanceToModel(curWords, followingWord, model) {
@@ -91,14 +102,69 @@ function addWordInstanceToModel(curWords, followingWord, model) {
     }
     
     var score = 0;
-    if(words[i+2] in subsequentWords) {
-        score = subsequentWords[words[i+2]];
+    if(followingWord in subsequentWords) {
+        score = subsequentWords[followingWord];
     }
     score++;
-    subsequentWords[words[i+2]] = score;
+    subsequentWords[followingWord] = score;
 
     model[curWords] = subsequentWords;
     
     return model;
 }
 
+function generateUtterance() {
+    
+    var utterance = "";
+    
+    var currentWindowStart = -1;
+    while(true) {
+        console.log("currentWindowStart=", currentWindowStart);
+        
+        var wordList;
+        if(currentWindowStart==-1) {
+            wordList = model[""];
+        } else {
+            var nextKey=utterance.split(/[\s]+/).slice(currentWindowStart, currentWindowStart+2);
+            nextKey = nextKey.join(" ");
+            console.log("nextKey=", nextKey);
+            wordList = model[nextKey];
+        }
+        
+        console.log("wordlist=",wordList);
+        
+        var newWord = pickWordFromList(wordList);
+        
+        if(newWord=='undefined') {
+            return utterance;
+        }
+        
+        if(currentWindowStart==-1) {
+            utterance = newWord;
+        } else {
+            utterance = utterance + " " + newWord;
+        }
+        
+        console.log("utterance=",utterance);
+        currentWindowStart++;
+    }
+}
+
+function pickWordFromList(wordList) {
+    
+    var rand = Math.random();
+    
+    // run through the list until we hit that value.
+    var prevScore = 0.0;
+    for(var index in wordList) {
+        var word = wordList[index];
+        
+        if(rand > prevScore && rand < word["prob"]) {
+            console.log("\tpicking: " + word["word"]);
+            return word["word"];
+        } else {
+            prevScore = word["prob"];
+            console.log("prevScore=", prevScore);
+        }
+    }
+}
