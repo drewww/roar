@@ -62,22 +62,26 @@ var normalizedModel = {}
 for(var words in model) {
     var followingWords = model[words];
     
+    console.log("processing '" + words + "'");
     var totalOptions = 0.0;
     for(var followingWord in followingWords) {
-        var followingWordCount = words[followingWord];
+        var followingWordCount = followingWords[followingWord];
         
         totalOptions = totalOptions+followingWordCount;
+        console.log("\t" + followingWord + ": " + followingWordCount + "("+totalOptions + ")");
     }
+        
     
     var normalizedFollowingWords = {};
     for(var followingWord in followingWords) {
         normalizedFollowingWords[followingWord] = (followingWords[followingWord]+0.0) / totalOptions;
     }
+    
     normalizedModel[words] = normalizedFollowingWords;
 }
 
 
-console.log(normalizedModel);
+ console.log(normalizedModel);
 
 
 
