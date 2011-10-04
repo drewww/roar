@@ -579,7 +579,6 @@ function _processPulse() {
                     isStopWord = word in stopWords;
                     isTooShort = word.length==1;
                     if (isStopWord || isTooShort)  {
-                        console.log("skipping word: " + word);
                         continue;
                     }
                     
@@ -654,7 +653,7 @@ function generateBot() {
     
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
-    bot["chat_odds"] = Math.random()*0.05;
+    bot["chat_odds"] = Math.random()*0.03;
     
     joinRoom(null, bot["room"]);
     
