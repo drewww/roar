@@ -138,14 +138,7 @@ io.sockets.on('connection', function(socket) {
         // Get the username.
         socket.get('nickname', function(err, nickname) {
             socket.get("room" ,function(err, roomName) {
-                messageDict = {text:data.text, from:nickname,
-                    timestamp:Date.now(), room:roomName};
-
-                io.sockets.in(roomName).emit('message', messageDict);
-
-                // By pushing and trimming, we keep it from growing indefinitely 
-                client.rpush("room.messages", JSON.stringify(messageDict));
-                client.ltrim("room.messages", -100, -1);
+                sendChatToRoom(roomName, nickname, data.text);
             });
         });
     });
@@ -246,10 +239,22 @@ client.once("ready", function(err) {
         _processPulse();
         _updateRooms(null);
         _checkShoutExpiration();
-        
-    }, 5000);
+        _chatBotTick();
+    }, 0);
 
 });
+
+
+function sendChatToRoom(roomName, nickname, messageText) {
+    messageDict = {text:messageText, from:nickname,
+        timestamp:Date.now(), room:roomName};
+
+    io.sockets.in(roomName).emit('message', messageDict);
+
+    // By pushing and trimming, we keep it from growing indefinitely 
+    client.rpush("room.messages", JSON.stringify(messageDict));
+    client.ltrim("room.messages", -100, -1);
+}
 
 function spreadShoutToRoom(room, shoutId) {
     // now spread the shout
@@ -635,7 +640,7 @@ var baseRooms = ["General Chat", "Team Liquid", "Reddit", "DRG Fans", "mouz fans
 function setupBots(num) {
     // Generate num names and store them.
     for(var i=0; i<num; i++) {
-        var bot = setTimeout(generateBot, 50);
+        var bot = generateBot();
         bots[bot["name"]] = bot;
     }
 }
@@ -649,26 +654,36 @@ function generateBot() {
     
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
+    bot["chat_odds"] = Math.random()*0.05;
     
     joinRoom(null, bot["room"]);
     
     return bot;
 }
 
+function _chatBotTick() {
+    
+    setTimeout(_chatBotTick, 200);
+    
+    // Each tick, run through the list and see if that bot wants to say
+    // something to its room.
+    for(var botName in bots) {
+        var bot = bots[botName];
+
+        if(Math.random() < bot["chat_odds"]) {
+            // chat!
+            var utterance = generateUtterance(model);
+            sendChatToRoom(bot["room"], botName, utterance["text"]);
+        }
+    }
+}
+
+
 function generateUtterance(model) {
     
     var utterance = {};
     
-    var names = model["names"];
     var words = model["words"];
-    
-    for(var key in model) {
-        console.log("key: " + key);
-    }
-    
-    // pick a name first. Just random the names list.
-    var randIndex = Math.round(Math.random()*names.length);
-    utterance["name"] = names[randIndex];
     
     var currentWindowStart = -1;
     while(true) {
