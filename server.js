@@ -369,7 +369,7 @@ function releaseNickname(socket) {
 }
 
 function joinRoom(socket, newRoomName) {
-        var population;
+    var population;
         
 
     client.hincrby("global:room_populations", newRoomName, 1,
@@ -518,7 +518,7 @@ function _checkShoutExpiration() {
                                 
                                 // Keeps max shout history at 100 to avoid
                                 // accumulating infinite data.
-                                client.ltrim("global:shouts", -100, -1);
+                                client.ltrim("global:shouts", -1000, -1);
                             });
                     });
                     
