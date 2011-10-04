@@ -97,7 +97,7 @@ if(program.generatemodel) {
 
     model=normalizedModel;
 
-    fs.writeFileSync("chat_model.json", JSON.stringify(model));
+    fs.writeFileSync("chat_model.json", JSON.stringify({"words":model, "names": namesSet.array()}));
     
     
     if(program.printmodel) {
@@ -121,7 +121,7 @@ if(program.generatemodel) {
     }    
 } else {
     
-    model = JSON.parse(fs.readFileSync("chat_model.json", 'utf-8'));
+    var model = JSON.parse(fs.readFileSync("chat_model.json", 'utf-8'));
     
     if(program.printmodel) {
         console.log(model);
@@ -134,7 +134,7 @@ if(program.generatemodel) {
     }
     
     for(var i=0; i<numUtterances; i++) {
-        console.log(generateUtterance());
+        console.log(generateUtterance(model));
     }
 }
 
@@ -164,9 +164,17 @@ function addWordInstanceToModel(curWords, followingWord, model) {
     return model;
 }
 
-function generateUtterance() {
+function generateUtterance(model) {
     
-    var utterance = "";
+    var utterance = {};
+    
+    var names = model["names"];
+    var words = model["words"];
+    
+    
+    // pick a name first. Just random the names list.
+    var randIndex = Math.round(Math.random()*names.length);
+    utterance["name"] = names[randIndex];
     
     var currentWindowStart = -1;
     while(true) {
@@ -174,12 +182,12 @@ function generateUtterance() {
         
         var wordList;
         if(currentWindowStart==-1) {
-            wordList = model[""];
+            wordList = words[""];
         } else {
-            var nextKey=utterance.split(/[\s]+/).slice(currentWindowStart, currentWindowStart+2);
+            var nextKey=utterance["text"].split(/[\s]+/).slice(currentWindowStart, currentWindowStart+2);
             nextKey = nextKey.join(" ");
             // console.log("nextKey=", nextKey);
-            wordList = model[nextKey];
+            wordList = words[nextKey];
         }
         
         // console.log("wordlist=",wordList);
@@ -191,12 +199,12 @@ function generateUtterance() {
         }
         
         if(currentWindowStart==-1) {
-            utterance = newWord;
+            utterance["text"] = newWord;
             
-            if(utterance.split(/[\s]+/).length==1) return utterance;
+            if(utterance["text"].split(/[\s]+/).length==1) return utterance;
             
         } else {
-            utterance = utterance + " " + newWord;
+            utterance["text"] = utterance["text"] + " " + newWord;
         }
         
         // console.log("\t" + utterance);
