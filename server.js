@@ -259,7 +259,7 @@ function sendChatToRoom(roomName, nickname, messageText) {
 
     // By pushing and trimming, we keep it from growing indefinitely 
     client.rpush("room.messages", JSON.stringify(messageDict));
-    client.ltrim("room.messages", -100, -1);
+    client.ltrim("room.messages", -2000, -1);
 }
 
 function spreadShoutToRoom(room, shoutId) {
@@ -518,7 +518,7 @@ function _checkShoutExpiration() {
                                 
                                 // Keeps max shout history at 100 to avoid
                                 // accumulating infinite data.
-                                client.ltrim("global:shouts", -10000, -1);
+                                client.ltrim("global:shouts", -100, -1);
                             });
                     });
                     
@@ -658,7 +658,8 @@ function _processPulse() {
         // console.log(dict);
         io.sockets.emit('pulse', {"words":dict,
             "activity":{"total":totalActivity, "window":windowActivity,
-            "relative":relativeActivity}});
+            "relative":relativeActivity,
+            "messages-per-min-instant":messagesInWindow*(60/10)}});
     });
 }
 
