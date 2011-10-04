@@ -153,64 +153,13 @@ io.sockets.on('connection', function(socket) {
         // Messages will be of the form: {"name":"room_name"}.
         var newRoomName = data["name"];
 
-        leaveRoom(socket, newRoomName);
-        
-        socket.set("room", newRoomName, function() {
+        socket.get("room", function (err, oldRoomName) {
+            leaveRoom(socket, oldRoomName);
             
-            var population;
-            client.hexists("global:rooms", newRoomName, function (err, exists) {
-                if(exists) {
-                    
-                    // If we already know about the room, increment the count
-                    client.hget("global:rooms", newRoomName, function (err, roomData) {
-                       var room = JSON.parse(roomData);
-                       
-                       // gonna need to test this
-                       room["population"] = room["population"]+1;
-                       
-                       client.hset("global:rooms", newRoomName,
-                            JSON.stringify(room), function(err, res) {
-                           socket.emit('message', {text:
-                               "You have joined room '"+newRoomName+
-                               "' with " + room["population"] +
-                               " total people.", admin:"true"});                           
-                       });
-                    });
-                } else {
-                    // otherwise, make a new hash for this room's info.
-                    client.incr("global:nextRoomId", function (err, roomId) {
-                        
-                        var room = {};
-                        room["id"] = roomId;
-                        room["name"] = newRoomName;
-                        room["population"] = 1;
-
-                        client.hset("global:rooms", newRoomName, JSON.stringify(room));
-                        
-                        socket.emit('message', {text:
-                            "You have joined room '"+newRoomName+
-                            "' with 1 total person.", admin:"true"});
-                        
-                    });
-                }
-                
-                socket.get("nickname", function(err, nickname) {
-                    // Kinda wanted to say where they came from here, but
-                    // that turns out to be a little tedious with the callback
-                    // structure. Figure out some way to cache that to make it
-                    // accessible?
-                    io.sockets.in(newRoomName).emit("message",
-                    {text:nickname + " has arrived.",
-                    admin:"true"});
-                });
-                
-                // doing this after the arrival broadcast message means
-                // it doens't go to that user, which is nice. We have separate
-                // arrival messages for them.
-                socket.join(newRoomName);
+            socket.set("room", newRoomName, function() {
+                joinRoom(socket, newRoomName);
             });
         });
-        
     });
     
     
@@ -404,6 +353,61 @@ function releaseNickname(socket) {
     socket.get("nickname", function(err, nickname) {
         client.hdel("global:connectedUsers", nickname);
     });
+}
+
+function joinRoom(socket, newRoomName) {
+        var population;
+        client.hexists("global:rooms", newRoomName, function (err, exists) {
+            if(exists) {
+
+                // If we already know about the room, increment the count
+                client.hget("global:rooms", newRoomName, function (err, roomData) {
+                   var room = JSON.parse(roomData);
+
+                   // gonna need to test this
+                   room["population"] = room["population"]+1;
+
+                   client.hset("global:rooms", newRoomName,
+                        JSON.stringify(room), function(err, res) {
+                       socket.emit('message', {text:
+                           "You have joined room '"+newRoomName+
+                           "' with " + room["population"] +
+                           " total people.", admin:"true"});                           
+                   });
+                });
+            } else {
+                // otherwise, make a new hash for this room's info.
+                client.incr("global:nextRoomId", function (err, roomId) {
+
+                    var room = {};
+                    room["id"] = roomId;
+                    room["name"] = newRoomName;
+                    room["population"] = 1;
+
+                    client.hset("global:rooms", newRoomName, JSON.stringify(room));
+
+                    socket.emit('message', {text:
+                        "You have joined room '"+newRoomName+
+                        "' with 1 total person.", admin:"true"});
+
+                });
+            }
+
+            socket.get("nickname", function(err, nickname) {
+                // Kinda wanted to say where they came from here, but
+                // that turns out to be a little tedious with the callback
+                // structure. Figure out some way to cache that to make it
+                // accessible?
+                io.sockets.in(newRoomName).emit("message",
+                {text:nickname + " has arrived.",
+                admin:"true"});
+            });
+
+            // doing this after the arrival broadcast message means
+            // it doens't go to that user, which is nice. We have separate
+            // arrival messages for them.
+            socket.join(newRoomName);
+        });
 }
 
 function leaveRoom(socket, newRoomName) {
@@ -625,6 +629,24 @@ function _processPulse() {
 // These methods manage bot text generation. Depends on a model file        //
 // generated by util/chat_model_generator.js.                               //
 //**************************************************************************//
+
+var bots = {};
+var baseRooms = ["General Chat", "Team Liquid", "Reddit", "DRG Fans", "mouz fans", "Zerg Strategy", "Terran Strategy"];
+function setupBots(num) {
+    var names = model["names"];
+    // Generate num names and store them.
+    for(var i=0; i<num; i++) {
+        var bot = {}
+        var randIndex = Math.round(Math.random()*names.length);
+        bot["name"] = names[randIndex];
+        
+        // randIndex = Math.round(Math.random()*baseRooms.length);
+        // bot["room"] = 
+        bots[bot["name"]] = bot;
+    }
+    
+    console.log("bots=", bots)
+}
 
 function generateUtterance(model) {
     
