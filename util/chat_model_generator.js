@@ -192,11 +192,14 @@ function generateUtterance() {
         
         if(currentWindowStart==-1) {
             utterance = newWord;
+            
+            if(utterance.split(/[\s]+/).length==1) return utterance;
+            
         } else {
             utterance = utterance + " " + newWord;
         }
         
-        // console.log("utterance=",utterance);
+        // console.log("\t" + utterance);
         currentWindowStart++;
     }
 }
