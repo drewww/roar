@@ -359,26 +359,21 @@ function releaseNickname(socket) {
 
 function joinRoom(socket, newRoomName) {
         var population;
-        client.hexists("global:rooms", newRoomName, function (err, exists) {
-            console.log("room: " + newRoomName + " exists? " + exists);
-            if(exists) {
-                console.log("Room exists: " + newRoomName);
-                // If we already know about the room, increment the count
-                client.hget("global:rooms", newRoomName, function (err, roomData) {
-                   var room = JSON.parse(roomData);
+        client.hget("global:rooms", newRoomName, function (err, roomData) {
+            if(roomData!=null) {
+               var room = JSON.parse(roomData);
 
-                   // gonna need to test this
-                   room["population"] = room["population"]+1;
+               // gonna need to test this
+               room["population"] = room["population"]+1;
 
-                   client.hset("global:rooms", newRoomName,
-                        JSON.stringify(room), function(err, res) {
-                            
-                       if(socket) socket.emit('message', {text:
-                           "You have joined room '"+newRoomName+
-                           "' with " + room["population"] +
-                           " total people.", admin:"true"});                           
-                   });
-                });
+               client.hset("global:rooms", newRoomName,
+                    JSON.stringify(room), function(err, res) {
+                        
+                   if(socket) socket.emit('message', {text:
+                       "You have joined room '"+newRoomName+
+                       "' with " + room["population"] +
+                       " total people.", admin:"true"});                           
+               });
             } else {
                 // otherwise, make a new hash for this room's info.
                 client.incr("global:nextRoomId", function (err, roomId) {
@@ -393,6 +388,7 @@ function joinRoom(socket, newRoomName) {
                     if(socket) socket.emit('message', {text:
                         "You have joined room '"+newRoomName+
                         "' with 1 total person.", admin:"true"});
+                    
                 });
             }
 
