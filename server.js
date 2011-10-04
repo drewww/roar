@@ -410,7 +410,6 @@ function joinRoom(socket, newRoomName) {
                         // this point.
                         client.hget("global:room_populations", newRoomName,
                             function(err, population) {
-                                console.log("internal callback pop: " + population);
                                 room["population"] = population;
 
                                 client.hset("global:rooms", newRoomName,

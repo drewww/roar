@@ -50,7 +50,7 @@
 				var roomName = rooms[roomIndex].name;
 				var roomPop = rooms[roomIndex].population;
 				
-				totalPop += roomPop;
+				totalPop += parseInt(roomPop);
 				
 				var roomItem = $("<li></li>");
 				roomItem.text(roomName + " (" + roomPop + ")")
@@ -62,7 +62,7 @@
 					.appendTo($("#top-rooms ul"));
 			}
 			
-			$("#messages-per-min").text(totalPop);
+			$("#total-users").text(totalPop);
 		});
 		
 		socket.on('shout', function(data) {
@@ -347,8 +347,8 @@
 			// Take the activity metrics and turn one into messages/min and
 			// put it into the right place in the DOM.
 			
-			$("#messages-per-min").text(
-				pulse["activity"]["messages-per-min-instant'"]);
+			$("#messages-per-min").html(
+				pulse["activity"]["messages-per-min-instant"]);
 			
 
 			// First pass: iterate through the pulse list and for each word
@@ -521,6 +521,26 @@
 			border-left: 1px solid #B3B5B8;
 			
 			height: 100%;
+			
+			text-align: center;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+
+		#stats table {
+			width: 130px;
+		}
+
+		#stats .label {
+			font-style: italic;
+			font-size: 0.8em;
+			text-align: right;
+		}
+		
+		#stats .stat {
+			font-weight: bold;
+			font-size: 1.0em;
+			text-align: left;
 		}
 		
 		#room-select label {
@@ -905,14 +925,17 @@ shout
 </div>
 
 <div id="stats">
-	<div>
-		<span>total spectators</span>
-		<span id="total-users"></span>
-	</div>
-	<div>
-		<span>messages / minute</span>
-		<span id="messages-per-min"></span>
-	</div>
+	
+	<table>
+	<tr>
+		<td class="label">spectators</td>
+		<td class="stat" id="total-users"></td>
+	</tr>
+	<tr>
+		<td class="label">messages/min</td>
+		<td class="stat" id="messages-per-min"></td>
+	</tr>
+	</table>
 </div>
 
 
