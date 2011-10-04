@@ -12,8 +12,8 @@ var libxml = require("libxmljs"),
 program.version('0.1')
     .option('-g, --generatemodel [corpus]', 'Generate a new model from the specified corpus file.')
     .option('-n, --numutterances [num]', 'Generate a specified number of utterances (default 1)')
+    .option('-p, --printmodel', 'Prints the current model.')
     .parse(process.argv);
-
 
 if(program.generatemodel) {
     var filename = program.generatemodel;
@@ -100,9 +100,17 @@ if(program.generatemodel) {
     fs.writeFileSync("chat_model.json", JSON.stringify(model));
     
     
+    if(program.printmodel) {
+        console.log(model);
+    }
+    
 } else {
     
     model = JSON.parse(fs.readFileSync("chat_model.json", 'utf-8'));
+    
+    if(program.printmodel) {
+        console.log(model);
+    }
     
     var numUtterances = 1;
     
