@@ -407,7 +407,6 @@ function joinRoom(socket, newRoomName) {
                     if (roomData != null) {
                         var room = JSON.parse(roomData);
 
-
                         // other option is to run a separate query to get the
                         // current population from global:room_populations at
                         // this point.
@@ -449,39 +448,6 @@ function joinRoom(socket, newRoomName) {
         if(socket) socket.join(newRoomName);
         
     });
-        
-        // client.hget("global:rooms", newRoomName, function (err, roomData) {
-        //     if(roomData!=null) {
-        //        var room = JSON.parse(roomData);
-        // 
-        //        // gonna need to test this
-        //        room["population"] = room["population"]+1;
-        // 
-        //        client.hset("global:rooms", newRoomName,
-        //             JSON.stringify(room), function(err, res) {
-        //                 
-        //            if(socket) socket.emit('message', {text:
-        //                "You have joined room '"+newRoomName+
-        //                "' with " + room["population"] +
-        //                " total people.", admin:"true"});                           
-        //        });
-        //     } else {
-        //         // otherwise, make a new hash for this room's info.
-        //         client.incr("global:nextRoomId", function (err, roomId) {
-        // 
-        //             var room = {};
-        //             room["id"] = roomId;
-        //             room["name"] = newRoomName;
-        //             room["population"] = 1;
-        // 
-        //             client.hset("global:rooms", newRoomName, JSON.stringify(room));
-        // 
-        //             if(socket) socket.emit('message', {text:
-        //                 "You have joined room '"+newRoomName+
-        //                 "' with 1 total person.", admin:"true"});
-        //             
-        //         });
-        //     }
 }
 
 function leaveRoom(socket, newRoomName) {
