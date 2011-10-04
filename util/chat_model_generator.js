@@ -65,7 +65,7 @@ if(program.generatemodel) {
         
         processedMessages++;
         
-        if(processedMessages % (messageNodes.length/100)) console.log((processedMessages / (messageNodes.length))*100 + "%");
+        // if((processedMessages % (messageNodes.length/5))==0) console.log((processedMessages / (messageNodes.length))*100 + "%");
         
     }
 
@@ -104,6 +104,21 @@ if(program.generatemodel) {
         console.log(model);
     }
     
+    var numKeys = 0;
+    var numKeysWithOptions = [0, 0, 0, 0, 0, 0, 0, 0];
+    for(var key in model) {
+        numKeys++;
+        
+        for(var optionCount in numKeysWithOptions) {
+            if(model[key].length > optionCount) numKeysWithOptions[optionCount] = numKeysWithOptions[optionCount]+1;
+        }
+    }
+    
+    console.log("Summary model statistics:");
+    
+    for(var optionCount in numKeysWithOptions) {
+        console.log(numKeysWithOptions[optionCount] + " 2-grams with > "+optionCount+" followup ("+ Math.round((numKeysWithOptions[optionCount]/(numKeys-1))*100) +"%)");
+    }    
 } else {
     
     model = JSON.parse(fs.readFileSync("chat_model.json", 'utf-8'));
