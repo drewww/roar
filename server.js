@@ -472,18 +472,22 @@ function leaveRoom(socket, newRoomName) {
                     admin:"true"});
                 }
             });
-            
+
             client.hget("global:rooms", roomName, function(err, roomData) {
                 var room = JSON.parse(roomData);
                 
                 room["population"] = room["population"] - 1;
                 
-                if(room["population"]==0) {
-                    client.hdel("global:rooms", roomName);
-                } else {
-                    client.hset("global:rooms", roomName,
-                        JSON.stringify(room));
-                }
+                // decrement the other counter, too.
+                client.hincrby("global:room_populations", roomName, -1,
+                    function(err, population) {
+                        if(population==0) {
+                            client.hdel("global:rooms", roomName);
+                        } else {
+                            client.hset("global:rooms", roomName,
+                                JSON.stringify(room));
+                        }
+                    });
             });
         }
     });

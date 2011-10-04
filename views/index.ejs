@@ -44,9 +44,13 @@
 			// Does this work? Check.
 			$("#top-rooms li").remove();
 			
+			var totalPop = 0;
+			// todo sort the rooms first
 			for(roomIndex in rooms) {
 				var roomName = rooms[roomIndex].name;
 				var roomPop = rooms[roomIndex].population;
+				
+				totalPop += roomPop;
 				
 				var roomItem = $("<li></li>");
 				roomItem.text(roomName + " (" + roomPop + ")")
@@ -57,6 +61,8 @@
 					})
 					.appendTo($("#top-rooms ul"));
 			}
+			
+			$("#messages-per-min").text(totalPop);
 		});
 		
 		socket.on('shout', function(data) {
@@ -313,7 +319,7 @@
 				
 				// Join a default room.
 				if(!data["rename"]) {
-					joinRoom("General Chat");
+					joinRoom("General Chat 1");
 				}
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
@@ -338,6 +344,13 @@
 		// will receive is a list of word/score combos.
 		
 		function updatePulse(pulse) {
+			// Take the activity metrics and turn one into messages/min and
+			// put it into the right place in the DOM.
+			
+			$("#messages-per-min").text(
+				pulse["activity"]["messages-per-min-instant'"]);
+			
+
 			// First pass: iterate through the pulse list and for each word
 			// in the list, create a div that represents it in a random loc.
 			
@@ -345,7 +358,6 @@
 			// Set a dummy attribute on all the children of pulse. Remove it
 			// when we touch them. If it's still there at the end, remove
 			// the element.
-			
 			$("#pulse").children().attr("untouched", "true");
 			
 			var pulseWords = pulse["words"];
@@ -501,6 +513,14 @@
 			border-right: 0px !important;
 			padding-top: 15px;
 			padding-left: 10px;
+		}
+		
+		#stats {
+			float: right;
+			width: 150px;
+			border-left: 1px solid #B3B5B8;
+			
+			height: 100%;
 		}
 		
 		#room-select label {
@@ -877,13 +897,27 @@ chat
 shout
 </div>
 
+
 <div id="room-select">
 <form id="room-select-form">
 <label for="room">section</label><input type="text" name="room" value="" id="room">
 </form>
 </div>
 
+<div id="stats">
+	<div>
+		<span>total spectators</span>
+		<span id="total-users"></span>
+	</div>
+	<div>
+		<span>messages / minute</span>
+		<span id="messages-per-min"></span>
+	</div>
 </div>
+
+
+</div>
+
 
 
 <div id="top-rooms">
