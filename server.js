@@ -230,7 +230,13 @@ client.once("ready", function(err) {
         for(key in res) {
             client.hdel("global:rooms", key);
         }
-    })
+    });
+    
+    client.hgetall("global:room_populations", function(err, res) {
+        for(key in res) {
+            client.hdel("global:room_populations", key);
+        }
+    });
     
     // Start the periodic data worker threads.
     // TODO split this into separate settimeouts to stagger them to avoid
@@ -364,54 +370,118 @@ function releaseNickname(socket) {
 
 function joinRoom(socket, newRoomName) {
         var population;
-        client.hget("global:rooms", newRoomName, function (err, roomData) {
-            if(roomData!=null) {
-               var room = JSON.parse(roomData);
+        
 
-               // gonna need to test this
-               room["population"] = room["population"]+1;
+    client.hincrby("global:room_populations", newRoomName, 1,
+        function(err, roomPopulation) {
+        console.log(newRoomName + " pop " + roomPopulation);
+        // start by incrementing the value. If the resulting value is 1, we need
+        // to do the create-new-room-structure code. Otherwise, update using
+        // this proper population number.
+        if (roomPopulation == 1) {
+            // create the room in the other data structure.
+            client.incr("global:nextRoomId",
+            function(err, roomId) {
 
-               client.hset("global:rooms", newRoomName,
-                    JSON.stringify(room), function(err, res) {
+                var room = {};
+                room["id"] = roomId;
+                room["name"] = newRoomName;
+                
+                client.hget("global:room_populations", newRoomName,
+                    function(err, population) {
+                        room["population"] = population;
                         
-                   if(socket) socket.emit('message', {text:
-                       "You have joined room '"+newRoomName+
-                       "' with " + room["population"] +
-                       " total people.", admin:"true"});                           
-               });
-            } else {
-                // otherwise, make a new hash for this room's info.
-                client.incr("global:nextRoomId", function (err, roomId) {
-
-                    var room = {};
-                    room["id"] = roomId;
-                    room["name"] = newRoomName;
-                    room["population"] = 1;
-
-                    client.hset("global:rooms", newRoomName, JSON.stringify(room));
-
-                    if(socket) socket.emit('message', {text:
-                        "You have joined room '"+newRoomName+
-                        "' with 1 total person.", admin:"true"});
-                    
-                });
-            }
-
-            if(socket) socket.get("nickname", function(err, nickname) {
-                // Kinda wanted to say where they came from here, but
-                // that turns out to be a little tedious with the callback
-                // structure. Figure out some way to cache that to make it
-                // accessible?
-                io.sockets.in(newRoomName).emit("message",
-                {text:nickname + " has arrived.",
-                admin:"true"});
+                        client.hset("global:rooms", newRoomName, JSON.stringify(room));
+                        if (socket) socket.emit('message', {
+                            text:
+                            "You have joined room '" + newRoomName +
+                            "' with "+population+" total person.",
+                            admin: "true"
+                        });
+                    });
             });
+        } else {
+            console.log("incrementing population");
+            client.hget("global:rooms", newRoomName,
+                function(err, roomData) {
+                    if (roomData != null) {
+                        var room = JSON.parse(roomData);
 
-            // doing this after the arrival broadcast message means
-            // it doens't go to that user, which is nice. We have separate
-            // arrival messages for them.
-            if(socket) socket.join(newRoomName);
+
+                        // other option is to run a separate query to get the
+                        // current population from global:room_populations at
+                        // this point.
+                        client.hget("global:room_populations", newRoomName,
+                            function(err, population) {
+                                console.log("internal callback pop: " + population);
+                                room["population"] = population;
+
+                                client.hset("global:rooms", newRoomName,
+                                    JSON.stringify(room),
+                                    function(err, res) {
+
+                                    if (socket) socket.emit('message', {
+                                        text:
+                                        "You have joined room '" + newRoomName +
+                                        "' with " + room["population"] +
+                                        " total people.",
+                                        admin: "true"
+                                });
+                            });
+                        });
+                    }
+            });
+        }
+        
+        if(socket) socket.get("nickname", function(err, nickname) {
+            // Kinda wanted to say where they came from here, but
+            // that turns out to be a little tedious with the callback
+            // structure. Figure out some way to cache that to make it
+            // accessible?
+            io.sockets.in(newRoomName).emit("message",
+            {text:nickname + " has arrived.",
+            admin:"true"});
         });
+
+        // doing this after the arrival broadcast message means
+        // it doens't go to that user, which is nice. We have separate
+        // arrival messages for them.
+        if(socket) socket.join(newRoomName);
+        
+    });
+        
+        // client.hget("global:rooms", newRoomName, function (err, roomData) {
+        //     if(roomData!=null) {
+        //        var room = JSON.parse(roomData);
+        // 
+        //        // gonna need to test this
+        //        room["population"] = room["population"]+1;
+        // 
+        //        client.hset("global:rooms", newRoomName,
+        //             JSON.stringify(room), function(err, res) {
+        //                 
+        //            if(socket) socket.emit('message', {text:
+        //                "You have joined room '"+newRoomName+
+        //                "' with " + room["population"] +
+        //                " total people.", admin:"true"});                           
+        //        });
+        //     } else {
+        //         // otherwise, make a new hash for this room's info.
+        //         client.incr("global:nextRoomId", function (err, roomId) {
+        // 
+        //             var room = {};
+        //             room["id"] = roomId;
+        //             room["name"] = newRoomName;
+        //             room["population"] = 1;
+        // 
+        //             client.hset("global:rooms", newRoomName, JSON.stringify(room));
+        // 
+        //             if(socket) socket.emit('message', {text:
+        //                 "You have joined room '"+newRoomName+
+        //                 "' with 1 total person.", admin:"true"});
+        //             
+        //         });
+        //     }
 }
 
 function leaveRoom(socket, newRoomName) {
@@ -653,7 +723,7 @@ function generateBot() {
     
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
-    bot["chat_odds"] = Math.random()*0.03;
+    bot["chat_odds"] = Math.random()*0.01;
     
     joinRoom(null, bot["room"]);
     
