@@ -97,7 +97,7 @@ if(program.generatemodel) {
 
     model=normalizedModel;
 
-    fs.writeFileSync("chat_model.json", JSON.stringify({"words":model, "names": namesSet.array()}));
+    fs.writeFileSync("chat_model.json", JSON.stringify({"names": namesSet.array(), "words":model}));
     
     
     if(program.printmodel) {
