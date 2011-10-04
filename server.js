@@ -9,7 +9,7 @@ var app = require('express').createServer(),
     // process = require('process');
     
 
-program.version('0.1')
+program.version('0.2')
     .option('-V, --verbose', 'Enable verbose logging.')
     .option('-p, --port [num]', 'Set the server port (default 8080)')
     .option('-b, --bots [num]', 'Creates [num] server-side chat bots.')
@@ -518,7 +518,7 @@ function _checkShoutExpiration() {
                                 
                                 // Keeps max shout history at 100 to avoid
                                 // accumulating infinite data.
-                                client.ltrim("global:shouts", -1000, -1);
+                                client.ltrim("global:shouts", -10000, -1);
                             });
                     });
                     
@@ -669,7 +669,11 @@ function _processPulse() {
 //**************************************************************************//
 
 var bots = {};
-var baseRooms = ["General Chat", "Team Liquid", "Reddit", "DRG Fans", "mouz fans", "Zerg Strategy", "Terran Strategy"];
+var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
+    "General Chat 4", "General Chat 5", "General Chat 6", "General Chat 7",
+    "Team Liquid", "Reddit", "col.MVP Fans", "mouz fans", "Zerg Strategy",
+    "Terran Strategy"];
+var botChatOddsOffset = 0.0;
 function setupBots(num) {
     // Generate num names and store them.
     for(var i=0; i<num; i++) {
@@ -687,7 +691,7 @@ function generateBot() {
     
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
-    bot["chat_odds"] = Math.random()*0.01;
+    bot["chat_odds"] = 0.02;
     
     joinRoom(null, bot["room"]);
     
@@ -698,10 +702,22 @@ function _chatBotTick() {
     
     setTimeout(_chatBotTick, 200);
     
+    // varry the chat odds slightly over time. clamp at +0.019 (near silence)
+    // and -0.02 (doubling odds); max change per cycle is +/-0.0005
+    var changeToOdds = (Math.random() * 0.0010) - 0.0005;
+    botChatOddsOffset += changeToOdds;
+    if(botChatOddsOffset > 0.019) {
+        botChatOddsOffset == 0.019;
+    } else if (botChatOddsOffset < -0.02) {
+        botChatOddsOffset = -0.02;
+    }
+    
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
     for(var botName in bots) {
         var bot = bots[botName];
+        
+        var chatOdds = Math.random() + botChatOddsOffset;
 
         if(Math.random() < bot["chat_odds"]) {
             // chat!
