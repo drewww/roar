@@ -47,6 +47,8 @@ if(program.bots) {
     fs.readFile(modelFilename, 'utf-8', function (err, data) {
         model = JSON.parse(data);
         console.log("Loaded model: " + modelFilename);
+        
+        setupBots(program.bots);
     });
 }
 
@@ -358,8 +360,9 @@ function releaseNickname(socket) {
 function joinRoom(socket, newRoomName) {
         var population;
         client.hexists("global:rooms", newRoomName, function (err, exists) {
+            console.log("room: " + newRoomName + " exists? " + exists);
             if(exists) {
-
+                console.log("Room exists: " + newRoomName);
                 // If we already know about the room, increment the count
                 client.hget("global:rooms", newRoomName, function (err, roomData) {
                    var room = JSON.parse(roomData);
@@ -369,7 +372,8 @@ function joinRoom(socket, newRoomName) {
 
                    client.hset("global:rooms", newRoomName,
                         JSON.stringify(room), function(err, res) {
-                       socket.emit('message', {text:
+                            
+                       if(socket) socket.emit('message', {text:
                            "You have joined room '"+newRoomName+
                            "' with " + room["population"] +
                            " total people.", admin:"true"});                           
@@ -386,14 +390,13 @@ function joinRoom(socket, newRoomName) {
 
                     client.hset("global:rooms", newRoomName, JSON.stringify(room));
 
-                    socket.emit('message', {text:
+                    if(socket) socket.emit('message', {text:
                         "You have joined room '"+newRoomName+
                         "' with 1 total person.", admin:"true"});
-
                 });
             }
 
-            socket.get("nickname", function(err, nickname) {
+            if(socket) socket.get("nickname", function(err, nickname) {
                 // Kinda wanted to say where they came from here, but
                 // that turns out to be a little tedious with the callback
                 // structure. Figure out some way to cache that to make it
@@ -406,7 +409,7 @@ function joinRoom(socket, newRoomName) {
             // doing this after the arrival broadcast message means
             // it doens't go to that user, which is nice. We have separate
             // arrival messages for them.
-            socket.join(newRoomName);
+            if(socket) socket.join(newRoomName);
         });
 }
 
@@ -511,7 +514,7 @@ function _updateRooms(socket) {
     
     // if there's a socket passed in, it's a request to do a one-shot
     // update.
-    if(socket==null) setTimeout(_updateRooms, 5000);
+    if(socket==null || typeof socket == 'undefined') setTimeout(_updateRooms, 5000);
     
     client.hgetall("global:rooms", function(err, res) {
         var allRoomData = [];
@@ -521,8 +524,9 @@ function _updateRooms(socket) {
         }
 
         // Now broadcast this message to all clients.
-        if(socket==null) io.sockets.emit("rooms", allRoomData);
-        else socket.emit("rooms", allRoomData);
+        if(socket==null  || typeof socket == 'undefined') {
+            io.sockets.emit("rooms", allRoomData);
+        } else socket.emit("rooms", allRoomData);
     });
 }
 
@@ -633,19 +637,26 @@ function _processPulse() {
 var bots = {};
 var baseRooms = ["General Chat", "Team Liquid", "Reddit", "DRG Fans", "mouz fans", "Zerg Strategy", "Terran Strategy"];
 function setupBots(num) {
-    var names = model["names"];
     // Generate num names and store them.
     for(var i=0; i<num; i++) {
-        var bot = {}
-        var randIndex = Math.round(Math.random()*names.length);
-        bot["name"] = names[randIndex];
-        
-        // randIndex = Math.round(Math.random()*baseRooms.length);
-        // bot["room"] = 
+        var bot = setTimeout(generateBot, 50);
         bots[bot["name"]] = bot;
     }
+}
+
+function generateBot() {
+    var bot = {}
+    var names = model["names"];
     
-    console.log("bots=", bots)
+    var randIndex = Math.floor(Math.random()*names.length);
+    bot["name"] = names[randIndex];
+    
+    randIndex = Math.floor(Math.random()*baseRooms.length);
+    bot["room"] = baseRooms[randIndex];
+    
+    joinRoom(null, bot["room"]);
+    
+    return bot;
 }
 
 function generateUtterance(model) {
