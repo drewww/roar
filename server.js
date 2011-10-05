@@ -689,7 +689,7 @@ function _processPulse() {
                                 client.hincrbr("messages.doc_freq", word, -1);
                             }
                             
-                            client.incrby("messages.total", -1*summary["total-messages"]);
+                            client.incrby("messages.total", -1*messagesInWindow);
                         });
                     }
                 }
@@ -703,8 +703,8 @@ function _processPulse() {
         client.hgetall("messages.doc_freq", function(err, docFreq) {
             client.llen("messages.summary", function(err, numDocs) {
                 client.get("messages.total", function(err, totalMessages) {
-                    client.lrange("messages.recent",0,0,
-                        function(err, oldestMessage) {
+                    client.lrange("messages.summary",0,0,
+                        function(err, oldestWindow) {
 
                         // there's a race condition on first document process
                         // where even though we've just saved it, the saves
@@ -719,10 +719,10 @@ function _processPulse() {
                         
                         
                         
-                        if(oldestMessage==null) startTime = Date.now();
+                        if(oldestWindow==null) startTime = Date.now();
                         else {
-                            oldestMessage = JSON.parse(oldestMessage);
-                            startTime = oldestMessage["timestamp"];
+                            oldestWindow = JSON.parse(oldestWindow);
+                            startTime = oldestWindow["timestamp"];
                         }
 
                         // we have all the tools we need: popularWordsInWindow is
@@ -743,7 +743,7 @@ function _processPulse() {
                         
                             var idf = Math.log(numDocs/df)/Math.log(10);
                         
-                            popularWordsList.push({"word":word, "score":tf*idf/3});
+                            popularWordsList.push({"word":word, "score":tf*idf/8});
                             // Knock out words that are mentioned once, just for cleaner
                             // data.
                             // TODO turn this back on when we know what the range
@@ -757,7 +757,10 @@ function _processPulse() {
                         // In a later pass, we'll use this to decide how many words to 
                         // send total.
                         // totalActivity is in messages/second
-                        var totalActivity = (totalMessages / (Date.now() - startTime));
+                        console.log("totalMessages: " + totalMessages);
+                        console.log("timeSinceStart: " + (Date.now() - startTime));
+                        
+                        var totalActivity = (totalMessages / ((Date.now() - startTime)/1000));
                         var windowActivity = messagesInWindow / WINDOW_SIZE;
                         var relativeActivity = windowActivity / totalActivity;
 
@@ -775,12 +778,10 @@ function _processPulse() {
                         });
                         popularWordsList.reverse();
 
-
-
                         console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
                         dict = popularWordsList.slice(0, activityFactor*20.0);
                     
-                        //console.log(dict);
+                        // console.log(dict);
                     
                         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
                         // console.log(dict);
@@ -855,7 +856,7 @@ function _chatBotTick() {
     botChatOddsOffset = 0.6*BASE_CHAT_ODDS * Math.sin((2.0*Math.PI) * timeFactor);
     
     // have an occasional dip followed by a spike.
-    if(Math.random() < 0.002 && spikeProgress==-1) {
+    if(Math.random() < 0.001 && spikeProgress==-1) {
          console.log("TRIGGER SPIKE");
          spikeProgress = 0;
     } 
