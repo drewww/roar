@@ -134,21 +134,33 @@ io.sockets.on('connection', function(socket) {
         
     
     socket.on('message', function(data) {
-        
+        console.log("message!");
         // setup some internal commands so I can easily manipulate state
         // from messages.
         if(data.text[0]=="/") {
             
             var args = data.text.split(" ");
             var command = args[0];
+            args = args.slice(1);
             command = command.slice(1);
             
             switch(command) {
                 case "level":
+                    if(args[0]=="vary") {
+                        varyBotParticipation = true;
+                        return;
+                    } else {
+                        varyBotParticipation = false;
+                    }
                 
+                    // Look at the next number.
+                    // Scale it 0-100 -> BASE_CHAT_ODDS -> -BASE_CHAT_ODDS
+                    botChatOddsOffset = (1-(parseInt(args[0])/100))* 2 * BASE_CHAT_ODDS
+                        - BASE_CHAT_ODDS;
                     break;
-                case "spike":
                     
+                case "spike":
+                    spikeProgress=0;
                     break;
                 default:
                     sendAdminMessage(socket,
@@ -840,6 +852,8 @@ var botChatOddsOffset = 0.0;
 
 var BASE_CHAT_ODDS = 0.003;
 
+var varyBotParticipation = true;
+
 function setupBots(num) {
     // Generate num names and store them.
     for(var i=0; i<num; i++) {
@@ -881,14 +895,18 @@ function _chatBotTick() {
     // }
     
     // Make it a sine wave with period 2 minutes.
-    var timeFactor = ((Date.now()/1000)%60)/60;
-    botChatOddsOffset = 0.6*BASE_CHAT_ODDS * Math.sin((2.0*Math.PI) * timeFactor);
+    if(varyBotParticipation) {
+        var timeFactor = ((Date.now()/1000)%60)/60;
+        botChatOddsOffset = 0.6*BASE_CHAT_ODDS
+            * Math.sin((2.0*Math.PI) * timeFactor);
+    }
     
     // have an occasional dip followed by a spike.
-    if(Math.random() < 0.001 && spikeProgress==-1) {
-         console.log("TRIGGER SPIKE");
-         spikeProgress = 0;
-    } 
+    // Turned off in favor of human-triggered spikes.
+    // if(Math.random() < 0.001 && spikeProgress==-1) {
+    //      console.log("TRIGGER SPIKE");
+    //      spikeProgress = 0;
+    // } 
     
     if(spikeProgress>-1) {
         // for the first 20 ticks, decrease talking over time.
@@ -902,6 +920,7 @@ function _chatBotTick() {
         } else if(spikeProgress < 145) {
             botChatOddsOffset = -BASE_CHAT_ODDS;
         } else {
+            varyBotParticipation = true;
             spikeProgress=-1;
         }
     }
