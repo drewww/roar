@@ -561,6 +561,12 @@ function _updateRooms(socket) {
             allRoomData.push({"name":roomName, "population":room["population"]});
         }
 
+        // sort the rooms by population
+        allRoomData.sort(function(a, b) {
+            return a["population"] - b["population"];
+        });
+        allRoomData.reverse();
+
         // Now broadcast this message to all clients.
         if(socket==null  || typeof socket == 'undefined') {
             io.sockets.emit("rooms", allRoomData);
@@ -666,7 +672,7 @@ function _processPulse() {
         popularWordsList.reverse();
         
         
-        console.log("activityFactor: " + activityFactor + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
+        console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
         dict = popularWordsList.slice(0, activityFactor*20.0);
         
         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
