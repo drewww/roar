@@ -726,11 +726,12 @@ function _processPulse() {
                             
                             // for each key in summary, decrement the DF by
                             // 1.
-                            for(var word in summary["words"]) {
-                                client.hincrbr("messages.doc_freq", word, -1);
+                            for(var wordIndex in summary["words"]) {
+                                var word = summary["words"][wordIndex];
+                                client.hincrby("messages.doc_freq", word, -1);
                             }
                             
-                            client.incrby("messages.total", -1*messagesInWindow);
+                            client.incrby("messages.total", -1*summary["total-messages"]);
                         });
                     }
                 }
