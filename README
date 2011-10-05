@@ -11,4 +11,5 @@ ROAR has a few dependencies. These are mostly tools I'd never used before and wa
 		- commander v0.2.0 (`npm install commander`)
 		- ejs v0.4.3 (`npm install ejs`)
 		- libxmljs v0.4.2 (`npm install libxmljs`, depends on libxml2 + scons)
+		- simplesets v1.1.6 (`npm install simplesets`)
 	- redis v2.2.13
