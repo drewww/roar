@@ -377,7 +377,15 @@
 					wordEl = $("#"+wordId);
 					
 					// If the word already exists, update its size.
-					var size = pulseMagnitude*4 + 1.5;
+					var size = pulseMagnitude*5 + 0.75;
+					var newOpacity = pulseMagnitude*3;
+					newOpacity = newOpacity * newOpacity * newOpacity;
+					
+					if(newOpacity > 1) {
+						newOpacity = 1;
+					}
+					
+					newOpacity - 0.3;
 					
 					var newDimensions = getDimensionsForWord(wordEl.html(), size);
 					
@@ -390,6 +398,8 @@
 					
 					wordEl.animate({
 						fontSize: size + "em",
+						opacity: newOpacity,
+						// textShadowBlur: "0",
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta,
 					}, 500, null, "easeOutBounce");
@@ -408,6 +418,7 @@
 					// invisible but in the right place, then animate
 					// it to the right size and opacity.
 					wordEl.css("opacity", 0.0);
+					// wordEl.css("text-shadow", "0px 0px 20px white");
 					wordEl.css("font-size", 0.4);
 					$("#pulse").append(wordEl);
 					

@@ -656,8 +656,6 @@ function _processPulse() {
         var popularWordsList = [];
         for(var word in popularWordsInWindow) {
             var wordScore = popularWordsInWindow[word];
-            
-            
             // Knock out words that are mentioned once, just for cleaner
             // data.
             if(wordScore > 1) {
@@ -697,7 +695,7 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "Terran Strategy"];
 var botChatOddsOffset = 0.0;
 
-var BASE_CHAT_ODDS = 0.01;
+var BASE_CHAT_ODDS = 0.003;
 
 function setupBots(num) {
     // Generate num names and store them.
