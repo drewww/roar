@@ -591,6 +591,8 @@ function _processPulse() {
         for(msgKey in res) {
             var msg = JSON.parse(res[msgKey]);
 
+            var WINDOW_SIZE = 10;
+
             // exclude messages that are older than ten minutes. This helps
             // with cases where the server has been running for a while
             // and chat stops, then restarts much later.
@@ -602,7 +604,7 @@ function _processPulse() {
             // guaranteed to be the first, but whatever. Be safe.
             if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
             
-            if(Date.now() - msg["timestamp"] < 10000) {
+            if(Date.now() - msg["timestamp"] < WINDOW_SIZE*1000) {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 
@@ -629,6 +631,22 @@ function _processPulse() {
         }
 
 
+        // In a later pass, we'll use this to decide how many words to 
+        // send total.
+        // totalActivity is in messages/second
+        var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
+        var windowActivity = messagesInWindow / WINDOW_SIZE;
+        var relativeActivity = windowActivity / totalActivity;
+        
+        // so with current settings, relativeActivity goes from about 0 to 
+        // 2.0, so lets scale that way.
+        
+        var activityFactor = relativeActivity/2.0;
+        if(activityFactor > 1) {
+            activityFactor = 1;
+        }
+
+
         var popularWordsList = [];
         for(var word in popularWordsInWindow) {
             var wordScore = popularWordsInWindow[word];
@@ -637,7 +655,7 @@ function _processPulse() {
             // Knock out words that are mentioned once, just for cleaner
             // data.
             if(wordScore > 1) {
-                popularWordsList.push({"word":word, "score":wordScore/20});
+                popularWordsList.push({"word":word, "score":(wordScore/20)});
             }
         }
         
@@ -647,22 +665,16 @@ function _processPulse() {
         });
         popularWordsList.reverse();
         
-        // In a later pass, we'll use this to decide how many words to 
-        // send total.
-        var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
-        var windowActivity = messagesInWindow / 5;
-        var relativeActivity = windowActivity / totalActivity;
         
-        // Hardcoding this for now. Eventually we want to include more words
-        // when it's louder, and fewer words when it's quiet. 
-        dict = popularWordsList.slice(0, 5);
+        console.log("activityFactor: " + activityFactor + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
+        dict = popularWordsList.slice(0, activityFactor*20.0);
         
         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
         // console.log(dict);
         io.sockets.emit('pulse', {"words":dict,
             "activity":{"total":totalActivity, "window":windowActivity,
             "relative":relativeActivity,
-            "messages-per-min-instant":messagesInWindow*(60/10)}});
+            "messages-per-min-instant":messagesInWindow*(60/WINDOW_SIZE)}});
     });
 }
 
@@ -678,6 +690,9 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "Team Liquid", "Reddit", "col.MVP Fans", "mouz fans", "Zerg Strategy",
     "Terran Strategy"];
 var botChatOddsOffset = 0.0;
+
+var BASE_CHAT_ODDS = 0.01;
+
 function setupBots(num) {
     // Generate num names and store them.
     for(var i=0; i<num; i++) {
@@ -695,26 +710,56 @@ function generateBot() {
     
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
-    bot["chat_odds"] = 0.02;
+    bot["chat_odds"] = BASE_CHAT_ODDS;
     
     joinRoom(null, bot["room"]);
     
     return bot;
 }
 
+
+var spikeProgress = -1;
 function _chatBotTick() {
     
     setTimeout(_chatBotTick, 200);
     
-    // varry the chat odds slightly over time. clamp at +0.019 (near silence)
-    // and -0.02 (doubling odds); max change per cycle is +/-0.0005
-    var changeToOdds = (Math.random() * 0.0010) - 0.0005;
-    botChatOddsOffset += changeToOdds;
-    if(botChatOddsOffset > 0.019) {
-        botChatOddsOffset == 0.019;
-    } else if (botChatOddsOffset < -0.02) {
-        botChatOddsOffset = -0.02;
+    // // varry the chat odds slightly over time. clamp at +0.019 (near silence)
+    // // and -0.02 (doubling odds); max change per cycle is +/-0.0005
+    // var changeToOdds = (Math.random() * 0.0010) - 0.0005;
+    // botChatOddsOffset += changeToOdds;
+    // if(botChatOddsOffset > 0.019) {
+    //     botChatOddsOffset == 0.019;
+    // } else if (botChatOddsOffset < -0.02) {
+    //     botChatOddsOffset = -0.02;
+    // }
+    
+    // Make it a sine wave with period 2 minutes.
+    var timeFactor = ((Date.now()/1000)%60)/60;
+    botChatOddsOffset = 0.6*BASE_CHAT_ODDS * Math.sin((2.0*Math.PI) * timeFactor);
+    
+    // have an occasional dip followed by a spike.
+    if(Math.random() < 0.002 && spikeProgress==-1) {
+         console.log("TRIGGER SPIKE");
+         spikeProgress = 0;
+    } 
+    
+    if(spikeProgress>-1) {
+        // for the first 20 ticks, decrease talking over time.
+        // then spike to super high for 10 ticks, then stop.
+        spikeProgress++;
+        
+        if(spikeProgress < 100) {
+            botChatOddsOffset = BASE_CHAT_ODDS * (spikeProgress/100);
+        } else if(spikeProgress < 120) {
+            botChatOddsOffset = BASE_CHAT_ODDS;
+        } else if(spikeProgress < 145) {
+            botChatOddsOffset = -BASE_CHAT_ODDS;
+        } else {
+            spikeProgress=-1;
+        }
     }
+
+    // console.log("\todds=" + botChatOddsOffset.toFixed(5));
     
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
@@ -723,7 +768,7 @@ function _chatBotTick() {
         
         var chatOdds = Math.random() + botChatOddsOffset;
 
-        if(Math.random() < bot["chat_odds"]) {
+        if(chatOdds < bot["chat_odds"]) {
             // chat!
             var utterance = generateUtterance(model);
             sendChatToRoom(bot["room"], botName, utterance["text"]);
