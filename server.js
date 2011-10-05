@@ -666,18 +666,26 @@ function _processPulse() {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 
-                wordsInMessage = msg["text"].split(/[\s,.!?]+/);
+                wordsInMessage = msg["text"].split(/[\s]+/);
                 
                 // For each word in the message 
                 for(var wordIndex in wordsInMessage) {
                     var word = wordsInMessage[wordIndex];
                     
-                    
                     isStopWord = word in stopWords;
                     isTooShort = word.length==1;
-                    if (isStopWord || isTooShort)  {
+                    isTooLong = word.length>15;
+                    isURL = word.search(/http/i)!=-1;
+                    if (isStopWord || isTooShort || isTooLong || isURL)  {
                         continue;
                     }
+                    
+                    // now strip out stuff that would make the word hard to
+                    // compare
+                    word = word.toLowerCase();
+                    word = word.replace(/[\(\)!?,.\"\'\*;]/g, "");
+                    
+                    if(word[word.length-1]==":") word=word.slice(0, -1);
                     
                     if(word in popularWordsInWindow) {
                         popularWordsInWindow[word] = popularWordsInWindow[word] + 1;
