@@ -134,7 +134,31 @@ io.sockets.on('connection', function(socket) {
         
     
     socket.on('message', function(data) {
-
+        
+        // setup some internal commands so I can easily manipulate state
+        // from messages.
+        if(data.text[0]=="/") {
+            
+            var args = data.text.split(" ");
+            var command = args[0];
+            command = command.slice(1);
+            
+            switch(command) {
+                case "level":
+                
+                    break;
+                case "spike":
+                    
+                    break;
+                default:
+                    sendAdminMessage(socket,
+                            "Unknown command '" + command + "'.");
+                    break;
+            }
+            
+            return;
+        }
+        
         // Get the username.
         socket.get('nickname', function(err, nickname) {
             socket.get("room" ,function(err, roomName) {
@@ -251,6 +275,19 @@ client.once("ready", function(err) {
 });
 
 
+function broadcastAdminMessage(room, message) {
+    if(room==null || typeof room == 'undefined') {
+        // broadcast to EVERYONE.
+        io.sockets.emit('message', {text:message, admin:"true"});
+    } else {
+        io.sockets.in(room).emit('message', {text:message, admin:"true"});
+    }
+}
+
+function sendAdminMessage(socket, message) {
+    socket.emit('message', {text:message, admin:"true"});
+}
+
 function sendChatToRoom(roomName, nickname, messageText) {
     messageDict = {text:messageText, from:nickname,
         timestamp:Date.now(), room:roomName};
@@ -321,8 +358,7 @@ function voteForShout(socket, shoutId, callback) {
         }
         
         if(inVotesList) {
-            socket.emit('message',
-                {text:"You've already voted for that shout", admin:"true"});
+            sendAdminMessage(socket, "You've already voted for that shout");
         } else {
             // Allow the vote.
             socket.get("room", function(err, room) {
@@ -393,13 +429,12 @@ function joinRoom(socket, newRoomName) {
                         room["population"] = population;
                         
                         client.hset("global:rooms", newRoomName, JSON.stringify(room));
-                        if (socket) socket.emit('message', {
-                            text:
-                            "You have joined room '" + newRoomName +
-                            "' with "+population+" total person.",
-                            admin: "true"
-                        });
-                    });
+                        if (socket) {
+                            sendAdminMessage(socket,
+                                "You have joined room '" + newRoomName +
+                                "' with "+population+" total person.");
+                        }
+                });
             });
         } else {
             client.hget("global:rooms", newRoomName,
@@ -417,28 +452,22 @@ function joinRoom(socket, newRoomName) {
                                 client.hset("global:rooms", newRoomName,
                                     JSON.stringify(room),
                                     function(err, res) {
-
-                                    if (socket) socket.emit('message', {
-                                        text:
-                                        "You have joined room '" + newRoomName +
-                                        "' with " + room["population"] +
-                                        " total people.",
-                                        admin: "true"
+                                        if (socket) sendAdminMessage(socket, 
+                                            "You have joined room '" + newRoomName +
+                                            "' with " + room["population"] +
+                                            " total people.");
                                 });
                             });
-                        });
                     }
-            });
-        }
+                });
+            }
         
         if(socket) socket.get("nickname", function(err, nickname) {
             // Kinda wanted to say where they came from here, but
             // that turns out to be a little tedious with the callback
             // structure. Figure out some way to cache that to make it
             // accessible?
-            io.sockets.in(newRoomName).emit("message",
-            {text:nickname + " has arrived.",
-            admin:"true"});
+            broadcastAdminMessage(newRoomName, nickname + " has arrived.");
         });
 
         // doing this after the arrival broadcast message means
