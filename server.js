@@ -786,8 +786,8 @@ function _processPulse() {
                         // In a later pass, we'll use this to decide how many words to 
                         // send total.
                         // totalActivity is in messages/second
-                        console.log("totalMessages: " + totalMessages);
-                        console.log("timeSinceStart: " + (Date.now() - startTime));
+                        // console.log("totalMessages: " + totalMessages);
+                        // console.log("timeSinceStart: " + (Date.now() - startTime));
                         
                         var totalActivity = (totalMessages / ((Date.now() - startTime)/1000));
                         var windowActivity = messagesInWindow / WINDOW_SIZE;
