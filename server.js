@@ -109,7 +109,7 @@ io.sockets.on('connection', function(socket) {
                             // Either we're going to need to keep separate recent
                             // lists for every room, or going to ditch this
                             // feature.
-                            // client.lrange("room.messages", -10, -1, function (err, res) {
+                            // client.lrange("messages.recent", -10, -1, function (err, res) {
                             //     console.log("lrange returned");
                             //     console.log(res);
                             //     for(msgIndex in res) {
@@ -258,8 +258,10 @@ function sendChatToRoom(roomName, nickname, messageText) {
     io.sockets.in(roomName).emit('message', messageDict);
 
     // By pushing and trimming, we keep it from growing indefinitely 
-    client.rpush("room.messages", JSON.stringify(messageDict));
-    client.ltrim("room.messages", -2000, -1);
+    // We don't need to trim; pulse will trim for us, to avoid having to
+    // push more data around than is strictly necessary.
+    client.rpush("messages.recent", JSON.stringify(messageDict));
+    // client.ltrim("messages.recent", -5000, -1);
 }
 
 function spreadShoutToRoom(room, shoutId) {
@@ -574,19 +576,20 @@ function _updateRooms(socket) {
     });
 }
 
+var lastDocumentProcessed = Date.now();
+
 function _processPulse() {
     
-    setTimeout(_processPulse, 2000);
+    setTimeout(_processPulse, 5000);
     
-    // In each loop, grab the whole message history (in room.messages) and
+    // In each loop, grab the whole message history (in recent_messages) and
     // generate a new pulse command.
     
     // The first phase is to measure relative volume. We do this by figuring
     // out the messages/second across the entire data set. Then we look only
     // at the last 5 seconds.
-    client.lrange("room.messages", 0, -1, function (err, res) {
+    client.lrange("messages.recent", 0, -1, function (err, res) {
         
-        var totalMessages = 0;
         var messagesInWindow = 0;
         
         var startTime = Date.now();
@@ -594,6 +597,7 @@ function _processPulse() {
         var popularWordsInWindow = {};
         
         // data contains all the messages in the room queue.
+        var foundFirstMessageInWindow = false;
         for(msgKey in res) {
             var msg = JSON.parse(res[msgKey]);
 
@@ -603,14 +607,21 @@ function _processPulse() {
             // with cases where the server has been running for a while
             // and chat stops, then restarts much later.
             if(Date.now() - msg["timestamp"] > 60*10*1000) continue;
-
-            totalMessages = totalMessages+1;
             
             // This will find the earliest item in the group. I think it's
             // guaranteed to be the first, but whatever. Be safe.
             if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
             
             if(Date.now() - msg["timestamp"] < WINDOW_SIZE*1000) {
+                
+                if(!foundFirstMessageInWindow) {
+                    foundFirstMessageInWindow = true;
+                    
+                    // trim any messages before this one. but for now, just
+                    // write it out to make sure this'll work.
+                    client.ltrim("messages.recent", msgKey, -1);
+                }
+                
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 
@@ -635,50 +646,152 @@ function _processPulse() {
                 }
             }
         }
-
-
-        // In a later pass, we'll use this to decide how many words to 
-        // send total.
-        // totalActivity is in messages/second
-        var totalActivity = (totalMessages / (Date.now() - startTime)) * 1000;
-        var windowActivity = messagesInWindow / WINDOW_SIZE;
-        var relativeActivity = windowActivity / totalActivity;
         
-        // so with current settings, relativeActivity goes from about 0 to 
-        // 2.0, so lets scale that way.
-        
-        var activityFactor = relativeActivity/2.0;
-        if(activityFactor > 1) {
-            activityFactor = 1;
-        }
-
-
-        var popularWordsList = [];
-        for(var word in popularWordsInWindow) {
-            var wordScore = popularWordsInWindow[word];
-            // Knock out words that are mentioned once, just for cleaner
-            // data.
-            if(wordScore > 1) {
-                popularWordsList.push({"word":word, "score":(wordScore/20)});
+        // if it's been a full windowsize worth of chat since we
+        // last produced a document, do it now.
+        if(Date.now()-lastDocumentProcessed > WINDOW_SIZE*1000) {
+            // the keys in popularWordsInWindow are naturally a set
+            // beacuse of the way we construct them. So we can just save
+            // the keys and that will be our set for IDF measurement.
+            var documentWords = [];
+            for(word in popularWordsInWindow) {
+                documentWords.push(word);
+                
+                // increment the document frequency hash
+                client.hincrby("messages.doc_freq", word, 1);
             }
+            var documentMetadata = {"timestamp":Date.now(),
+                "words":documentWords, "total-messages":messagesInWindow};
+            
+            client.incrby("messages.total",
+                documentMetadata["total-messages"]);
+            
+            // tradeoff here is that larger document count is clearly better
+            // data, but if we have to grab it out of redis every pulse,
+            // is that really expensive?
+            client.rpush("messages.summary", JSON.stringify(documentMetadata));
+
+            // Limit the length of the history we maintain, and keep the
+            // doc_freq value up to date as we expire old documents.
+            client.llen("messages.summary", function(err, length) {
+                if(length > 1000) {
+                    var numPops = length - 1000;
+                    
+                    for(var i=0; i<numPops; i++) {
+                        // pop summaries off and reverse them from
+                        // the DF count.
+                        client.lpop("messages.summary",function(err, summary){
+                            summary = JSON.parse(summary);
+                            
+                            // for each key in summary, decrement the DF by
+                            // 1.
+                            for(var word in summary["words"]) {
+                                client.hincrbr("messages.doc_freq", word, -1);
+                            }
+                            
+                            client.incrby("messages.total", -1*summary["total-messages"]);
+                        });
+                    }
+                }
+            });
         }
         
-        // Now sort the list by word score, so it's frequency sorted.
-        popularWordsList.sort(function(a, b) {
-            return a["score"] - b["score"];
+        // This is NOT going to include the one that we just pushed in, in all
+        // likelyhood. That's not necessarily that big a deal. Or any super
+        // recent updates to messages.doc_freq if we actually did pop
+        // documents off. 
+        client.hgetall("messages.doc_freq", function(err, docFreq) {
+            client.llen("messages.summary", function(err, numDocs) {
+                client.get("messages.total", function(err, totalMessages) {
+                    client.lrange("messages.recent",0,0,
+                        function(err, oldestMessage) {
+
+                        // there's a race condition on first document process
+                        // where even though we've just saved it, the saves
+                        // haven't gone through by the time we're fetching here
+                        // so we need to use reasonable default values.
+                        
+                        var startTime;
+                        
+                        if(totalMessages == null) totalMessages = 0;
+                        if(docFreq == null) docFreq = {};
+                        if(numDocs == null) numDocs = 1;
+                        
+                        
+                        
+                        if(oldestMessage==null) startTime = Date.now();
+                        else {
+                            oldestMessage = JSON.parse(oldestMessage);
+                            startTime = oldestMessage["timestamp"];
+                        }
+
+                        // we have all the tools we need: popularWordsInWindow is
+                        // TF, and the DF terms are in docFreq + numDocs. So,
+                        // for each word in the window calcuate its TF*IDF score.
+
+                        // first, calculate term frequency within the current document (
+                        // eg within the 10 second analysis window)
+                        var popularWordsList = [];
+                        for(var word in popularWordsInWindow) {
+                            var tf = popularWordsInWindow[word];
+                        
+                            // get the IDF term looking at the doc_freq value.
+                            // second log is to correct for the fact that Math.log
+                            // is really ln
+                            var df = 1;
+                            if(word in docFreq) df = docFreq[word];
+                        
+                            var idf = Math.log(numDocs/df)/Math.log(10);
+                        
+                            popularWordsList.push({"word":word, "score":tf*idf/3});
+                            // Knock out words that are mentioned once, just for cleaner
+                            // data.
+                            // TODO turn this back on when we know what the range
+                            // on tf-idf scores looks like.
+                            // if(wordScore > 1) {
+                            //     popularWordsList.push({"word":word,
+                            //         "score":wordFreq * idf});
+                            // }
+                        }
+
+                        // In a later pass, we'll use this to decide how many words to 
+                        // send total.
+                        // totalActivity is in messages/second
+                        var totalActivity = (totalMessages / (Date.now() - startTime));
+                        var windowActivity = messagesInWindow / WINDOW_SIZE;
+                        var relativeActivity = windowActivity / totalActivity;
+
+                        // so with current settings, relativeActivity goes from about 0 to 
+                        // 2.0, so lets scale that way.
+
+                        var activityFactor = relativeActivity/2.0;
+                        if(activityFactor > 1) {
+                            activityFactor = 1;
+                        }
+
+                        // Now sort the list by word score, so it's frequency sorted.
+                        popularWordsList.sort(function(a, b) {
+                            return a["score"] - b["score"];
+                        });
+                        popularWordsList.reverse();
+
+
+
+                        console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
+                        dict = popularWordsList.slice(0, activityFactor*20.0);
+                    
+                        //console.log(dict);
+                    
+                        // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
+                        // console.log(dict);
+                        io.sockets.emit('pulse', {"words":dict,
+                            "activity":{"total":totalActivity, "window":windowActivity,
+                            "relative":relativeActivity,
+                            "messages-per-min-instant":messagesInWindow*(60/WINDOW_SIZE)}});
+                    });
+                });
+            });
         });
-        popularWordsList.reverse();
-        
-        
-        console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
-        dict = popularWordsList.slice(0, activityFactor*20.0);
-        
-        // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
-        // console.log(dict);
-        io.sockets.emit('pulse', {"words":dict,
-            "activity":{"total":totalActivity, "window":windowActivity,
-            "relative":relativeActivity,
-            "messages-per-min-instant":messagesInWindow*(60/WINDOW_SIZE)}});
     });
 }
 
