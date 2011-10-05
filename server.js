@@ -570,7 +570,7 @@ function _updateRooms(socket) {
 
 function _processPulse() {
     
-    setTimeout(_processPulse, 5000);
+    setTimeout(_processPulse, 2000);
     
     // In each loop, grab the whole message history (in room.messages) and
     // generate a new pulse command.
