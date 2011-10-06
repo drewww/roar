@@ -776,7 +776,19 @@ function _processPulse() {
                         var popularWordsList = [];
                         for(var word in popularWordsInWindow) {
                             var tf = popularWordsInWindow[word];
-                        
+                            
+                            // Drop words that were only mentioned once in
+                            // the window. With typos, lots of single-mentions
+                            // have a super high idf (basically infinity) 
+                            // which shoots them to the top. This REALLY 
+                            // harshly limits the length of popularWords in
+                            // bot mode, and means you gotta run lots of bots
+                            // to make sure you're not constantly bottoming
+                            // out on the list in high load situations. 
+                            if(tf==1) {
+                                continue;
+                            }
+                            
                             // get the IDF term looking at the doc_freq value.
                             // second log is to correct for the fact that Math.log
                             // is really ln
@@ -795,6 +807,8 @@ function _processPulse() {
                             //         "score":wordFreq * idf});
                             // }
                         }
+                        
+                        // console.log("\t popWordsList.length=" + popularWordsList.length);
 
                         // In a later pass, we'll use this to decide how many words to 
                         // send total.
@@ -848,7 +862,7 @@ function _processPulse() {
                         }
                         dict = rescaledDict;
                         
-                        console.log(dict);
+                        // console.log(dict);
                         
                         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
                         // console.log(dict);
@@ -872,13 +886,17 @@ function _processPulse() {
 var bots = {};
 var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "General Chat 4", "General Chat 5", "General Chat 6", "General Chat 7",
-    "Team Liquid", "Reddit", "col.MVP Fans", "mouz fans", "Zerg Strategy",
-    "Terran Strategy"];
+    "Team Liquid 1", "Team Liquid 2", "Team Liquid 3", "Team Liquid 4",
+    "Reddit 1", "Reddit 2", "Reddit 3", "Reddit 4",
+    "Wellplayed.org 1", "Wellplayed.org 2", "Wellplayed.org 3",
+    "col.MVP Fans", "mouz fans", "Zerg Strategy",
+    "Terran Strategy", "Protoss Strategy",
+    "Francais", "Deutch", "Espangol"];
 var botChatOddsOffset = 0.0;
 
 var BASE_CHAT_ODDS = 0.003;
 
-var varyBotParticipation = false;
+var varyBotParticipation = true;
 
 function setupBots(num) {
     // Generate num names and store them.
