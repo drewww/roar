@@ -364,11 +364,30 @@
 			for(var itemIndex in pulseWords) {
 				var pulseItem = pulseWords[itemIndex];
 				var pulseWord = pulseItem["word"];
+				
+				// Runs 0->1
 				var pulseMagnitude = pulseItem["score"];
 				
 				if(pulseWord=="") continue;
 				
+				// TODO change this to a hash so we can deal with words
+				// that aren't legal CSS ids
 				var wordId = "pulse-word-" + pulseWord;
+				
+				var newOpacity = pulseMagnitude;
+				newOpacity = Math.pow(newOpacity, 5);
+				
+				// This is going to be a tad bit wonky. If a word is CREATED
+				// at very low size, it's going to be blurry forever. Going
+				// to have to write separate code to promote it properly.
+				var isBlur = false;
+				if(newOpacity > 0.8) {
+					newOpacity = 0.8;
+				} else if (newOpacity < 0.2) {
+					isBlur = true;
+					newOpacity = 0.2;
+				}
+				
 				
 				// If the word already exists, find that element and update it
 				// Otherwise, create a new one.
@@ -377,15 +396,7 @@
 					wordEl = $("#"+wordId);
 					
 					// If the word already exists, update its size.
-					var size = pulseMagnitude*5 + 0.75;
-					var newOpacity = pulseMagnitude*3;
-					newOpacity = newOpacity * newOpacity * newOpacity;
-					
-					if(newOpacity > 1) {
-						newOpacity = 1;
-					}
-					
-					newOpacity - 0.3;
+					var size = pulseMagnitude*2 + 0.25;
 					
 					var newDimensions = getDimensionsForWord(wordEl.html(), size);
 					
@@ -399,7 +410,6 @@
 					wordEl.animate({
 						fontSize: size + "em",
 						opacity: newOpacity,
-						// textShadowBlur: "0",
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta,
 					}, 500, null, "easeOutBounce");
@@ -434,25 +444,47 @@
 					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
 					
-					// Create the element with default settings that make it
-					// invisible but in the right place, then animate
-					// it to the right size and opacity.
-					wordEl.css("opacity", 0.0);
-					// wordEl.css("text-shadow", "0px 0px 20px white");
-					wordEl.css("font-size", 0.4);
-					$("#pulse").append(wordEl);
+					console.log(pulseWord + " - isBlur? " + isBlur);
 					
-					var size = pulseMagnitude*4 + 1.5;
-					var newDimensions = getDimensionsForWord(wordEl.html(), size);
-					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
-					var topDelta=(wordEl.height()-newDimensions["height"])/2;
+					if(isBlur) {
+						
+						// if it's blur, create it as blurry
+						wordEl.css("color", "transparent");
+						wordEl.css("text-shadow", "0 0 4px white");
+						wordEl.css("font-size", "1.2em");
+						wordEl.css("opacity", 0.0);
+
+						$("#pulse").append(wordEl);
+						
+						wordEl.animate({
+							opacity: 0.5
+						}, 500, null, "easeOutBounce");
+						
+					} else {
+
+						// Create the element with default settings that make it
+						// invisible but in the right place, then animate
+						// it to the right size and opacity.
+						wordEl.css("opacity", 0.0);
+						// wordEl.css("text-shadow", "0px 0px 20px white");
+						wordEl.css("font-size", 0.4);
+						$("#pulse").append(wordEl);
 					
-					wordEl.animate({
-						opacity: 0.8,
-						fontSize: size + "em",
-						left: "+=" + leftDelta,
-						top: "+=" + topDelta
-					}, 500, null, "easeOutBounce");
+						var size = pulseMagnitude*4 + 1.5;
+						var newDimensions = getDimensionsForWord(
+							wordEl.html(),size);
+						var leftDelta =
+						 	(wordEl.width()-newDimensions["width"])/2;
+						var topDelta =
+							(wordEl.height()-newDimensions["height"])/2;
+					
+						wordEl.animate({
+							opacity: newOpacity,
+							fontSize: size + "em",
+							left: "+=" + leftDelta,
+							top: "+=" + topDelta
+						}, 500, null, "easeOutBounce");
+					}
 					
 				}
 			}

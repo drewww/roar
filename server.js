@@ -821,10 +821,35 @@ function _processPulse() {
                         popularWordsList.reverse();
 
                         console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
-                        dict = popularWordsList.slice(0, activityFactor*20.0);
-                    
-                        // console.log(dict);
-                    
+                        
+                        // square the activity factor to make it more nonlinear
+                        dict = popularWordsList.slice(0, activityFactor*50.0);
+                        
+                        // rescore all the words to make the point decline
+                        // sharper than it is in reality (with the bot
+                        // distribution, anyway)
+                        var rescaledDict = [];
+                        for(var key in dict) {
+                            var entry = dict[key];
+                            
+                            var keyInt = parseInt(key);
+                            
+                            // the key is an int so we can use that to rescale
+                            // off. We want an exponential falloff in scores
+                            // so there are lots of really low score words.
+
+                            // we'll make the max score 1, min score 0.
+                            // we'll try doing it against an absolute curve,
+                            // where the max length (for max activity) is 
+                            // 30
+
+                            entry["score"] = Math.pow(((dict.length-keyInt) / dict.length), 2);
+                            rescaledDict.push(entry);
+                        }
+                        dict = rescaledDict;
+                        
+                        console.log(dict);
+                        
                         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
                         // console.log(dict);
                         io.sockets.emit('pulse', {"words":dict,
