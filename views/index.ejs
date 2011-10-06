@@ -348,6 +348,8 @@
 		// will receive is a list of word/score combos.
 		
 		function updatePulse(pulse) {
+			console.log("PULSE ", pulse);
+			
 			// Take the activity metrics and turn one into messages/min and
 			// put it into the right place in the DOM.
 			$("#messages-per-min").html(
@@ -360,7 +362,7 @@
 			// Set a dummy attribute on all the children of pulse. Remove it
 			// when we touch them. If it's still there at the end, remove
 			// the element.
-			
+			$("#pulse").children().attr("untouched", "true");
 			
 			// $("#pulse").children().attr("untouched", "true");
 			
@@ -411,13 +413,15 @@
 
 					
 					// If the word already exists, update its size.
+					// (the extra -15 is to make sure that words still have
+					//  some downward presure on their size over time even
+					//  if they're getting a few points still)
 					var size = pulseMagnitude*12;
-
+					var newSize = parseInt(wordEl.css("font-size")) + size
+						- 10;
 					
 					var newDimensions = getDimensionsForWord(
-						wordEl.html(),
-						wordEl.css("font-size") + size
-						);
+						wordEl.html(), newSize);
 					
 					// To make it look like it's growing equally in either
 					// direction (instead of growing from the upper left 
@@ -425,12 +429,18 @@
 					// growth and move left half of the difference.
 					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
 					var topDelta=(wordEl.height()-newDimensions["height"])/2;
+					
+					console.log("leftDelta: " + leftDelta + "; topDelta: " + topDelta);
+					
 					wordEl.animate({
-						fontSize: "+=" + size,
+						fontSize: newSize,
 						opacity: newOpacity,
-						// left: "+=" + leftDelta,
-						// top: "+=" + topDelta,
-					}, 250, "linear", fadeAwayAnimation);
+						left: "+=" + leftDelta,
+						top: "+=" + topDelta,
+					}, 250, "linear", null);
+					
+					wordEl.removeAttr("untouched");
+					
 				} else {
 					// If the word isn't on screen already, add it.
 					
@@ -476,7 +486,7 @@
 						
 						wordEl.animate({
 							opacity: 0.5
-						}, 500, "linear", fadeAwayAnimation);
+						}, 500, "linear", null);
 						
 					} else {
 
@@ -485,7 +495,7 @@
 						// it to the right size and opacity.
 						wordEl.css("opacity", 0.0);
 						// wordEl.css("text-shadow", "0px 0px 20px white");
-						wordEl.css("font-size", 8);
+						wordEl.css("font-size", 4);
 						$("#pulse").append(wordEl);
 					
 						var size = pulseMagnitude*4*12 + 18;
@@ -501,11 +511,46 @@
 							fontSize: size,
 							left: "+=" + leftDelta,
 							top: "+=" + topDelta
-						}, 500, "linear", fadeAwayAnimation);
+						}, 500, "linear", null);
 					}
 					
 				}
 			}
+			
+			
+			// Now cycle through all the elements in pulse and remove any
+			// that haven't been touched - those have no magnitude
+			// otherwise they would have been in the update list.
+			var pulseWordEls = $("#pulse").children();
+			console.log("untouched words: ", pulseWordEls);
+			
+			pulseWordEls.map(function () {
+				var element = $(this);
+
+				if(element.attr("untouched")!=null) {
+					console.log("found one");
+					// If the element still has the untouched attribute,
+					// nuke it.
+					
+					// we're going to shrink by a fixed amount. Call it 5px 
+					// for now.
+					var newSize = parseInt(element.css("font-size")) - 25;
+
+					var newDimensions = getDimensionsForWord(element.html(), newSize);
+					var leftDelta=(element.width()-newDimensions["width"])/2;
+					var topDelta=(element.height()-newDimensions["height"])/2;
+
+					// TODO come back to opacity and fix it. 
+					element.animate({
+						// opacity: 0.0,
+						fontSize: newSize,
+						left: "+=" + leftDelta,
+						top: "+=" + topDelta
+					}, 250, function() {
+						if(newSize < 5) $(this).remove();
+					});
+				}
+			});
 		 }
 		
 		// Used to generate local error messages into the chat logs.
