@@ -407,10 +407,30 @@
 					wordEl.removeAttr("untouched");
 				} else {
 					// If the word isn't on screen already, add it.
+					
+					var topPos = Math.random()*($(window).height()*0.3)
+						+ $(window).height()*0.7;
+					var leftPos = Math.random()*($(window).width()-300)
+						+ $(window).width()*0.35;
+					
+					// not sure what the max size is - it changes as I change
+					// scoring systems. This seems like a lot.
+					var maxDimensions = getDimensionsForWord(pulseWord, 4);
+					if(leftPos + maxDimensions["width"] > $(window).width()) {
+						leftPos -= leftPos + maxDimensions["width"] - $(window).width();
+					}
+					
+					if(topPos + maxDimensions["height"] > ($(window).height())) {
+						topPos -= topPos + maxDimensions["height"] - $(window).height();
+						
+						// console.log("want to adjust top - " + (topPos + maxDimensions["height"] - $(window).height()));
+					}
+					
+					
 					wordEl = $(document.createElement('div'));
 					wordEl.attr("id", wordId);
-					wordEl.css("top", Math.random()*($(window).height()-50));
-					wordEl.css("left", Math.random()*$(window).width()-100);
+					wordEl.css("top", topPos);
+					wordEl.css("left", leftPos);
 					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
 					
