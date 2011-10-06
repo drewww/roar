@@ -620,7 +620,7 @@ var WINDOW_SIZE = 10;
 
 function _processPulse() {
     
-    setTimeout(_processPulse, 5000);
+    setTimeout(_processPulse, 2000);
     
     // In each loop, grab the whole message history (in recent_messages) and
     // generate a new pulse command.
@@ -797,7 +797,7 @@ function _processPulse() {
                         
                             var idf = Math.log(numDocs/df)/Math.log(10);
                         
-                            popularWordsList.push({"word":word, "score":tf*idf/8});
+                            popularWordsList.push({"word":word, "score":tf*idf});
                             // Knock out words that are mentioned once, just for cleaner
                             // data.
                             // TODO turn this back on when we know what the range

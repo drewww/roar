@@ -350,10 +350,8 @@
 		function updatePulse(pulse) {
 			// Take the activity metrics and turn one into messages/min and
 			// put it into the right place in the DOM.
-			
 			$("#messages-per-min").html(
 				pulse["activity"]["messages-per-min-instant"]);
-			
 
 			// First pass: iterate through the pulse list and for each word
 			// in the list, create a div that represents it in a random loc.
@@ -362,7 +360,9 @@
 			// Set a dummy attribute on all the children of pulse. Remove it
 			// when we touch them. If it's still there at the end, remove
 			// the element.
-			$("#pulse").children().attr("untouched", "true");
+			
+			
+			// $("#pulse").children().attr("untouched", "true");
 			
 			var pulseWords = pulse["words"];
 			for(var itemIndex in pulseWords) {
@@ -408,9 +408,13 @@
 
 					
 					// If the word already exists, update its size.
-					var size = pulseMagnitude*2 + 0.25;
+					var size = pulseMagnitude;
+
 					
-						var newDimensions = getDimensionsForWord(wordEl.html(), size);
+					var newDimensions = getDimensionsForWord(
+						wordEl.html(),
+						size
+						);
 					
 					// To make it look like it's growing equally in either
 					// direction (instead of growing from the upper left 
@@ -418,13 +422,13 @@
 					// growth and move left half of the difference.
 					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
 					var topDelta=(wordEl.height()-newDimensions["height"])/2;
-					
+					wordEl.stop();
 					wordEl.animate({
-						fontSize: size + "em",
+						fontSize: "+=" + size + "em",
 						opacity: newOpacity,
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta,
-					}, 500, null, "easeOutBounce");
+					}, 250, "linear", fadeAwayAnimation);
 					
 					wordEl.removeAttr("untouched");
 				} else {
@@ -470,11 +474,11 @@
 						
 						wordEl.animate({
 							opacity: 0.5
-						}, 500, null, "easeOutBounce");
+						}, 500, "linear", fadeAwayAnimation);
 						
 					} else {
 
-						// Create the element with default settings that make it
+						// Create the element with default settings so it's
 						// invisible but in the right place, then animate
 						// it to the right size and opacity.
 						wordEl.css("opacity", 0.0);
@@ -495,40 +499,12 @@
 							fontSize: size + "em",
 							left: "+=" + leftDelta,
 							top: "+=" + topDelta
-						}, 500, null, "easeOutBounce");
+						}, 500, "linear", fadeAwayAnimation);
 					}
 					
 				}
 			}
-			
-			
-			// Now cycle through all the elements in pulse and remove any
-			// that haven't been touched - those have no magnitude
-			// otherwise they would have been in the update list.
-			var pulseWordEls = $("#pulse").children();
-			
-			pulseWordEls.map(function () {
-				var element = $(this);
-				
-				if(element.attr("untouched")!=null) {
-					// If the element still has the untouched attribute,
-					// nuke it.
-					
-					var newDimensions = getDimensionsForWord(element.html(), 0.4);
-					var leftDelta=(element.width()-newDimensions["width"])/2;
-					var topDelta=(element.height()-newDimensions["height"])/2;
-					
-					element.animate({
-						opacity: 0.0,
-						fontSize: 0.4,
-						left: "+=" + leftDelta,
-						top: "+=" + topDelta
-					}, 500, function() {
-						$(this).remove();
-					});
-				}
-			});
-		}
+		 }
 		
 		// Used to generate local error messages into the chat logs.
 		function localAdminMessage(message, isError) {
@@ -543,6 +519,29 @@
 			var size = {"width":buffer.width(), "height":buffer.height()};
 			buffer.html("");
 			return size;
+		}
+		
+		function fadeAwayAnimation() {
+			
+			var newDimensions = getDimensionsForWord(
+				$(this).html(),1.0);
+			var leftDelta =
+			 	($(this).width()-newDimensions["width"])/2;
+			var topDelta =
+				($(this).height()-newDimensions["height"])/2;
+			
+			var el = $(this);
+			
+			// start the fade away animation
+			el.animate({
+					opacity: 0.0,
+					fontSize: "1.0em",
+					// fontSize: "0.1em",
+					left: "+=" + leftDelta,
+					top:  "+=" + topDelta
+				}, 10000, "linear", function() {
+					$(this).remove();
+			});
 		}
 		
 	</script>
