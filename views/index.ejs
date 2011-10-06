@@ -10,6 +10,8 @@
 	
 	<script src="/static/js/jquery-1.6.2.min.js" type="text/javascript"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<script src="/static/js/jquery.md5.js"></script>
+	
 	<script type="text/javascript" charset="utf-8">
 		
 		var socket = io.connect("http://<%= server %>:<%= port %>");
@@ -264,8 +266,9 @@
 			// one sticks around in a scrollable div for reviewing chat
 			// history. They need different IDs to not collide.
 			
-			var liveId = 'chat-live-' + message.timestamp;
-			var historyId = 'chat-' + message.timestamp;
+			var hash = $.md5(message.timestamp + message.text);
+			var liveId = 'chat-live-' + hash;
+			var historyId = 'chat-' + hash;
 			
 			var contentsEl;
 			if("admin" in message)  {
@@ -302,7 +305,7 @@
 			
 				// This will remove each chat message from the list after 10 seconds and pull it out of the DOM entirely so the chat window area will manage its size automatically.
 				setTimeout(function() {
-					$("#chat-live-" + message.timestamp).animate({opacity:0.0}, 250, function() {
+					$("#chat-live-" + hash).animate({opacity:0.0}, 250, function() {
 						$(this).remove();
 					})
 				}, 8000);
@@ -382,7 +385,7 @@
 				
 				// TODO change this to a hash so we can deal with words
 				// that aren't legal CSS ids
-				var wordId = "pulse-word-" + pulseWord;
+				var wordId = "pulse-word-" + $.md5(pulseWord);
 				
 				var newOpacity = pulseMagnitude;
 				newOpacity = Math.pow(newOpacity, 5);
@@ -404,13 +407,15 @@
 				var wordEl;
 				if($("#" + wordId).length) {
 					
+					
+					wordEl = $("#"+wordId);
+
 					if(!isBlur && wordEl.hasClass("blur")) {
 						// fix it up and make it workable.
 						wordEl.css("color", "white");
 						wordEl.css("text-shadow", "none");
 					}
-					
-					wordEl = $("#"+wordId);
+
 					
 					// If the word already exists, update its size.
 					var size = pulseMagnitude*2 + 0.25;
