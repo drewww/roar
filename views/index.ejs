@@ -393,6 +393,13 @@
 				// Otherwise, create a new one.
 				var wordEl;
 				if($("#" + wordId).length) {
+					
+					if(!isBlur && wordEl.hasClass("blur")) {
+						// fix it up and make it workable.
+						wordEl.css("color", "white");
+						wordEl.css("text-shadow", "none");
+					}
+					
 					wordEl = $("#"+wordId);
 					
 					// If the word already exists, update its size.
@@ -420,11 +427,12 @@
 					
 					var topPos = Math.random()*($(window).height()*0.3)
 						+ $(window).height()*0.7;
-					var leftPos = Math.random()*($(window).width()-300)
+					var leftPos = Math.random()*($(window).width()*0.65)
 						+ $(window).width()*0.35;
 					
-					// not sure what the max size is - it changes as I change
-					// scoring systems. This seems like a lot.
+					// the max size should be 2.25 with a pulse ranging from 
+					// 0 - 1, but this puts stuff off the bottom edge at that
+					// value, so upping it.
 					var maxDimensions = getDimensionsForWord(pulseWord, 4);
 					if(leftPos + maxDimensions["width"] > $(window).width()) {
 						leftPos -= leftPos + maxDimensions["width"] - $(window).width();
@@ -453,6 +461,7 @@
 						wordEl.css("text-shadow", "0 0 4px white");
 						wordEl.css("font-size", "1.2em");
 						wordEl.css("opacity", 0.0);
+						wordEl.addClass("blur");
 
 						$("#pulse").append(wordEl);
 						
