@@ -397,8 +397,11 @@
 				// Otherwise, create a new one.
 				var wordEl;
 				if($("#" + wordId).length) {
-					
 					wordEl = $("#"+wordId);
+					wordEl.stop();
+
+					console.log("update word: " + wordEl.text());
+
 
 					if(!isBlur && wordEl.hasClass("blur")) {
 						// fix it up and make it workable.
@@ -408,12 +411,12 @@
 
 					
 					// If the word already exists, update its size.
-					var size = pulseMagnitude;
+					var size = pulseMagnitude*12;
 
 					
 					var newDimensions = getDimensionsForWord(
 						wordEl.html(),
-						size
+						wordEl.css("font-size") + size
 						);
 					
 					// To make it look like it's growing equally in either
@@ -422,15 +425,12 @@
 					// growth and move left half of the difference.
 					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
 					var topDelta=(wordEl.height()-newDimensions["height"])/2;
-					wordEl.stop();
 					wordEl.animate({
-						fontSize: "+=" + size + "em",
+						fontSize: "+=" + size,
 						opacity: newOpacity,
-						left: "+=" + leftDelta,
-						top: "+=" + topDelta,
+						// left: "+=" + leftDelta,
+						// top: "+=" + topDelta,
 					}, 250, "linear", fadeAwayAnimation);
-					
-					wordEl.removeAttr("untouched");
 				} else {
 					// If the word isn't on screen already, add it.
 					
@@ -461,12 +461,14 @@
 					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
 					
+					console.log("adding word: " + wordEl.text());
+					
 					if(isBlur) {
 						
 						// if it's blur, create it as blurry
 						wordEl.css("color", "transparent");
 						wordEl.css("text-shadow", "0 0 4px white");
-						wordEl.css("font-size", "1.2em");
+						wordEl.css("font-size", 16);
 						wordEl.css("opacity", 0.0);
 						wordEl.addClass("blur");
 
@@ -483,10 +485,10 @@
 						// it to the right size and opacity.
 						wordEl.css("opacity", 0.0);
 						// wordEl.css("text-shadow", "0px 0px 20px white");
-						wordEl.css("font-size", 0.4);
+						wordEl.css("font-size", 8);
 						$("#pulse").append(wordEl);
 					
-						var size = pulseMagnitude*4 + 1.5;
+						var size = pulseMagnitude*4*12 + 18;
 						var newDimensions = getDimensionsForWord(
 							wordEl.html(),size);
 						var leftDelta =
@@ -496,7 +498,7 @@
 					
 						wordEl.animate({
 							opacity: newOpacity,
-							fontSize: size + "em",
+							fontSize: size,
 							left: "+=" + leftDelta,
 							top: "+=" + topDelta
 						}, 500, "linear", fadeAwayAnimation);
@@ -515,7 +517,7 @@
 		function getDimensionsForWord(word, size) {
 			var buffer = $("#word-buffer");
 			buffer.html(word);
-			buffer.css("font-size", size + "em");
+			buffer.css("font-size", size);
 			var size = {"width":buffer.width(), "height":buffer.height()};
 			buffer.html("");
 			return size;
@@ -524,7 +526,7 @@
 		function fadeAwayAnimation() {
 			
 			var newDimensions = getDimensionsForWord(
-				$(this).html(),1.0);
+				$(this).html(),12);
 			var leftDelta =
 			 	($(this).width()-newDimensions["width"])/2;
 			var topDelta =
@@ -535,8 +537,7 @@
 			// start the fade away animation
 			el.animate({
 					opacity: 0.0,
-					fontSize: "1.0em",
-					// fontSize: "0.1em",
+					fontSize: 12,
 					left: "+=" + leftDelta,
 					top:  "+=" + topDelta
 				}, 10000, "linear", function() {
