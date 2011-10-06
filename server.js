@@ -134,7 +134,6 @@ io.sockets.on('connection', function(socket) {
         
     
     socket.on('message', function(data) {
-        console.log("message!");
         // setup some internal commands so I can easily manipulate state
         // from messages.
         if(data.text[0]=="/") {
@@ -362,7 +361,6 @@ function voteForShout(socket, shoutId, callback) {
         // list.
         var inVotesList = false;
         for(var voteIndex in votesList) {
-            console.log("in vote index:  " + voteIndex);
             if (shoutId+"" ===votesList[voteIndex]) {
                 inVotesList = true;
                 break;
@@ -618,6 +616,7 @@ function _updateRooms(socket) {
 }
 
 var lastDocumentProcessed = Date.now();
+var WINDOW_SIZE = 10;
 
 function _processPulse() {
     
@@ -630,10 +629,7 @@ function _processPulse() {
     // out the messages/second across the entire data set. Then we look only
     // at the last 5 seconds.
     client.lrange("messages.recent", 0, -1, function (err, res) {
-        
         var messagesInWindow = 0;
-        
-        var startTime = Date.now();
         
         var popularWordsInWindow = {};
         
@@ -642,16 +638,11 @@ function _processPulse() {
         for(msgKey in res) {
             var msg = JSON.parse(res[msgKey]);
 
-            var WINDOW_SIZE = 10;
 
             // exclude messages that are older than ten minutes. This helps
             // with cases where the server has been running for a while
             // and chat stops, then restarts much later.
             if(Date.now() - msg["timestamp"] > 60*10*1000) continue;
-            
-            // This will find the earliest item in the group. I think it's
-            // guaranteed to be the first, but whatever. Be safe.
-            if(msg["timestamp"] < startTime) startTime = msg["timestamp"];
             
             if(Date.now() - msg["timestamp"] < WINDOW_SIZE*1000) {
                 
@@ -699,6 +690,7 @@ function _processPulse() {
         // if it's been a full windowsize worth of chat since we
         // last produced a document, do it now.
         if(Date.now()-lastDocumentProcessed > WINDOW_SIZE*1000) {
+            lastDocumentProcessed = Date.now();
             // the keys in popularWordsInWindow are naturally a set
             // beacuse of the way we construct them. So we can just save
             // the keys and that will be our set for IDF measurement.
@@ -767,11 +759,11 @@ function _processPulse() {
                         if(docFreq == null) docFreq = {};
                         if(numDocs == null) numDocs = 1;
                         
-                        
-                        
-                        if(oldestWindow==null) startTime = Date.now();
-                        else {
-                            oldestWindow = JSON.parse(oldestWindow);
+                        if(typeof oldestWindow[0] == 'undefined' ||
+                            oldestWindow[0].length < 10) {
+                            startTime = Date.now();
+                        } else {
+                            oldestWindow = JSON.parse(oldestWindow[0]);
                             startTime = oldestWindow["timestamp"];
                         }
 
@@ -861,7 +853,7 @@ var botChatOddsOffset = 0.0;
 
 var BASE_CHAT_ODDS = 0.003;
 
-var varyBotParticipation = true;
+var varyBotParticipation = false;
 
 function setupBots(num) {
     // Generate num names and store them.
@@ -893,29 +885,12 @@ function _chatBotTick() {
     
     setTimeout(_chatBotTick, 200);
     
-    // // varry the chat odds slightly over time. clamp at +0.019 (near silence)
-    // // and -0.02 (doubling odds); max change per cycle is +/-0.0005
-    // var changeToOdds = (Math.random() * 0.0010) - 0.0005;
-    // botChatOddsOffset += changeToOdds;
-    // if(botChatOddsOffset > 0.019) {
-    //     botChatOddsOffset == 0.019;
-    // } else if (botChatOddsOffset < -0.02) {
-    //     botChatOddsOffset = -0.02;
-    // }
-    
     // Make it a sine wave with period 2 minutes.
     if(varyBotParticipation) {
         var timeFactor = ((Date.now()/1000)%60)/60;
         botChatOddsOffset = 0.6*BASE_CHAT_ODDS
             * Math.sin((2.0*Math.PI) * timeFactor);
     }
-    
-    // have an occasional dip followed by a spike.
-    // Turned off in favor of human-triggered spikes.
-    // if(Math.random() < 0.001 && spikeProgress==-1) {
-    //      console.log("TRIGGER SPIKE");
-    //      spikeProgress = 0;
-    // } 
     
     if(spikeProgress>-1) {
         // for the first 20 ticks, decrease talking over time.
