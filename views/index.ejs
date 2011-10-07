@@ -542,8 +542,8 @@
 					}
 					
 					// clamp it because at small sizes you get weird behavior.
-					if(newSize < 4) {
-						newSize = 4;
+					if(newSize < 6) {
+						newSize = 6;
 					}
 
 					// TODO come back to opacity and fix it. 
@@ -553,7 +553,7 @@
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta
 					}, 250, function() {
-						if(newSize < 5) $(this).remove();
+						if(newSize <= 6) $(this).remove();
 					});
 				}
 			});

@@ -675,6 +675,8 @@ function _processPulse() {
                     // compare
                     word = word.toLowerCase();
                     word = word.replace(/[\(\)!?,.\"\'\*;]/g, "");
+                    word = word.replace(/\/\//g, "");
+                    if(word == "") continue;
                     
                     if(word[word.length-1]==":") word=word.slice(0, -1);
                     
