@@ -207,9 +207,8 @@ io.sockets.on('connection', function(socket) {
             client.hset(shoutKey, "text", data["text"]);
             client.hset(shoutKey, "timestamp", Date.now());
             
-            // Set expiration five seconds out - that'll give the 
             client.hset(shoutKey, "votes", 0);
-            client.hset(shoutKey, "room-votes", "{}");
+
             socket.get("nickname", function(err, nickname) {
                 client.hset(shoutKey, "from", nickname, function(err, res) {
                     
@@ -331,6 +330,9 @@ function spreadShoutToRoom(room, shoutId) {
             socket.join("shout:" + shoutId);
         }
         
+        client.hset(shoutKey, "room:" + room + ":votes", 0);
+        client.hset(shoutKey, "room:" + room + ":promoted", "false");
+        
         // Manage the timeouts. If no expiration is set, set it to now+1 min.
         // If a timeout is set (and we're expanding to a new room), give the
         // shout another minute of life.
@@ -373,7 +375,7 @@ function voteForShout(socket, shoutId, callback) {
         } else {
             // Allow the vote.
             socket.get("room", function(err, room) {
-                writeShoutFromRoom(room, shoutId, callback);
+                writeShoutVoteFromRoom(room, shoutId, callback);
                 
                 // Mark this socket as having voted.
                 votesList.push(shoutId +"");
@@ -384,94 +386,106 @@ function voteForShout(socket, shoutId, callback) {
     });
 }
 
-function writeShoutFromRoom(room, shoutId, callback) {
+function writeShoutVoteFromRoom(room, shoutId, callback) {
     
     var shoutKey = "shout:" + shoutId;
     
-    client.hget(shoutKey, "room-votes", function(err, res) {
-        var roomVotes = JSON.parse(res);
+    // shout vote data is stored in a series of keys:
+    // room:roomname:votes
+    // room:roomname:promoted
+    // (aside: roomnames need to have have colons in them)
+    
+    var roomVotesKey = "room:" + room + ":votes";
+    var roomPromotedKey = "room:" + room + ":promoted";
+    
+    client.hincrby(shoutKey, roomVotesKey, 1, function(err, roomVotes) {
+        // Check for shout promotion here. The question is, have more 
+        // than half the people in the room it was just voted for in
+        // vote for it. If they did, spread it. 
+        
+        client.hget(shoutKey, roomPromotedKey, function(err, isPromoted) {
+            
+            // console.log("checking promotion on " + shoutKey + ": " + isPromoted);
+            if(isPromoted=="true") {
+                console.log("blocking promotion from " + room + " because already promoted");
+                return;
+            }
+            
+            // if this room has already promoted the shout, no need to 
+            // promote further. call it. otherwise, do the promotion
+            // checking.
+            client.hget("global:room_populations", room,
+                function(err, pop) {
+                    console.log("checking shout promotion: " + roomVotes + " > " + (pop/4) + "?");
+                    if(roomVotes > (pop/4)) {
+                        console.log("promoting shout!");
 
-        var roomVoteCount = 0;
-        if(room in roomVotes) {
-            roomVoteCount = roomVotes[room];
+                        // flip the bit on room votes that says don't use
+                        // this room to cause a promotion anymore.
+                        // (DO THIS NEXT)
+                        client.hset(shoutKey, roomPromotedKey, "true");
+
+                        client.hkeys("global:room_populations",
+                            function(err, roomNames) {
+                                var roomNameSet = new sets.Set(roomNames);
+
+                                for(roomName in roomNames) {
+                                    roomNameSet.remove(roomName);
+                                }
+
+                                console.log("rooms we have't spread to yet=", roomNameSet.array());
+
+                                if(roomNameSet.size==0) {
+                                    console.log("Shout has reached max promotion.");
+                                    // TODO tell the client who shouted
+                                    // that it's maxxed out.
+                                }
+
+                                // now roomNameSet has all the rooms that
+                                // haven't seen this shout yet. roll the
+                                // dice and expand to two of them.
+                                // (this is not quite a fair search, but
+                                // since we're going to take two adjacent
+                                // rooms, it'll do for now.)
+                                var index = Math.floor(Math.random()* 
+                                    roomNameSet.size()-1.0000001);
+
+                                console.log("spreading to new rooms: " +
+                                    roomNameSet.array()[index] + " and " +
+                                    roomNameSet.array()[index+1]);
+
+                                // Spread to two adjacent rooms in the
+                                // list.
+                                spreadShoutToRoom(
+                                    roomNameSet.array()[index], shoutId);
+                                spreadShoutToRoom(
+                                    roomNameSet.array()[index+1],
+                                    shoutId);
+                            })
+
+
+
+                    }
+            });
+        });
+        
+    });
+    
+    // boost the total vote count by 1.
+    client.hincrby(shoutKey, "votes", 1,
+        function (err, curVoteCount){
+            // notify everyone listening to that shout of the vote.
+
+        // don't need to send this if this is the first vote.
+        if(curVoteCount > 1) {
+            io.sockets.in(shoutKey).emit("shout.vote",
+                {"id":shoutId, "votes":curVoteCount});
         }
 
-        roomVotes[room] = roomVoteCount+1;
-
-        client.hset(shoutKey, "room-votes",
-            JSON.stringify(roomVotes));
-
-        // boost the total vote count by 1.
-        client.hincrby(shoutKey, "votes", 1,
-            function (err, curVoteCount){
-                // notify everyone listening to that shout of the vote.
-
-                // don't need to send this if this is the first vote.
-            if(curVoteCount > 1) {
-                io.sockets.in(shoutKey).emit("shout.vote",
-                    {"id":shoutId, "votes":curVoteCount});
-            }
-
-            // Do the callback.
-            setTimeout(function() {
-                // Check for shout promotion here. The question is, have more 
-                // than half the people in the room it was just voted for in
-                // vote for it. If they did, spread it. 
-                
-                client.hget("global:room_populations", room,
-                    function(err, pop) {
-                        console.log("checking shout promotion: " + roomVotes[room] + " > " + (pop/4) + "?");
-                        if(roomVotes[room] > (pop/4)) {
-                            console.log("promoting shout!");
-                            
-                            // flip the bit on room votes that says don't use
-                            // this room to cause a promotion anymore.
-                            // (DO THIS NEXT)
-                            
-                            client.hkeys("global:room_populations",
-                                function(err, roomNames) {
-                                    var roomNameSet = new sets.Set(roomNames);
-                                    for(roomName in roomVotes) {
-                                        roomNameSet.remove(roomName);
-                                    }
-                                    
-                                    if(roomNameSet.size==0) {
-                                        console.log("Shout has reached max promotion.");
-                                        // TODO tell the client who shouted
-                                        // that it's maxxed out.
-                                    }
-                                    
-                                    // now roomNameSet has all the rooms that
-                                    // haven't seen this shout yet. roll the
-                                    // dice and expand to two of them.
-                                    // (this is not quite a fair search, but
-                                    // since we're going to take two adjacent
-                                    // rooms, it'll do for now.)
-                                    var index = Math.floor(Math.random()* 
-                                        roomNameSet.size()-1.0000001);
-                                    
-                                    console.log("spreading to new rooms: " +
-                                        roomNameSet.array()[index] + " and " +
-                                        roomNameSet.array()[index+1]);
-                                    
-                                    // Spread to two adjacent rooms in the
-                                    // list.
-                                    spreadShoutToRoom(
-                                        roomNameSet.array()[index], shoutId);
-                                    spreadShoutToRoom(
-                                        roomNameSet.array()[index+1],
-                                        shoutId);
-                                })
-                            
-
-                            
-                        }
-                });
-                
-                
-                if(callback!=null&&typeof callback != 'undefined') callback();
-            }, 0);
-        });
+        // Do the callback.
+        setTimeout(function() {
+            if(callback!=null&&typeof callback != 'undefined') callback();
+        }, 0);
     });
 }
 
@@ -484,7 +498,10 @@ function releaseNickname(socket) {
 function joinRoom(socket, newRoomName) {
     var population;
         
-
+    // TODO validate the room name. Need to not include : or other special
+    // characters and notify people of errors when they choose bad names.
+    
+    
     client.hincrby("global:room_populations", newRoomName, 1,
         function(err, roomPopulation) {
         // start by incrementing the value. If the resulting value is 1, we need
@@ -1040,18 +1057,24 @@ function _chatBotTick() {
             var shoutKey = keys[keyIndex];
             
             
+            
             client.hgetall(shoutKey, function(err, shoutData) {
-                shoutData["room-votes"] = JSON.parse(shoutData["room-votes"]);
-                
-                // loop through all the rooms this shout has been sent to
-                for(var roomName in shoutData["room-votes"]) {
-                    
-                    var list = []
-                    if(roomName in shoutsByRoom) {
-                        list = shoutsByRoom[roomName];
+                // all the per room shout data is now in its own keys, of the
+                // form described elsewhere (shout:roomname:votes)
+
+                for(var key in shoutData) {
+                    var keyPieces = key.split(":");
+                    if(keyPieces.length != 3) continue;
+                    if(keyPieces[0]=="room" && keyPieces[2]=="votes") {
+                        
+                        var roomName = keyPieces[1];
+                        var list = [];
+                        if(roomName in shoutsByRoom) {
+                            list = shoutsByRoom[roomName];
+                        }
+                        list.push(shoutData)
+                        shoutsByRoom[roomName] = list;
                     }
-                    list.push(shoutData)
-                    shoutsByRoom[roomName] = list;
                 }
                 
                 currentKey++
@@ -1072,7 +1095,7 @@ function _chatBotTick() {
 
                             var shoutVoteOdds = Math.random();
                             if(shoutVoteOdds < 0.02) {
-                                writeShoutFromRoom(bot["room"], shout["id"],
+                                writeShoutVoteFromRoom(bot["room"], shout["id"],
                                     null);
                             }
                         }
