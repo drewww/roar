@@ -5,7 +5,8 @@ var app = require('express').createServer(),
     crypto = require('crypto'),
     express = require('express'),
     fs = require('fs'),
-    program = require('commander');
+    program = require('commander'),
+    sets = require('simplesets');
     // process = require('process');
     
 
@@ -412,7 +413,64 @@ function writeShoutFromRoom(room, shoutId, callback) {
             }
 
             // Do the callback.
-            if(callback!=null) setTimeout(callback, 0);
+            setTimeout(function() {
+                // Check for shout promotion here. The question is, have more 
+                // than half the people in the room it was just voted for in
+                // vote for it. If they did, spread it. 
+                
+                client.hget("global:room_populations", room,
+                    function(err, pop) {
+                        console.log("checking shout promotion: " + roomVotes[room] + " > " + (pop/4) + "?");
+                        if(roomVotes[room] > (pop/4)) {
+                            console.log("promoting shout!");
+                            
+                            // flip the bit on room votes that says don't use
+                            // this room to cause a promotion anymore.
+                            // (DO THIS NEXT)
+                            
+                            client.hkeys("global:room_populations",
+                                function(err, roomNames) {
+                                    var roomNameSet = new sets.Set(roomNames);
+                                    for(roomName in roomVotes) {
+                                        roomNameSet.remove(roomName);
+                                    }
+                                    
+                                    if(roomNameSet.size==0) {
+                                        console.log("Shout has reached max promotion.");
+                                        // TODO tell the client who shouted
+                                        // that it's maxxed out.
+                                    }
+                                    
+                                    // now roomNameSet has all the rooms that
+                                    // haven't seen this shout yet. roll the
+                                    // dice and expand to two of them.
+                                    // (this is not quite a fair search, but
+                                    // since we're going to take two adjacent
+                                    // rooms, it'll do for now.)
+                                    var index = Math.floor(Math.random()* 
+                                        roomNameSet.size()-1.0000001);
+                                    
+                                    console.log("spreading to new rooms: " +
+                                        roomNameSet.array()[index] + " and " +
+                                        roomNameSet.array()[index+1]);
+                                    
+                                    // Spread to two adjacent rooms in the
+                                    // list.
+                                    spreadShoutToRoom(
+                                        roomNameSet.array()[index], shoutId);
+                                    spreadShoutToRoom(
+                                        roomNameSet.array()[index+1],
+                                        shoutId);
+                                })
+                            
+
+                            
+                        }
+                });
+                
+                
+                if(callback!=null&&typeof callback != 'undefined') callback();
+            }, 0);
         });
     });
 }
@@ -962,8 +1020,6 @@ function _chatBotTick() {
         }
     }
 
-    // console.log("\todds=" + botChatOddsOffset.toFixed(5));
-    
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
     processBotChat();
@@ -1015,7 +1071,7 @@ function _chatBotTick() {
                                 continue;
 
                             var shoutVoteOdds = Math.random();
-                            if(shoutVoteOdds < 0.005) {
+                            if(shoutVoteOdds < 0.02) {
                                 writeShoutFromRoom(bot["room"], shout["id"],
                                     null);
                             }
@@ -1024,10 +1080,7 @@ function _chatBotTick() {
                 }
             });
         }
-        
-        
-    })
-    
+    });
 }
 
 
@@ -1112,7 +1165,7 @@ function pickWordFromList(wordList) {
 }
 
 
-
+// TOD try getting rid of these - tf-idf should handle all this stuff.
 var stopWords = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
 "below":1,"between":1,"both":1,"but":1,"by":1,"can't":1,"cannot":1,"could":1,"couldn't":1,"did":1,
