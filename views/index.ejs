@@ -427,7 +427,12 @@
 						opacity: "+=" + 0.1,
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta,
-					}, 250, "linear", null);
+					}, 250, "linear", function() {
+						
+						// I feel like I should do this here, but when I do
+						// I get weird behavior. Hmm.
+							// if(newSize < 5) $(this).remove();
+					});
 					
 					wordEl.removeAttr("untouched");
 					
@@ -534,6 +539,11 @@
 
 					if(newSize < 16) {
 						element.addClass("blur");
+					}
+					
+					// clamp it because at small sizes you get weird behavior.
+					if(newSize < 4) {
+						newSize = 4;
 					}
 
 					// TODO come back to opacity and fix it. 
