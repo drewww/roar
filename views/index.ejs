@@ -380,20 +380,18 @@
 				// that aren't legal CSS ids
 				var wordId = "pulse-word-" + $.md5(pulseWord);
 				
-				var newOpacity = pulseMagnitude;
-				newOpacity = Math.pow(newOpacity, 5);
+				// words are always created at 0.5 opacity if they're not
+				// blurry. then, over time if they persist they gain opacity.
+				var newOpacity = 0.5;
 				
 				// This is going to be a tad bit wonky. If a word is CREATED
 				// at very low size, it's going to be blurry forever. Going
 				// to have to write separate code to promote it properly.
 				var isBlur = false;
-				if(newOpacity > 0.8) {
-					newOpacity = 0.8;
-				} else if (newOpacity < 0.2) {
+
+				if(pulseMagnitude < 0.2) {
 					isBlur = true;
-					newOpacity = 0.2;
 				}
-				
 				
 				// If the word already exists, find that element and update it
 				// Otherwise, create a new one.
@@ -407,18 +405,19 @@
 
 					if(!isBlur && wordEl.hasClass("blur")) {
 						// fix it up and make it workable.
+						console.log("updating a word that was blurry to unblurry");
 						wordEl.css("color", "white");
 						wordEl.css("text-shadow", "none");
 					}
 
 					
 					// If the word already exists, update its size.
-					// (the extra -15 is to make sure that words still have
+					// (the extra -6 is to make sure that words still have
 					//  some downward presure on their size over time even
 					//  if they're getting a few points still)
 					var size = pulseMagnitude*12;
 					var newSize = parseInt(wordEl.css("font-size")) + size
-						- 10;
+						- 6;
 					
 					var newDimensions = getDimensionsForWord(
 						wordEl.html(), newSize);
@@ -434,7 +433,7 @@
 					
 					wordEl.animate({
 						fontSize: newSize,
-						opacity: newOpacity,
+						opacity: "+=" + 0.1,
 						left: "+=" + leftDelta,
 						top: "+=" + topDelta,
 					}, 250, "linear", null);
