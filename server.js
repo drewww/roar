@@ -958,6 +958,53 @@ function _chatBotTick() {
     
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
+    
+    // get a list of active shouts (keys shout:*)
+    // hgetall for each one, put them in a hash based on what rooms each
+    // one is visible too. then for each bot, loop through the shouts
+    // visible to their room and roll dice to decide on voting. 
+    var shoutsByRoom = {};
+    var currentKey = 0;
+    var maxKeys = 0;
+    client.keys("shout:*", function(err, keys) {
+
+        // when we've accumulated this many, do the callback.
+        maxKeys = keys.length;
+        console.log("got keys=",keys);
+
+        for(var keyIndex in keys) {
+            var shoutKey = keys[keyIndex];
+            
+            
+            client.hgetall(shoutKey, function(err, shoutData) {
+                console.log("handling specific shout now=", shoutData);
+                shoutData["room-votes"] = JSON.parse(shoutData["room-votes"]);
+                
+                // loop through all the rooms this shout has been sent to
+                for(var roomName in shoutData["room-votes"]) {
+                    
+                    var list = []
+                    if(roomName in shoutsByRoom) {
+                        list = shoutsByRoom[roomName];
+                    }
+                    list.push(shoutData)
+                    shoutsByRoom[roomName] = list;
+                }
+                
+                currentKey++
+                if(currentKey == maxKeys) {
+                    // do the next step with accumulated data in shoutsByRoom
+                    
+                    console.log("done getting shouts");
+                    console.log("organizedByRoom: ", shoutsByRoom);
+                    
+                }
+            });
+        }
+        
+        
+    })
+    
     for(var botName in bots) {
         var bot = bots[botName];
         
