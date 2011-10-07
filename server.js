@@ -372,41 +372,48 @@ function voteForShout(socket, shoutId, callback) {
         } else {
             // Allow the vote.
             socket.get("room", function(err, room) {
-                client.hget(shoutKey, "room-votes", function(err, res) {
-                    var roomVotes = JSON.parse(res);
-
-                    var roomVoteCount = 0;
-                    if(room in roomVotes) {
-                        roomVoteCount = roomVotes[room];
-                    }
-
-                    roomVotes[room] = roomVoteCount+1;
-
-                    client.hset(shoutKey, "room-votes",
-                        JSON.stringify(roomVotes));
-
-                    // boost the total vote count by 1.
-                    client.hincrby(shoutKey, "votes", 1,
-                        function (err, curVoteCount){
-                            // notify everyone listening to that shout of the vote.
-
-                            // don't need to send this if this is the first vote.
-                        if(curVoteCount > 1) {
-                            io.sockets.in(shoutKey).emit("shout.vote",
-                                {"id":shoutId, "votes":curVoteCount});
-                        }
-                        // Mark this socket as having voted.
-                        votesList.push(shoutId +"");
-                        socket.set("votes", JSON.stringify(votesList));
-
-                        // now check for shout promotion
-
-                        // Do the callback.
-                        if(callback!=null) setTimeout(callback, 0);
-                    });
-                });
+                writeShoutFromRoom(room, shoutId, callback);
+                
+                // Mark this socket as having voted.
+                votesList.push(shoutId +"");
+                socket.set("votes", JSON.stringify(votesList));
+                
             });
         }
+    });
+}
+
+function writeShoutFromRoom(room, shoutId, callback) {
+    
+    var shoutKey = "shout:" + shoutId;
+    
+    client.hget(shoutKey, "room-votes", function(err, res) {
+        var roomVotes = JSON.parse(res);
+
+        var roomVoteCount = 0;
+        if(room in roomVotes) {
+            roomVoteCount = roomVotes[room];
+        }
+
+        roomVotes[room] = roomVoteCount+1;
+
+        client.hset(shoutKey, "room-votes",
+            JSON.stringify(roomVotes));
+
+        // boost the total vote count by 1.
+        client.hincrby(shoutKey, "votes", 1,
+            function (err, curVoteCount){
+                // notify everyone listening to that shout of the vote.
+
+                // don't need to send this if this is the first vote.
+            if(curVoteCount > 1) {
+                io.sockets.in(shoutKey).emit("shout.vote",
+                    {"id":shoutId, "votes":curVoteCount});
+            }
+
+            // Do the callback.
+            if(callback!=null) setTimeout(callback, 0);
+        });
     });
 }
 
@@ -918,6 +925,7 @@ function generateBot() {
     randIndex = Math.floor(Math.random()*baseRooms.length);
     bot["room"] = baseRooms[randIndex];
     bot["chat_odds"] = BASE_CHAT_ODDS;
+    bot["shouts_voted_for"] = {};
     
     joinRoom(null, bot["room"]);
     
@@ -958,6 +966,7 @@ function _chatBotTick() {
     
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
+    processBotChat();
     
     // get a list of active shouts (keys shout:*)
     // hgetall for each one, put them in a hash based on what rooms each
@@ -970,14 +979,12 @@ function _chatBotTick() {
 
         // when we've accumulated this many, do the callback.
         maxKeys = keys.length;
-        console.log("got keys=",keys);
-
+        
         for(var keyIndex in keys) {
             var shoutKey = keys[keyIndex];
             
             
             client.hgetall(shoutKey, function(err, shoutData) {
-                console.log("handling specific shout now=", shoutData);
                 shoutData["room-votes"] = JSON.parse(shoutData["room-votes"]);
                 
                 // loop through all the rooms this shout has been sent to
@@ -993,11 +1000,27 @@ function _chatBotTick() {
                 
                 currentKey++
                 if(currentKey == maxKeys) {
-                    // do the next step with accumulated data in shoutsByRoom
-                    
-                    console.log("done getting shouts");
-                    console.log("organizedByRoom: ", shoutsByRoom);
-                    
+
+                    // process bot voting now
+                    for(var botName in bots) {
+                        var bot = bots[botName];
+                        // now process shouts. get the list of shouts in this
+                        // bot's room and roll the dice on each one to see
+                        // if you want to vote for it.
+                        var shoutsInMyRoom = shoutsByRoom[bot["room"]];
+                        for(var shoutIndex in shoutsInMyRoom) {
+                            var shout = shoutsInMyRoom[shoutIndex];
+
+                            if(shout["id"] in bot["shouts_voted_for"])
+                                continue;
+
+                            var shoutVoteOdds = Math.random();
+                            if(shoutVoteOdds < 0.005) {
+                                writeShoutFromRoom(bot["room"], shout["id"],
+                                    null);
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -1005,19 +1028,24 @@ function _chatBotTick() {
         
     })
     
+}
+
+
+function processBotChat() {
+    // do the next step with accumulated data in shoutsByRoom
     for(var botName in bots) {
         var bot = bots[botName];
-        
+
         var chatOdds = Math.random() + botChatOddsOffset;
 
         if(chatOdds < bot["chat_odds"]) {
             // chat!
             var utterance = generateUtterance(model);
-            sendChatToRoom(bot["room"], botName, utterance["text"]);
+            sendChatToRoom(bot["room"], botName,
+                utterance["text"]);
         }
     }
 }
-
 
 function generateUtterance(model) {
     
