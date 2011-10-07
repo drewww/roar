@@ -837,7 +837,7 @@ function _processPulse() {
                         console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
                         
                         // square the activity factor to make it more nonlinear
-                        dict = popularWordsList.slice(0, activityFactor*20.0);
+                        dict = popularWordsList.slice(0, activityFactor*40.0);
                         
                         // rescore all the words to make the point decline
                         // sharper than it is in reality (with the bot
