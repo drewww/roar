@@ -225,6 +225,10 @@ io.sockets.on('connection', function(socket) {
                         });
                     });
                     
+                    // also, register this socket as the owner of the shout
+                    console.log("Joining socket to " + "shout:" + shoutId + ":owner");
+                    socket.join("shout:" + shoutId + ":owner");
+                    // console.log(getSocketListForRoom(shoutKey +":owner")[0]);
                 });
             });
         });
@@ -285,6 +289,16 @@ client.once("ready", function(err) {
 
 });
 
+function getSocketListForRoom(room) {
+    var sockets = [];
+    var socketHash = io.sockets.in(room).sockets;
+    
+    for(var socketId in socketHash) {
+        sockets.push(socketHash[socketId]);
+    }
+    
+    return sockets;
+}
 
 function broadcastAdminMessage(room, message) {
     if(room==null || typeof room == 'undefined') {
@@ -315,6 +329,8 @@ function sendChatToRoom(roomName, nickname, messageText) {
 function spreadShoutToRoom(room, shoutId) {
     // now spread the shout
     var shoutKey = "shout:" + shoutId;
+    console.log("shoutKey: " + shoutKey);
+    
     client.hgetall(shoutKey, function(err, res) {
         // Feels silly to bounce off redis like this,
         // but whatever.
@@ -335,12 +351,24 @@ function spreadShoutToRoom(room, shoutId) {
         
         // Manage the timeouts. If no expiration is set, set it to now+1 min.
         // If a timeout is set (and we're expanding to a new room), give the
-        // shout another minute of life.
+        // shout another minute of life
+        console.log("shoutKey: " + shoutKey);
         client.hget(shoutKey, "expiration", function (err, res) {
            if(res==null) {
                client.hset(shoutKey, "expiration", Date.now() + 60000);
            } else {
                client.hincrby(shoutKey, "expiration", 60000);
+               
+               // putting the admin message here because this only happens
+               // on non-initial spreads.
+
+               console.log("shoutKey: " + shoutKey);
+               
+               console.log("Spreading to key " + shoutKey + ":owner");
+               var socket = getSocketListForRoom(shoutKey +":owner")[0];
+               
+               sendAdminMessage(getSocketListForRoom(shoutKey +":owner")[0],
+                   "Your shout just spread to " + room + "!");
            }
         });
     });
@@ -453,9 +481,9 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                                 // console.log("total rooms: " + roomNames.length + " rooms left to spread to: " + roomNameSet.size());
 
                                 if(roomNameSet.size==0) {
-                                    console.log("Shout has reached max promotion.");
                                     // TODO tell the client who shouted
                                     // that it's maxxed out.
+                                    handleMaxShout(shoutId);
                                     return;
                                 }
 
@@ -468,13 +496,14 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                                 
                                 for(var i=0; i<2; i++) {
                                     if(roomNameSet.size()==0) {
+                                        handleMaxShout(shoutId);
                                         return;
                                     }
                                     
                                     var index = Math.floor(Math.random()* 
                                         roomNameSet.size()-.0000001);
                                     var roomToSpreadTo = roomNameSet.array()[index];
-                                    spreadShoutToRoom(roomToSpreadTo);
+                                    spreadShoutToRoom(roomToSpreadTo, shoutId);
                                     roomNameSet.remove(roomToSpreadTo);
                                 }
                             });
@@ -501,6 +530,18 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
             if(callback!=null&&typeof callback != 'undefined') callback();
         }, 0);
     });
+}
+
+function handleMaxShout(shoutId) {
+    console.log("Shout has reached max promotion.");
+    
+    var socket = getSocketListForRoom("shout:" + shoutId +":owner")[0];
+    
+    sendAdminMessage(socket, "Everyone has seen your shout!");
+    
+    // and then remove them from the channel
+    socket.leave("shout:" + shoutId + ":owner");
+    
 }
 
 function releaseNickname(socket) {
@@ -650,6 +691,8 @@ function _checkShoutExpiration() {
                     var shoutId = shoutKey.split(":")[1];
                     io.sockets.in(shoutKey).emit("shout.expire",
                         {"id":shoutId});
+
+                    console.log("Expiring shout:" + shoutId);
                     
                     client.hgetall(shoutKey, function(err, shoutData) {
                         client.rpush("global:shouts",
@@ -671,6 +714,9 @@ function _checkShoutExpiration() {
                         var socket = subscribedSockets[index];
                         socket.leave(shoutKey);
                     }
+                    
+                    getSocketListForRoom(shoutKey +":owner")[0]
+                        .leave(shoutKey + ":owner");
                 }
             });
         }
