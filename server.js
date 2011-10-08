@@ -715,8 +715,9 @@ function _checkShoutExpiration() {
                         socket.leave(shoutKey);
                     }
                     
-                    getSocketListForRoom(shoutKey +":owner")[0]
-                        .leave(shoutKey + ":owner");
+                    var socketsList = getSocketListForRoom(shoutKey+":owner");
+                    if(socketsList.length==1)
+                        socketsList[0].leave(shoutKey + ":owner");
                 }
             });
         }
@@ -1116,8 +1117,6 @@ function _chatBotTick() {
         for(var keyIndex in keys) {
             var shoutKey = keys[keyIndex];
             
-            
-            
             client.hgetall(shoutKey, function(err, shoutData) {
                 // all the per room shout data is now in its own keys, of the
                 // form described elsewhere (shout:roomname:votes)
@@ -1128,6 +1127,7 @@ function _chatBotTick() {
                     if(keyPieces[0]=="room" && keyPieces[2]=="votes") {
                         
                         var roomName = keyPieces[1];
+
                         var list = [];
                         if(roomName in shoutsByRoom) {
                             list = shoutsByRoom[roomName];
@@ -1136,7 +1136,7 @@ function _chatBotTick() {
                         shoutsByRoom[roomName] = list;
                     }
                 }
-                
+                // console.log("shouts by room", shoutsByRoom);
                 currentKey++
                 if(currentKey == maxKeys) {
 
@@ -1147,19 +1147,34 @@ function _chatBotTick() {
                         // bot's room and roll the dice on each one to see
                         // if you want to vote for it.
                         var shoutsInMyRoom = shoutsByRoom[bot["room"]];
+                        if(shoutsInMyRoom==null || typeof shoutsInMyRoom == 'undefined') continue;
+                        // console.log("shoutsInMyRoom", shoutsInMyRoom);
+                        
                         for(var shoutIndex in shoutsInMyRoom) {
                             var shout = shoutsInMyRoom[shoutIndex];
 
-                            if(shout["id"] in bot["shouts_voted_for"])
-                                continue;
-
                             var shoutVoteOdds = Math.random();
-                            if(shoutVoteOdds < 0.02) {
+                            if(shoutVoteOdds < 0.005) {
+
+                                // disabling non-double voting beacuse it seems
+                                // to break things and max out all the bots at
+                                // way lower thant he room count. So, demo around it.
+                                // console.log("shoutIndex=", shoutIndex);
+                                // console.log("shout=", shout);
+                                // console.log("shouts_voted_for=", bot["shouts_voted_for"]);
+                                // if(shout["id"] in bot["shouts_voted_for"]) 
+                                //     continue;
+                                
+                                
                                 writeShoutVoteFromRoom(bot["room"], shout["id"],
                                     null);
+                                bot["shouts_voted_for"][shout["id"]] = true;
+                                bots[botName] = bot;
                             }
                         }
                     }
+                    
+                    // console.log("bots=", bots);
                 }
             });
         }
