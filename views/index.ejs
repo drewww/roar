@@ -96,17 +96,13 @@
 			});
 			metaRoomList.reverse();
 			
-			console.log("metaRoomList=", metaRoomList);
-			
 			$("#top-rooms li").remove();
 			
 			var totalPop = 0;
 			// todo sort the rooms first
+			var maxRooms = 8;
 			for(roomIndex in metaRoomList) {
 				var room = metaRoomList[roomIndex];
-				
-				console.log("processing room: ",room);
-				
 				var roomName = room.name;
 				var roomPop = room.population;
 				
@@ -124,6 +120,8 @@
 				if(room["num_instances"]!=0) {
 					roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
 				}
+				
+				if($("#top-rooms ul").children().length==maxRooms) break;
 			}
 			
 			$("#total-users").text(totalPop);
@@ -741,13 +739,17 @@
 			margin-right: 5px;
 		}
 		
+		#room-select input {
+			width: 180px;
+		}
+		
 		#room-select {
 			border-left: 1px solid #B3B5B8;
 			height: 100%;
 			float: right;
 			padding-top: 15px;
 			padding-left: 10px;
-			width: 205px;
+			width: 260px;
 		}
 		
 		#logo {
@@ -860,7 +862,7 @@
 			
 			position:fixed;
 			
-			width: 215px;
+			width: 270px;
 			bottom: -200px;
 			right: 0%;
 			
@@ -894,10 +896,9 @@
 			-o-user-select: none;
 			user-select: none;
 			
-			padding: 5px;
 			margin-right: 5px;
 			margin-left: 5px;
-			margin-bottom: 5px;
+			margin-bottom: 0px;
 		}
 		
 		#top-rooms li:hover {
