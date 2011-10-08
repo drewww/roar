@@ -96,7 +96,7 @@
 			});
 			metaRoomList.reverse();
 			
-			$("#top-rooms li").remove();
+			$("#top-rooms-list li").remove();
 			
 			var totalPop = 0;
 			// todo sort the rooms first
@@ -115,13 +115,13 @@
 						$("#room").val($(this).attr("title"));
 						$("#room-select-form").submit();
 					})
-					.appendTo($("#top-rooms ul"));
+					.appendTo($("#top-rooms-list"));
 					
 				if(room["num_instances"]!=0) {
 					roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
 				}
 				
-				if($("#top-rooms ul").children().length==maxRooms) break;
+				if($("#top-rooms-list").children().length==maxRooms) break;
 			}
 			
 			$("#total-users").text(totalPop);
@@ -176,7 +176,7 @@
 			// Setup default visibility.
 			$("#identity-message").hide();
 			$("#chat-history").hide();
-			$("#top-rooms").hide();
+			$("#rooms-container").hide();
 
 			
 			$("#chat-input").attr("disabled", true);
@@ -264,13 +264,13 @@
 		});
 		
 		function toggleRoomList(event) {
-			if($("#top-rooms").is(":visible")) {
-				$("#top-rooms").animate({bottom:-300}, 500, function(){
+			if($("#rooms-container").is(":visible")) {
+				$("#rooms-container").animate({bottom:-300}, 500, function(){
 					$(this).hide();
 				});
 			} else {
-				$("#top-rooms").show();
-				$("#top-rooms").animate({bottom:51}, 500, null);
+				$("#rooms-container").show();
+				$("#rooms-container").animate({bottom:51}, 500, null);
 			}
 		}
 		
@@ -855,7 +855,7 @@
 			z-index: 2;
 		}
 		
-		#top-rooms {
+		#rooms-container {
 			background-color: rgba(254, 240, 209, 0.7);
 			border: #928B33;
 			color: #333;
@@ -870,7 +870,7 @@
 			
 		}
 		
-		#top-rooms h1 {
+		#rooms-container h1 {
 			margin: 0px;
 			font-size: 1.0em;
 			background-color: #413D1B;
@@ -880,12 +880,12 @@
 			
 		}
 		
-		#top-rooms ul {
+		#rooms-container ul {
 			padding-left: 0px;
 			margin: 0px;
 		}
 		
-		#top-rooms li {
+		#rooms-container li {
 			cursor: pointer;
 			
 			list-style-type: none;
@@ -901,7 +901,7 @@
 			margin-bottom: 0px;
 		}
 		
-		#top-rooms li:hover {
+		#rooms-container li:hover {
 			background-color: #ccc;
 		}
 
@@ -1143,9 +1143,11 @@ shout
 
 
 
-<div id="top-rooms">
+<div id="rooms-container">
 <h1>top sections</h1>
-<ul></ul>
+<ul id="top-rooms-list"></ul>
+<h1>suggested rooms</h1>
+<ul id="suggested-rooms-list"></ul>
 </div>
 
 <div id="chat-history">
