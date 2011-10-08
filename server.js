@@ -193,6 +193,10 @@ io.sockets.on('connection', function(socket) {
         });
     });
     
+    socket.on('room.list', function(data) {
+        // send this socket an updated room list.
+        _updateRooms(socket);
+    });
     
     socket.on('shout', function (data) {
         // {text:(shout_text)}
@@ -738,19 +742,19 @@ function _updateRooms(socket) {
     // update.
     if(socket==null || typeof socket == 'undefined') setTimeout(_updateRooms, 5000);
     
-    client.hgetall("global:rooms", function(err, res) {
+    client.hgetall("global:room_populations", function(err, res) {
         var allRoomData = [];
         for(var roomName in res) {
-            var room = JSON.parse(res[roomName]);
-            allRoomData.push({"name":roomName, "population":room["population"]});
+            allRoomData.push({"name":roomName, "population":res[roomName]});
         }
-
+        
         // sort the rooms by population
         allRoomData.sort(function(a, b) {
             return a["population"] - b["population"];
         });
         allRoomData.reverse();
-
+        
+        
         // Now broadcast this message to all clients.
         if(socket==null  || typeof socket == 'undefined') {
             io.sockets.emit("rooms", allRoomData);
