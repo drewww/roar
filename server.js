@@ -407,7 +407,7 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
             
             // console.log("checking promotion on " + shoutKey + ": " + isPromoted);
             if(isPromoted=="true") {
-                console.log("blocking promotion from " + room + " because already promoted");
+                // console.log("blocking promotion from " + room + " because already promoted");
                 return;
             }
             
@@ -416,9 +416,9 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
             // checking.
             client.hget("global:room_populations", room,
                 function(err, pop) {
-                    console.log("checking shout promotion: " + roomVotes + " > " + (pop/4) + "?");
+                    // console.log("checking shout promotion: " + roomVotes + " > " + (pop/4) + "?");
                     if(roomVotes > (pop/4)) {
-                        console.log("promoting shout!");
+                        // console.log("promoting shout!");
 
                         // flip the bit on room votes that says don't use
                         // this room to cause a promotion anymore.
@@ -427,18 +427,36 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
 
                         client.hkeys("global:room_populations",
                             function(err, roomNames) {
+                            client.hkeys(shoutKey, function(err, shoutKeys) {
                                 var roomNameSet = new sets.Set(roomNames);
 
-                                for(roomName in roomNames) {
-                                    roomNameSet.remove(roomName);
+                                var roomsAlreadySpreadTo = [];
+                                // console.log("shoutKeys=", shoutKeys);
+                                for(var shoutKeyIndex in shoutKeys) {
+                                    var key = shoutKeys[shoutKeyIndex];
+                                    var keyPieces = key.split(":");
+                                    if(keyPieces.length != 3) continue;
+                                    if(keyPieces[0]=="room" &&
+                                        keyPieces[2]=="votes") {
+                                        roomsAlreadySpreadTo.push(keyPieces[1]);
+                                    }
                                 }
-
-                                console.log("rooms we have't spread to yet=", roomNameSet.array());
+                                // console.log("roomsAlreadySpreadTo=", roomsAlreadySpreadTo);
+                                
+                                // remove all the rooms this shout has already
+                                // spread to. 
+                                for(var roomsSpreadIndex in roomsAlreadySpreadTo) {
+                                    roomNameSet.remove(
+                                        roomsAlreadySpreadTo[roomsSpreadIndex]);
+                                }
+                            
+                                // console.log("total rooms: " + roomNames.length + " rooms left to spread to: " + roomNameSet.size());
 
                                 if(roomNameSet.size==0) {
                                     console.log("Shout has reached max promotion.");
                                     // TODO tell the client who shouted
                                     // that it's maxxed out.
+                                    return;
                                 }
 
                                 // now roomNameSet has all the rooms that
@@ -447,24 +465,20 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                                 // (this is not quite a fair search, but
                                 // since we're going to take two adjacent
                                 // rooms, it'll do for now.)
-                                var index = Math.floor(Math.random()* 
-                                    roomNameSet.size()-1.0000001);
-
-                                console.log("spreading to new rooms: " +
-                                    roomNameSet.array()[index] + " and " +
-                                    roomNameSet.array()[index+1]);
-
-                                // Spread to two adjacent rooms in the
-                                // list.
-                                spreadShoutToRoom(
-                                    roomNameSet.array()[index], shoutId);
-                                spreadShoutToRoom(
-                                    roomNameSet.array()[index+1],
-                                    shoutId);
-                            })
-
-
-
+                                
+                                for(var i=0; i<2; i++) {
+                                    if(roomNameSet.size()==0) {
+                                        return;
+                                    }
+                                    
+                                    var index = Math.floor(Math.random()* 
+                                        roomNameSet.size()-.0000001);
+                                    var roomToSpreadTo = roomNameSet.array()[index];
+                                    spreadShoutToRoom(roomToSpreadTo);
+                                    roomNameSet.remove(roomToSpreadTo);
+                                }
+                            });
+                        });
                     }
             });
         });
