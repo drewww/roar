@@ -754,7 +754,6 @@ function _updateRooms(socket) {
         });
         allRoomData.reverse();
         
-        
         // Now broadcast this message to all clients.
         if(socket==null  || typeof socket == 'undefined') {
             io.sockets.emit("rooms", allRoomData);

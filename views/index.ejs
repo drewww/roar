@@ -43,25 +43,87 @@
 		socket.on('rooms', function(data) {
 			rooms = data;
 			
-			// Does this work? Check.
+			// The rooms data is a list sorted by population. It also has lots
+			// of sort of duplicate rooms. So we're going to do a first pass
+			// to combine all those rooms and hide them. When you select one,
+			// it'll just default to the '1' version of that room. 
+			
+			var condensedList = {};
+			for(var roomIndex in rooms) {
+				var room = rooms[roomIndex];
+				
+				// split the room name on spaces. If the room is a number room
+				// then merge it in.
+				var roomPieces = room["name"].split(' ');
+				var shortName;
+				if(!isNaN(parseInt(roomPieces[roomPieces.length-1]))) {
+					// Then the last 'word' is a number and we can collapse 
+					// it into a group.
+					var remainingPieces = roomPieces.slice(0,
+						roomPieces.length-1);
+					shortName = remainingPieces.join(" ");
+					
+					// default to the room number that we encounter first
+					var currentMetaroom = {"name":room["name"], "population":0, "num_instances":0};
+					if(shortName in condensedList) currentMetaroom =
+						condensedList[shortName];
+					
+					currentMetaroom["population"] += 
+						parseInt(room["population"]);
+					currentMetaroom["num_instances"] += 1;
+					
+					condensedList[shortName] = currentMetaroom;
+				} else {
+					// It's a normal room (probably user-defined) and we 
+					// should treat it normally. include it in the main list.
+					var shortName = roomPieces.join(" ");
+					condensedList[shortName] = room;
+					condensedList[shortName]["num_instances"] = 0;
+				}
+
+			}
+
+			// Now turn the metaroom hash into a list.
+			var metaRoomList = [];
+			for(var roomName in condensedList) {
+				var metaRoom = condensedList[roomName];
+				metaRoom["short_name"] = roomName;
+				metaRoomList.push(metaRoom);
+			}
+			
+			metaRoomList.sort(function(a, b) {
+				return a["population"] - b["population"];
+			});
+			metaRoomList.reverse();
+			
+			console.log("metaRoomList=", metaRoomList);
+			
 			$("#top-rooms li").remove();
 			
 			var totalPop = 0;
 			// todo sort the rooms first
-			for(roomIndex in rooms) {
-				var roomName = rooms[roomIndex].name;
-				var roomPop = rooms[roomIndex].population;
+			for(roomIndex in metaRoomList) {
+				var room = metaRoomList[roomIndex];
+				
+				console.log("processing room: ",room);
+				
+				var roomName = room.name;
+				var roomPop = room.population;
 				
 				totalPop += parseInt(roomPop);
 				
 				var roomItem = $("<li></li>");
-				roomItem.text(roomName + " (" + roomPop + ")")
-					.attr("title", roomName)
+				roomItem.text(room.name + " ("+room.population+")")
+					.attr("title", room["name"])
 					.click(function (event) {
 						$("#room").val($(this).attr("title"));
 						$("#room-select-form").submit();
 					})
 					.appendTo($("#top-rooms ul"));
+					
+				if(room["num_instances"]!=0) {
+					roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
+				}
 			}
 			
 			$("#total-users").text(totalPop);
@@ -94,7 +156,10 @@
 						)
 					)
 				.append($("<br class='clear'>"))
-				.appendTo($("#shout-live"));	
+				.appendTo($("#shout-live"));
+				
+				
+				
 		});
 		
 		socket.on('shout.vote', function(data) {
