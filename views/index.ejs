@@ -11,6 +11,7 @@
 		
 		var socket = io.connect("http://<%= server %>:<%= port %>");
 		var rooms = [];
+		var metaRooms = [];
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -95,6 +96,7 @@
 				return a["population"] - b["population"];
 			});
 			metaRoomList.reverse();
+			metaRooms = metaRoomList;
 			
 			$("#top-rooms-list li").remove();
 			
@@ -103,23 +105,11 @@
 			var maxRooms = 8;
 			for(roomIndex in metaRoomList) {
 				var room = metaRoomList[roomIndex];
-				var roomName = room.name;
-				var roomPop = room.population;
 				
-				totalPop += parseInt(roomPop);
+				totalPop += parseInt(room.population);
 				
-				var roomItem = $("<li></li>");
-				roomItem.text(room.name + " ("+room.population+")")
-					.attr("title", room["name"])
-					.click(function (event) {
-						$("#room").val($(this).attr("title"));
-						$("#room-select-form").submit();
-					})
-					.appendTo($("#top-rooms-list"));
-					
-				if(room["num_instances"]!=0) {
-					roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
-				}
+				// Make the room item element and append it immediately.
+				makeRoomItemFromRoom(room).appendTo($("#top-rooms-list"));
 				
 				if($("#top-rooms-list").children().length==maxRooms) break;
 			}
@@ -230,6 +220,30 @@
 				socket.emit("identify", {username:$("#name").val()});
 				event.preventDefault();
 			})
+			
+			$("#room").keyup(function (event) {
+				// grab the text in #room and see if it matches any of our
+				// room names. If it does, add those on to the room menu.
+				
+				$("#suggested-rooms-list").children().remove();
+				
+				var baseString = $(this).val();
+				var matchedRooms = getRelatedRoomsForString(baseString);
+				
+				var item;
+				if(matchedRooms.length>0) {
+					for(var roomIndex in matchedRooms) {
+						var room = matchedRooms[roomIndex];
+						
+						item = makeRoomItemFromRoom(room);
+					}
+				} else {
+					item = $("<li></li>")
+						.text("No sections start with '" + baseString + "'");
+				}
+				
+				item.appendTo($("#suggested-rooms-list"));
+			});
 			
 			$("#room").focus(function (event) {
 				// show the room list
@@ -637,26 +651,48 @@
 			return size;
 		}
 		
-		function fadeAwayAnimation() {
+		function getRelatedRoomsForString(string) {
+			// Given a string, loop through the room list and return a list of
+			// any rooms that START with that string. This isn't super fancy,
+			// but whatever. It's easy and will look okay in a demo.
 			
-			var newDimensions = getDimensionsForWord(
-				$(this).html(),12);
-			var leftDelta =
-			 	($(this).width()-newDimensions["width"])/2;
-			var topDelta =
-				($(this).height()-newDimensions["height"])/2;
+			var candidateMetaRooms = [];
 			
-			var el = $(this);
+			if(string=="") return candidateMetaRooms;
 			
-			// start the fade away animation
-			el.animate({
-					opacity: 0.0,
-					fontSize: 12,
-					left: "+=" + leftDelta,
-					top:  "+=" + topDelta
-				}, 10000, "linear", function() {
-					$(this).remove();
-			});
+			for (var roomIndex in metaRooms) {
+				var room = metaRooms[roomIndex];
+				
+				var result = room["short_name"].search(string);
+				var resultName = room["name"].search(string);
+				
+				if (result==0) {
+					candidateMetaRooms.push(room);
+				}
+			}
+			
+			return candidateMetaRooms;
+		}
+		
+		function makeRoomItemFromRoom(room) {
+			
+			var roomName = room.name;
+			var roomPop = room.population;
+			
+			
+			var roomItem = $("<li></li>");
+			roomItem.text(room.name + " ("+room.population+")")
+				.attr("title", room["name"])
+				.click(function (event) {
+					$("#room").val($(this).attr("title"));
+					$("#room-select-form").submit();
+				})
+				
+			if(room["num_instances"]!=0) {
+				roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
+			}
+			
+			return roomItem;
 		}
 		
 	</script>
