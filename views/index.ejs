@@ -12,6 +12,7 @@
 		var socket = io.connect("http://<%= server %>:<%= port %>");
 		var rooms = [];
 		var metaRooms = [];
+		var pulseEnabled = true;
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -160,7 +161,7 @@
 			$("#shout-" + data["id"]).remove();
 		});
 
-		var graph;
+
 		$(document).ready(function() {
 			
 			// Setup default visibility.
@@ -168,6 +169,14 @@
 			$("#chat-history").hide();
 			$("#rooms-container").hide();
 
+			
+			$(window).blur(function() {
+				pulseEnabled = false;
+			});
+			
+			$(window).focus(function() {
+				pulseEnabled = true;
+			});
 			
 			$("#chat-input").attr("disabled", true);
 			
@@ -425,6 +434,7 @@
 		// will receive is a list of word/score combos.
 		
 		function updatePulse(pulse) {
+			if(!pulseEnabled) return;
 			
 			// Take the activity metrics and turn one into messages/min and
 			// put it into the right place in the DOM.
@@ -666,7 +676,7 @@
 				var result = room["short_name"].search(string);
 				var resultName = room["name"].search(string);
 				
-				if (result==0) {
+				if (result>-1) {
 					candidateMetaRooms.push(room);
 				}
 			}
