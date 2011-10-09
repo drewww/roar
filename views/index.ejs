@@ -51,6 +51,7 @@
 			// it'll just default to the '1' version of that room. 
 			
 			var condensedList = {};
+			var totalPop = 0;
 			for(var roomIndex in rooms) {
 				var room = rooms[roomIndex];
 				
@@ -58,12 +59,16 @@
 				// then merge it in.
 				var roomPieces = room["name"].split(' ');
 				var shortName;
+				
+				totalPop += parseInt(room.population);
+				
 				if(!isNaN(parseInt(roomPieces[roomPieces.length-1]))) {
 					// Then the last 'word' is a number and we can collapse 
 					// it into a group.
 					var remainingPieces = roomPieces.slice(0,
 						roomPieces.length-1);
 					shortName = remainingPieces.join(" ");
+					
 					
 					// default to the room number that we encounter first
 					var currentMetaroom = {"name":room["name"], "population":0, "num_instances":0};
@@ -101,13 +106,10 @@
 			
 			$("#top-rooms-list li").remove();
 			
-			var totalPop = 0;
 			// todo sort the rooms first
 			var maxRooms = 8;
 			for(roomIndex in metaRoomList) {
 				var room = metaRoomList[roomIndex];
-				
-				totalPop += parseInt(room.population);
 				
 				// Make the room item element and append it immediately.
 				makeRoomItemFromRoom(room).appendTo($("#top-rooms-list"));

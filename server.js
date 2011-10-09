@@ -741,7 +741,7 @@ function _updateRooms(socket) {
     // if there's a socket passed in, it's a request to do a one-shot
     // update.
     if(socket==null || typeof socket == 'undefined') setTimeout(_updateRooms, 5000);
-    
+
     client.hgetall("global:room_populations", function(err, res) {
         var allRoomData = [];
         for(var roomName in res) {
@@ -753,6 +753,8 @@ function _updateRooms(socket) {
             return a["population"] - b["population"];
         });
         allRoomData.reverse();
+        
+
         
         // Now broadcast this message to all clients.
         if(socket==null  || typeof socket == 'undefined') {
