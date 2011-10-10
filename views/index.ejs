@@ -179,7 +179,9 @@
 			$("#identity-message").hide();
 			$("#chat-history").hide();
 			$("#rooms-container").hide();
-
+			$("#chat-sect").hide();
+			$("#sections-sect").hide();
+			$("#pulse-sect").hide();
 			
 			$(window).blur(function() {
 				pulseEnabled = false;
@@ -274,6 +276,16 @@
 				// hide the room list
 				setTimeout(toggleRoomList, 50);
 			});
+			
+			$(".section-button").click(function (event) {
+				$(".selected").removeClass("selected");
+				
+				$("#content").children().hide();
+				$("#" + this.id.split("-")[0] + "-sect").show();
+				
+				$(this).addClass("selected");
+			});
+			
 			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
@@ -1201,8 +1213,8 @@
 			top: 50%;
 			left: 50%;
 			
-			width: 400px;
-			height: 600px;
+			width: 550px;
+			height: 500px;
 			
 			margin-left: -200px;
 			margin-top: -300px;
@@ -1211,8 +1223,58 @@
 			
 			box-shadow: 3px 3px 0px black;
 			z-index: 8001;
+			
+			font-family: Helvetica, sans-serif;
+			
 		}
 		
+		#header-container {
+			width: 100%;
+			height: 110px;
+			padding: 5px;
+		}
+		
+		#images {
+			float: left;
+			background-color: black;
+			width: 200px;
+			height: 106px;
+			margin-right: 5px;
+		}
+		
+		#header h1 {
+			font-weight: bold;
+			font-size: 3.0em;
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+		
+		#header h2 {
+			font-style: italic;
+			font-weight: normal;
+			font-size: 1.2em;
+			margin-top: 0px;
+			margin-bottom: 0px;
+		}
+		
+		.section-button {
+			float: left;
+			font-size: 1.1em;
+			margin-right: 5px;
+			margin-top: 5px;
+			background-color: #aaa;
+			padding: 2px;
+			
+			cursor: pointer;
+		}
+		
+		.selected {
+			background-color: #555;
+		}
+		
+		#content {
+			padding: 5px;
+		}
 		
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
@@ -1236,24 +1298,25 @@
 		</div>
 		<div id="text">
 			<div id="header">
-				ROAR — large scale chat for spectators
+				<h1>ROAR</h1>
+				<h2>large scale chat for spectators</h2>
 			</div>
-			<div class="section-button selected">
+			<div id="overview-title" class="section-button selected">
 				overview
 			</div>
-			<div class="section-button selected">
+			<div id="chat-title" class="section-button">
 				chat &amp; shouts
 			</div>
-			<div class="section-button selected">
+			<div id="sections-title" class="section-button">
 				sections
 			</div>
-			<div class="section-button selected">
+			<div id="pulse-title" class="section-button">
 				pulse
 			</div>
 		</div>
 	</div>
 	<div id="content">
-		<div id="overview">
+		<div id="overview-sect">
 			This is some overview copy.
 		</div>
 		<div id="chat-sect">
