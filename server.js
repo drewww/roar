@@ -269,15 +269,15 @@ client.once("ready", function(err) {
         }
     });
     
-    client.hgetall("global:rooms", function(err, res) {
+    client.hgetall("rooms", function(err, res) {
         for(key in res) {
-            client.hdel("global:rooms", key);
+            client.hdel("rooms", key);
         }
     });
     
-    client.hgetall("global:room_populations", function(err, res) {
+    client.hgetall("rooms.population", function(err, res) {
         for(key in res) {
-            client.hdel("global:room_populations", key);
+            client.hdel("rooms.population", key);
         }
     });
     
@@ -327,7 +327,9 @@ function sendChatToRoom(roomName, nickname, messageText) {
     // We don't need to trim; pulse will trim for us, to avoid having to
     // push more data around than is strictly necessary.
     client.rpush("messages.recent", JSON.stringify(messageDict));
-    // client.ltrim("messages.recent", -5000, -1);
+    
+    // increment the counter for room activity.
+    client.hincrby("rooms.activity", roomName, 1);
 }
 
 function spreadShoutToRoom(room, shoutId) {
@@ -446,7 +448,7 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
             // if this room has already promoted the shout, no need to 
             // promote further. call it. otherwise, do the promotion
             // checking.
-            client.hget("global:room_populations", room,
+            client.hget("rooms.population", room,
                 function(err, pop) {
                     // console.log("checking shout promotion: " + roomVotes + " > " + (pop/4) + "?");
                     if(roomVotes > (pop/4)) {
@@ -457,7 +459,7 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                         // (DO THIS NEXT)
                         client.hset(shoutKey, roomPromotedKey, "true");
 
-                        client.hkeys("global:room_populations",
+                        client.hkeys("rooms.population",
                             function(err, roomNames) {
                             client.hkeys(shoutKey, function(err, shoutKeys) {
                                 var roomNameSet = new sets.Set(roomNames);
@@ -561,7 +563,7 @@ function joinRoom(socket, newRoomName) {
     // characters and notify people of errors when they choose bad names.
     
     
-    client.hincrby("global:room_populations", newRoomName, 1,
+    client.hincrby("rooms.population", newRoomName, 1,
         function(err, roomPopulation) {
         // start by incrementing the value. If the resulting value is 1, we need
         // to do the create-new-room-structure code. Otherwise, update using
@@ -575,11 +577,11 @@ function joinRoom(socket, newRoomName) {
                 room["id"] = roomId;
                 room["name"] = newRoomName;
                 
-                client.hget("global:room_populations", newRoomName,
+                client.hget("rooms.population", newRoomName,
                     function(err, population) {
                         room["population"] = population;
                         
-                        client.hset("global:rooms", newRoomName, JSON.stringify(room));
+                        client.hset("rooms", newRoomName, JSON.stringify(room));
                         if (socket) {
                             sendAdminMessage(socket,
                                 "You have joined room '" + newRoomName +
@@ -588,19 +590,19 @@ function joinRoom(socket, newRoomName) {
                 });
             });
         } else {
-            client.hget("global:rooms", newRoomName,
+            client.hget("rooms", newRoomName,
                 function(err, roomData) {
                     if (roomData != null) {
                         var room = JSON.parse(roomData);
 
                         // other option is to run a separate query to get the
-                        // current population from global:room_populations at
+                        // current population from rooms.population at
                         // this point.
-                        client.hget("global:room_populations", newRoomName,
+                        client.hget("rooms.population", newRoomName,
                             function(err, population) {
                                 room["population"] = population;
 
-                                client.hset("global:rooms", newRoomName,
+                                client.hset("rooms", newRoomName,
                                     JSON.stringify(room),
                                     function(err, res) {
                                         if (socket) sendAdminMessage(socket, 
@@ -654,18 +656,18 @@ function leaveRoom(socket, newRoomName) {
                 }
             });
 
-            client.hget("global:rooms", roomName, function(err, roomData) {
+            client.hget("rooms", roomName, function(err, roomData) {
                 var room = JSON.parse(roomData);
                 
                 room["population"] = room["population"] - 1;
                 
                 // decrement the other counter, too.
-                client.hincrby("global:room_populations", roomName, -1,
+                client.hincrby("rooms.population", roomName, -1,
                     function(err, population) {
                         if(population==0) {
-                            client.hdel("global:rooms", roomName);
+                            client.hdel("rooms", roomName);
                         } else {
-                            client.hset("global:rooms", roomName,
+                            client.hset("rooms", roomName,
                                 JSON.stringify(room));
                         }
                     });
@@ -699,13 +701,13 @@ function _checkShoutExpiration() {
                     console.log("Expiring shout:" + shoutId);
                     
                     client.hgetall(shoutKey, function(err, shoutData) {
-                        client.rpush("global:shouts",
+                        client.rpush("shouts",
                             JSON.stringify(shoutData), function (err, res) {
                                 client.del(shoutKey);
                                 
                                 // Keeps max shout history at 100 to avoid
                                 // accumulating infinite data.
-                                client.ltrim("global:shouts", -100, -1);
+                                client.ltrim("shouts", -100, -1);
                             });
                     });
                     
@@ -732,34 +734,66 @@ function _checkShoutExpiration() {
 // think about heavily caching the room list in a dedicated key at some point.
 // Send an update with summary information about the current roomlist
 // to populate client side room autocomplete information. 
+var _updateRoomsCallCount = 0;
 function _updateRooms(socket) {
     // For each room we want to include the room name and the number
     // of people in each room. This is all stored in redis, so we can
-    // just dump the contents of global:rooms and format it into one
+    // just dump the contents of rooms and format it into one
     // big JSON message to distribute.
     
     // if there's a socket passed in, it's a request to do a one-shot
     // update.
     if(socket==null || typeof socket == 'undefined') setTimeout(_updateRooms, 5000);
 
-    client.hgetall("global:room_populations", function(err, res) {
-        var allRoomData = [];
-        for(var roomName in res) {
-            allRoomData.push({"name":roomName, "population":res[roomName]});
-        }
+    client.hgetall("rooms.population", function(err, populations) {
+        client.hgetall("rooms.activity", function(err, activities) {
+            client.get("global:total_activity", function(err, total_activity){
+                
+                var roomCount = 0;
+                for(var foo in populations) roomCount++;
+                
+                var allRoomData = [];
+                for(var roomName in populations) {
+                    var roomMessages = 0;
+                    if(roomName in activities) {
+                        roomMessages = activities[roomName];
+                    }
+                    
+                    // Also need to take into account that total_activity
+                    // is ALL rooms - divide by the room count to normalize
+                    // it properly.
+                    var roomMessagesPerSecond = roomMessages /
+                        (5*_updateRoomsCallCount);
+                    var relativeRoomActivity = roomMessagesPerSecond/
+                        (total_activity/roomCount);
+                
+                    allRoomData.push({"name":roomName,
+                        "population":populations[roomName],
+                        "relative":relativeRoomActivity});
+                }
         
-        // sort the rooms by population
-        allRoomData.sort(function(a, b) {
-            return a["population"] - b["population"];
+                // sort the rooms by population
+                allRoomData.sort(function(a, b) {
+                    return a["population"] - b["population"];
+                });
+                allRoomData.reverse();
+        
+                // Now broadcast this message to all clients.
+                if(socket==null  || typeof socket == 'undefined') {
+                    io.sockets.emit("rooms", allRoomData);
+                    
+                    // clear out the activity list ever 6 times this gets
+                    // called to low-pass a little better.
+                    _updateRoomsCallCount++;
+                    
+                    if(_updateRoomsCallCount%12==0) {
+                        _updateRoomsCallCount=0;
+                        client.del("rooms.activity");
+                    }
+                    
+                } else socket.emit("rooms", allRoomData);
+            });
         });
-        allRoomData.reverse();
-        
-
-        
-        // Now broadcast this message to all clients.
-        if(socket==null  || typeof socket == 'undefined') {
-            io.sockets.emit("rooms", allRoomData);
-        } else socket.emit("rooms", allRoomData);
     });
 }
 
@@ -970,6 +1004,10 @@ function _processPulse() {
                         var windowActivity = messagesInWindow / WINDOW_SIZE;
                         var relativeActivity = windowActivity / totalActivity;
 
+                        // cache totalActivity (messages/second) in redis
+                        // for other parts of the system to use.
+                        client.set("global:total_activity", totalActivity);
+
                         // so with current settings, relativeActivity goes from about 0 to 
                         // 2.0, so lets scale that way.
 
@@ -1044,7 +1082,7 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "Francais", "Deutch", "Espangol"];
 var botChatOddsOffset = 0.0;
 
-var BASE_CHAT_ODDS = 0.003;
+var BASE_CHAT_ODDS = 0.002;
 
 var varyBotParticipation = true;
 

@@ -44,7 +44,7 @@
 		
 		socket.on('rooms', function(data) {
 			rooms = data;
-			
+
 			// The rooms data is a list sorted by population. It also has lots
 			// of sort of duplicate rooms. So we're going to do a first pass
 			// to combine all those rooms and hide them. When you select one,
@@ -71,21 +71,25 @@
 					
 					
 					// default to the room number that we encounter first
-					var currentMetaroom = {"name":room["name"], "population":0, "num_instances":0};
+					var currentMetaroom = {"name":room["name"], "population":0, "num_instances":0, "total_activity":0};
 					if(shortName in condensedList) currentMetaroom =
 						condensedList[shortName];
 					
 					currentMetaroom["population"] += 
 						parseInt(room["population"]);
 					currentMetaroom["num_instances"] += 1;
+					currentMetaroom["total_activity"] += room["relative"];
 					
 					condensedList[shortName] = currentMetaroom;
 				} else {
 					// It's a normal room (probably user-defined) and we 
 					// should treat it normally. include it in the main list.
 					var shortName = roomPieces.join(" ");
+
+					
 					condensedList[shortName] = room;
 					condensedList[shortName]["num_instances"] = 0;
+					condensedList[shortName]["relative"] = room["relative"];
 				}
 
 			}
@@ -95,6 +99,13 @@
 			for(var roomName in condensedList) {
 				var metaRoom = condensedList[roomName];
 				metaRoom["short_name"] = roomName;
+				
+				console.log(roomName + " totalActivity: " + metaRoom["total_activity"]);
+				
+				if(metaRoom["num_instances"]!=0) {
+					metaRoom["relative"] = metaRoom["total_activity"]/
+						metaRoom["num_instances"];
+				}
 				metaRoomList.push(metaRoom);
 			}
 			
@@ -103,6 +114,8 @@
 			});
 			metaRoomList.reverse();
 			metaRooms = metaRoomList;
+			
+			console.log(metaRooms);
 			
 			$("#top-rooms-list li").remove();
 			
@@ -703,6 +716,9 @@
 			if(room["num_instances"]!=0) {
 				roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
 			}
+			
+			roomItem.text(roomItem.text() + " " +
+				room["relative"].toFixed(2));
 			
 			return roomItem;
 		}
