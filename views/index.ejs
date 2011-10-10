@@ -777,7 +777,7 @@
 			
 			border-top: 1px solid #B3B5B8;
 			
-			z-index: 9999;
+			z-index: 7000;
 		}
 		
 		#chat, #roar-bar .button, #logo, #identity {
@@ -1181,6 +1181,39 @@
 			font-weight: bold;
 		}
 		
+		/* Styles for the static webpage part of the site. */
+		
+		#backdrop {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			
+			background-color: black;
+			opacity: 0.6;
+			width: 100%;
+			height: 100%;
+			z-index: 8000;
+		}
+		
+		#information {
+			position: fixed;
+			
+			top: 50%;
+			left: 50%;
+			
+			width: 400px;
+			height: 600px;
+			
+			margin-left: -200px;
+			margin-top: -300px;
+			
+			background-color: #f0f0f0;
+			
+			box-shadow: 3px 3px 0px black;
+			z-index: 8001;
+		}
+		
+		
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
@@ -1195,6 +1228,49 @@
 <body>
 
 <img id="stream-img" src="/static/starcraft.png">
+
+
+<div id="information">
+	<div id="header-container">
+		<div id="images">
+		</div>
+		<div id="text">
+			<div id="header">
+				ROAR — large scale chat for spectators
+			</div>
+			<div class="section-button selected">
+				overview
+			</div>
+			<div class="section-button selected">
+				chat &amp; shouts
+			</div>
+			<div class="section-button selected">
+				sections
+			</div>
+			<div class="section-button selected">
+				pulse
+			</div>
+		</div>
+	</div>
+	<div id="content">
+		<div id="overview">
+			This is some overview copy.
+		</div>
+		<div id="chat-sect">
+			This is some chat copy.
+		</div>
+		<div id="sections-sect">
+			This is some sections copy.
+		</div>
+		<div id="pulse-sect">
+			This is some pulse copy. 
+		</div>
+	</div>
+</div>
+<div id="backdrop">
+</div>
+
+
 
 <div id="roar-container">
 <div id="roar-bar">
