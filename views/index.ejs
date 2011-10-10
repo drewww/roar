@@ -183,6 +183,8 @@
 			$("#sections-sect").hide();
 			$("#pulse-sect").hide();
 			
+			$(".callout").hide();
+			
 			$(window).blur(function() {
 				pulseEnabled = false;
 			});
@@ -286,6 +288,33 @@
 				$(this).addClass("selected");
 			});
 			
+			
+			$("#hide").click(function (event) {
+				
+				var hideEl = $(this);
+				
+				if($("#container").is(".minimized")) {
+					$("#container").animate({
+						top: "200px"
+					}, 800, function() {
+						$(this).removeClass("minimized");
+						hideEl.text("hide");
+						hideEl.width(100);
+						
+						$("<div id='backdrop'></div>").appendTo($("body"));
+					});
+				} else {
+					$("#container").animate({
+						top: "-315px"
+					}, 800, function() {
+						$(this).addClass("minimized");
+						hideEl.text("about this project");
+						hideEl.width(300);
+						
+						$("#backdrop").remove();
+					});
+				}
+			});
 			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
@@ -1207,24 +1236,25 @@
 			z-index: 8000;
 		}
 		
-		#information {
+		#container {
 			position: fixed;
 			
-			top: 50%;
+			top: 200px;
 			left: 50%;
 			
 			width: 550px;
 			
 			margin-left: -200px;
-			margin-top: -300px;
 			
-			background-color: #f0f0f0;
-			
-			box-shadow: 3px 3px 0px black;
 			z-index: 8001;
 			
 			font-family: Helvetica, sans-serif;
 			
+		}
+		
+		#information {
+			background-color: #f0f0f0;
+			box-shadow: 3px 3px 0px black;
 		}
 		
 		#header-container {
@@ -1284,8 +1314,15 @@
 			left: 50px;
 			z-index: 8000;
 		}
-
-
+		
+		#hide {
+			margin-left: 20px;
+			font-weight: bold;
+			width: 100px;
+			color: white;
+			cursor: pointer;
+		}
+		
 		#name-callout {
 			left: 120px;
 			bottom: 51px;
@@ -1303,6 +1340,17 @@
 			width: 300px;
 		}
 		
+		#pulse-callout {
+			right: 40%;
+			bottom: 30%;
+			width: 300px;
+		}
+		
+		#bots-callout {
+			left: 150px;
+			bottom: 20%;
+			width: 300px;
+		}
 
 		/* using this strategy: http://mrcoles.com/blog/callout-box-css-border-triangles-cross-browser/ */
 		.callout {
@@ -1383,49 +1431,54 @@
 
 <img id="stream-img" src="/static/starcraft.png">
 
-
-<div id="information">
-	<div id="header-container">
-		<div id="images">
-		</div>
-		<div id="text">
-			<div id="header">
-				<h1>ROAR</h1>
-				<h2>large scale chat for spectators</h2>
+<div id="container">
+	<div id="information">
+		<div id="header-container">
+			<div id="images">
 			</div>
-			<div id="overview-title" class="section-button selected">
-				overview
+			<div id="text">
+				<div id="header">
+					<h1>ROAR</h1>
+					<h2>large scale chat for spectators</h2>
+				</div>
+				<div id="overview-title" class="section-button selected">
+					overview
+				</div>
+				<div id="chat-title" class="section-button">
+					chat &amp; shouts
+				</div>
+				<div id="sections-title" class="section-button">
+					sections
+				</div>
+				<div id="pulse-title" class="section-button">
+					pulse
+				</div>
 			</div>
-			<div id="chat-title" class="section-button">
-				chat &amp; shouts
+		</div>
+		<div id="content">
+			<div id="overview-sect">
+	The experience of being in a crowd is visceral. We feel a sense of connection and belonging through shared experiences like watching a sporting event, speech, or performance. In online environments, though, we are often part of a crowd without feeling it. <span class="roar">ROAR</span> is designed to allow very large groups of distributed spectators have meaningful conversations with strangers or friends while creating a sense of presence of thousands of other spectators. <span class="roar">ROAR</span> is also interested in creating opportunities for collective action among spectators and providing flexible ways to share content among very large groups. These systems combine to let you feel the roar of the crowd even if you're alone in your bedroom.
 			</div>
-			<div id="sections-title" class="section-button">
-				sections
+			<div id="chat-sect">
+				At its heart, <span class="roar">ROAR</span> is about chat. You can send two different kinds of text-based messages. Like a normal chat system, you can send chat messages to other people in your section of the crowd. These messages rapidly expire, but you can send them as often as you like. Shouts, on the other hand, have a life of their own. When you shout something, everyone in your section sees it first and if enough of them like it (by clicking '+1') people in other sections will see it too. 
 			</div>
-			<div id="pulse-title" class="section-button">
-				pulse
+			<div id="sections-sect">
+				Sections in <span class="roar">ROAR</span> are your way of deciding what kind of chat experience you want to have. Sections can be named anything you want&mdash;you can make your own section by just typing in any name you like. All sections are public, but only the most popular sections are shown in the suggested list, so you can make a section for just you and your friends if you like. Suggested sections all have a small activity indicator to help you gauge how active that section is; the more dots, the more chatting going on there. 
+			</div>
+			<div id="pulse-sect">
+				Pulse is what really brings the crowd together in <span class="roar">ROAR</span>. The words you see bubbling up below are the most common recent terms across <emph>all</emph> sections. The more words there are, the more active the crowd is; when there are very few words, the crowd has gone silent. Well-coordinated crowds can manipulate this display by coordinating common outbursts (perhaps using the shout feature) to force the system to display their chosen words. 
 			</div>
 		</div>
-	</div>
-	<div id="content">
-		<div id="overview-sect">
-The experience of being in a crowd is visceral. We feel a sense of connection and belonging through shared experiences like watching a sporting event, speech, or performance. In online environments, though, we are often part of a crowd without feeling it. <span class="roar">ROAR</span> is designed to allow very large groups of distributed spectators have meaningful conversations with strangers or friends while creating a sense of presence of thousands of other spectators. <span class="roar">ROAR</span> is also interested in creating opportunities for collective action among spectators and providing flexible ways to share content among very large groups. These systems combine to let you feel the roar of the crowd even if you're alone in your bedroom.
-		</div>
-		<div id="chat-sect">
-			At its heart, <span class="roar">ROAR</span> is about chat. You can send two different kinds of text-based messages. Like a normal chat system, you can send chat messages to other people in your section of the crowd. These messages rapidly expire, but you can send them as often as you like. Shouts, on the other hand, have a life of their own. When you shout something, everyone in your section sees it first and if enough of them like it (by clicking '+1') people in other sections will see it too. 
-		</div>
-		<div id="sections-sect">
-			Sections in <span class="roar">ROAR</span> are your way of deciding what kind of chat experience you want to have. Sections can be named anything you want&mdash;you can make your own section by just typing in any name you like. All sections are public, but only the most popular sections are shown in the suggested list, so you can make a section for just you and your friends if you like. Suggested sections all have a small activity indicator to help you gauge how active that section is; the more dots, the more chatting going on there. 
-		</div>
-		<div id="pulse-sect">
-			Pulse is what really brings the crowd together in <span class="roar">ROAR</span>. The words you see bubbling up below are the most common recent terms across <emph>all</emph> sections. The more words there are, the more active the crowd is; when there are very few words, the crowd has gone silent. Well-coordinated crowds can manipulate this display by coordinating common outbursts (perhaps using the shout feature) to force the system to display their chosen words. 
-		</div>
-	</div>
 	
-	<div id="footer">
-		Designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a>
+		<div id="footer">
+			Designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a>
+		</div>
+	</div>
+	<div id="hide">
+		hide
 	</div>
 </div>
+
 <div id="backdrop">
 </div>
 
@@ -1445,6 +1498,19 @@ The experience of being in a crowd is visceral. We feel a sense of connection an
 
 <div class="callout border-callout" id="section-callout">
 	Use this to choose which section of the crowd you want to be in. You can choose an existing section or type in the name of your own custom section. A pop-up window will show you which sections have the most people and how active they are.
+    <b class="border-notch notch notch right"></b>
+    <b class="notch notch right"></b>
+</div>
+
+
+<div class="callout border-callout" id="bots-callout">
+	This chat is coming from bots trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way for me to test the visualization with real content. You can tell the bots to stop talking by saying <span class="command">/level 0</span> in chat. <span class="command">/level vary</span> will make them normal again. 
+    <b class="border-notch notch notch left"></b>
+    <b class="notch notch left"></b>
+</div>
+
+<div class="callout border-callout" id="pulse-callout">
+	This is the pulse visualization area. The words shown here are the most popular terms across <emph>all</emph> sections. The more words visible, the more active the crowd is right now. The more solid the word, the longer it has been visible.
     <b class="border-notch notch notch right"></b>
     <b class="notch notch right"></b>
 </div>
