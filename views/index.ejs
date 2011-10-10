@@ -486,8 +486,6 @@
 				var wordEl;
 				if($("#" + wordId).length) {
 					wordEl = $("#"+wordId);
-					wordEl.stop();
-
 					
 					// If the word already exists, update its size.
 					// (the extra -6 is to make sure that words still have
@@ -505,8 +503,6 @@
 						// make it blur!
 						wordEl.addClass("blur");
 					}
-
-
 					
 					var newDimensions = getDimensionsForWord(
 						wordEl.html(), newSize);
@@ -517,8 +513,6 @@
 					// growth and move left half of the difference.
 					var leftDelta=(wordEl.width()-newDimensions["width"])/2;
 					var topDelta=(wordEl.height()-newDimensions["height"])/2;
-					
-					// console.log("leftDelta: " + leftDelta + "; topDelta: " + topDelta);
 					
 					wordEl.animate({
 						fontSize: newSize,
@@ -564,9 +558,8 @@
 					wordEl.addClass("pulse-word");
 					wordEl.html(pulseWord);
 					
-					// console.log("adding word: " + wordEl.text());
 					var size = pulseMagnitude*2*12;
-
+					
 					var isBlur = false;
 					if(size < 16) {
 						isBlur = true;
@@ -609,6 +602,7 @@
 						}, 500, "linear", null);
 					}
 					
+					wordEl.css("z-index", parseInt(wordEl.css('font-size')));
 				}
 			}
 			
