@@ -100,8 +100,6 @@
 				var metaRoom = condensedList[roomName];
 				metaRoom["short_name"] = roomName;
 				
-				console.log(roomName + " totalActivity: " + metaRoom["total_activity"]);
-				
 				if(metaRoom["num_instances"]!=0) {
 					metaRoom["relative"] = metaRoom["total_activity"]/
 						metaRoom["num_instances"];
@@ -114,8 +112,6 @@
 			});
 			metaRoomList.reverse();
 			metaRooms = metaRoomList;
-			
-			console.log(metaRooms);
 			
 			$("#top-rooms-list li").remove();
 			
@@ -704,21 +700,55 @@
 			var roomName = room.name;
 			var roomPop = room.population;
 			
-			
-			var roomItem = $("<li></li>");
-			roomItem.text(room.name + " ("+room.population+")")
+
+			var roomItem = $("<li></li>")
 				.attr("title", room["name"])
 				.click(function (event) {
 					$("#room").val($(this).attr("title"));
 					$("#room-select-form").submit();
-				})
+				});
+
+			var roomActivityIndicator = $("<div></div>")
+				.addClass("activity")
+				.appendTo(roomItem);
+				
+			// rescale relativeLevel (which runs approx 0-2) to 1-5.
+			var relativeLevel = Math.floor(5*(room["relative"]/2));
+			if(relativeLevel>5) relativeLevel = 5;
+			
+			var colorClass;
+			switch(relativeLevel) {
+				case 0:
+					colorClass = "level-red";
+					break;
+				case 1:
+				case 2:
+					colorClass = "level-yellow";
+					break;
+				case 3:
+				case 4:
+					colorClass = "level-green";
+					break;
+				default:
+					colorClass = "level-green";
+			}
+			for(var i=0; i<5; i++) {
+				var activityPixel = $("<div></div>")
+					.addClass("pixel")
+					.appendTo(roomActivityIndicator);
+				
+				if(i<relativeLevel+1) activityPixel.addClass(colorClass);
+			}
+
+			
+			var roomName = $("<div></div>");
+			roomName.text(room.name + " ("+room.population+")")
+				.appendTo(roomItem);
 				
 			if(room["num_instances"]!=0) {
-				roomItem.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
+				roomName.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
 			}
 			
-			roomItem.text(roomItem.text() + " " +
-				room["relative"].toFixed(2));
 			
 			return roomItem;
 		}
@@ -969,6 +999,31 @@
 			background-color: #ccc;
 		}
 
+		.activity {
+			margin-right: 5px;
+		}
+		
+		.level-green {
+			background-color: green !important;
+		}
+		
+		.level-yellow {
+			background-color: yellow !important;
+		}
+		
+		.level-red { 
+			background-color: red !important;
+		}
+		
+		.pixel {
+			width: 5px;
+			height: 5px;
+			background-color: grey;
+			margin-right: 2px;
+			float: left;
+			margin-top: 7px;
+		}
+		
 		
 		#roar-bar .button {
 			width: 70px;
