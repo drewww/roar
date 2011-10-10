@@ -285,6 +285,27 @@
 				$("#content").children().hide();
 				$("#" + this.id.split("-")[0] + "-sect").show();
 				
+				$(".callout").hide(200);
+				
+				switch(this.id.split("-")[0]) {
+					case "overview":
+						
+						break;
+					case "chat":
+						$("#chat-callout").show(200);
+						$("#bots-callout").show(200);
+						break;
+						
+					case "sections":
+						$("#section-callout").show(200);
+						break;
+					case "pulse":
+						$("#pulse-callout").show(200);
+						break;
+					default:
+						break;
+				}
+				
 				$(this).addClass("selected");
 			});
 			
@@ -1329,7 +1350,7 @@
 		}
 		
 		#chat-callout {
-			left: 180px;
+			left: 300px;
 			bottom: 51px;
 			width: 300px;
 		}
@@ -1348,7 +1369,7 @@
 		
 		#bots-callout {
 			left: 150px;
-			bottom: 20%;
+			bottom: 23%;
 			width: 300px;
 		}
 
