@@ -1276,6 +1276,82 @@
 			padding: 5px;
 		}
 		
+		.explainer {
+			width: 300px;
+			position: absolute;
+			height: 200px;
+			
+			bottom: 51px;
+			left: 50px;
+			z-index: 8000;
+		}
+
+
+		#name-callout {
+			left: 120px;
+			bottom: 51px;
+		}
+		
+		#chat-callout {
+			left: 180px;
+			bottom: 51px;
+			width: 300px;
+		}
+		
+		#section-callout {
+			right: 50px;
+			bottom: 51px;
+			width: 300px;
+		}
+		
+
+		/* using this strategy: http://mrcoles.com/blog/callout-box-css-border-triangles-cross-browser/ */
+		.callout {
+		    position: absolute;
+			width: 200px;
+
+
+		    margin: 18px 0;
+		    padding: 18px 20px;
+		    background-color: #eef4f9;
+		    /* easy rounded corners for modern browsers */
+		    -moz-border-radius: 6px;
+		    -webkit-border-radius: 6px;
+		    border-radius: 6px;
+			
+			z-index: 8000;
+			
+			font-family: Helvetica, sans-serif;
+		}
+		
+		.callout .notch {
+		    position: absolute;
+		    bottom: -10px;
+		    margin: 0;
+		    border-bottom: 0;
+		    border-left: 10px solid transparent;
+		    border-right: 10px solid transparent;
+		    border-top: 10px solid #eef4f9;
+		    padding: 0;
+		    width: 0;
+		    height: 0;
+		    /* ie6 height fix */
+		    font-size: 0;
+		    line-height: 0;
+		     /* ie6 transparent fix */
+		    _border-right-color: pink;
+		    _border-left-color: pink;
+		    _filter: chroma(color=pink);
+		}
+		
+		.callout .left {
+			left: 20px !important;
+		}
+		
+		.callout .right {
+			right: 20px !important;
+		}
+
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
@@ -1333,6 +1409,32 @@
 <div id="backdrop">
 </div>
 
+
+
+<div class="callout border-callout" id="name-callout">
+	Start by choosing a nickname. You can always click on your nickname later to change it to something else.
+    <b class="border-notch notch left"></b>
+    <b class="notch left"></b>
+</div>
+
+<div class="callout border-callout" id="chat-callout">
+	Type your message here! If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections.
+    <b class="border-notch notch left"></b>
+    <b class="notch left"></b>
+</div>
+
+<div class="callout border-callout" id="section-callout">
+	Use this to choose which section of the crowd you want to be in. You can choose an existing section or type in the name of your own custom section. A pop-up window will show you which sections have the most people and how active they are.
+    <b class="border-notch notch notch right"></b>
+    <b class="notch notch right"></b>
+</div>
+
+<div id="chat-explainer" class="explainer">
+<div class="content">
+</div>
+<div class="notch">
+</div>
+</div>
 
 
 <div id="roar-container">
