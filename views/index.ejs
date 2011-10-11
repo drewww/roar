@@ -380,6 +380,7 @@
 						.appendTo($("body"));
 				});
 			} else {
+				$(".callout").hide(200);
 				$("#container").animate({
 					top: -($("#container").height()-55)
 				}, 800, function() {
@@ -387,7 +388,6 @@
 					hideEl.text("about this project");
 					hideEl.width(300);
 
-					$(".callout").hide(200);
 					
 					if(usingDemoName) {
 						$("#name-callout").show(200);
@@ -1647,32 +1647,32 @@
 
 
 <div class="callout border-callout" id="name-callout">
-	You can change your nickname by clicking here and entering a new one.
+	You can <span class="highlight">change your nickname</span> by clicking here and entering a new one.
     <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="chat-callout">
-	Type your message here! If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections.
+	<span class="highlight">Type your message here!</span> If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections.
     <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="section-callout">
-	Use this to choose which section of the crowd you want to be in. You can choose an existing section or type in the name of your own custom section. A pop-up window will show you which sections have the most people and how active they are.
+	Use this to <span class="highlight">choose which section</span> of the crowd you want to be in. You can choose an existing section or type in the name of your own custom section. A pop-up window will show you which sections have the most people and how active they are.
     <b class="border-notch right"></b>
     <b class="notch right"></b>
 </div>
 
 
 <div class="callout border-callout" id="bots-callout">
-	This chat is coming from bots trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way for me to test the visualization with real content. You can tell the bots to stop talking by saying <span class="command">/level 0</span> in chat. <span class="command">/level vary</span> will make them normal again. 
+	This <span class="highlight">chat is coming from bots</span> trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way for me to test the visualization with real content. You can tell the bots to stop talking by saying <span class="command">/level 0</span> in chat. <span class="command">/level vary</span> will make them normal again. 
     <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="pulse-callout">
-	This is the pulse visualization area. The words shown here are the most popular terms across <emph>all</emph> sections. The more words visible, the more active the crowd is right now. The more solid the word, the longer it has been visible.
+	This is the pulse visualization area. The words shown here are the <span class="highlight">most popular terms across <emph>all</emph> sections</span>. The more words visible, the more active the crowd is right now. The more solid the word, the longer it has been visible.
     <b class="border-notch right"></b>
     <b class="notch right"></b>
 </div>
