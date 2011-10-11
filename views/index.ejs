@@ -200,6 +200,13 @@
 			
 			$(".callout").hide();
 			
+			if("roar-start-hidden" in localStorage) {
+				$("#backdrop").hide();
+				$("#container").addClass("minimized");
+				$("#container").offset({top:-424}, 0);
+				$("#hide").text("about this project");
+			}
+			
 			$(window).blur(function() {
 				pulseEnabled = false;
 			});
@@ -373,7 +380,6 @@
 				}, 800, function() {
 					$(this).removeClass("minimized");
 					hideEl.text("hide");
-					hideEl.width(100);
 					
 					$("<div id='backdrop'></div>")
 						.click(hideInfoPanel)
@@ -386,7 +392,6 @@
 				}, 800, function() {
 					$(this).addClass("minimized");
 					hideEl.text("about this project");
-					hideEl.width(300);
 
 					
 					if(usingDemoName) {
@@ -403,6 +408,8 @@
 					$("#backdrop").remove();
 				});
 			}
+			
+			localStorage["roar-start-hidden"] = true;
 		}
 		
 		function sendShout() {
@@ -1423,7 +1430,7 @@
 		#hide {
 			margin-left: 20px;
 			font-weight: bold;
-			width: 100px;
+			width: 300px;
 			color: white;
 			cursor: pointer;
 			font-size: 1.6em;
