@@ -381,9 +381,7 @@
 					$(this).removeClass("minimized");
 					hideEl.text("hide");
 					
-					$("<div id='backdrop'></div>")
-						.click(hideInfoPanel)
-						.appendTo($("body"));
+					$("#backdrop").show();
 				});
 			} else {
 				$(".callout").hide(200);
@@ -405,7 +403,7 @@
 					}
 					
 					
-					$("#backdrop").remove();
+					$("#backdrop").hide();
 				});
 			}
 			
