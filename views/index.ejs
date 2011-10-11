@@ -14,6 +14,8 @@
 		var metaRooms = [];
 		var pulseEnabled = true;
 		
+		var usingDemoName = false;
+		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
 
@@ -27,7 +29,20 @@
 				// This client has not logged in before. Present the identify
 				// UI and ask them what they want their name to be. Then
 				// send that to the server. 
-				$("#identity-container").show();
+				
+				// in this demo version, if they haven't logged in, log them
+				// in as a demo user. Need to randomize it a bit so they
+				// don't collide.
+				var curTimeString = Date.now() + '';
+				var demoUserName = "Demo User " +
+					curTimeString.slice(curTimeString.length-3,
+					curTimeString.length);
+					
+				usingDemoName = true;
+				
+				socket.emit("identify", {username:demoUserName});
+				
+				//$("#identity-container").show();
 			}
 		});
 
@@ -213,6 +228,10 @@
 				$("#name").removeClass("default-text-active");
 				
 				$("#name").val($("#nickname").html());
+				
+				$("#name-callout").hide(200);
+				
+				usingDemoName = false;
 			});
 			
 			$("#show-history").click(function () {
@@ -332,6 +351,17 @@
 						hideEl.width(300);
 
 						$(".callout").hide(200);
+						
+						if(usingDemoName) {
+							$("#name-callout").show(200);
+							
+							// hide the callout in ten seconds if they don't
+							// pick a new name.
+							setTimeout(function() {
+								$("#name-callout").hide(200);
+							}, 10000);
+						}
+						
 						
 						$("#backdrop").remove();
 					});
@@ -1510,7 +1540,7 @@
 
 
 <div class="callout border-callout" id="name-callout">
-	Start by choosing a nickname. You can always click on your nickname later to change it to something else.
+	You can change your nickname by clicking here and entering a new one.
     <b class="border-notch notch left"></b>
     <b class="notch left"></b>
 </div>
