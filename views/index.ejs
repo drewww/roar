@@ -1286,8 +1286,8 @@
 			top: 0px;
 			left: 0px;
 			
-			background-color: black;
-			opacity: 0.6;
+			background-color: #0C2538;
+			opacity: 0.4;
 			width: 100%;
 			height: 100%;
 			z-index: 8000;
@@ -1299,34 +1299,58 @@
 			top: 10px;
 			left: 50%;
 			
-			width: 550px;
+			width: 580px;
 			
-			margin-left: -200px;
+			margin-left: -290px;
 			
 			z-index: 8001;
 			
 			font-family: Helvetica, sans-serif;
-			
 		}
 		
 		#information {
 			background-color: #f0f0f0;
-			box-shadow: 3px 3px 0px black;
+			box-shadow: 3px 3px 3px black;
 			padding: 10px;
+			border-top: 1px solid #36464C;
+			border-right: 1px solid #36464C;
+			border-left: 1px solid #36464C;
+			
+			color: #0C2538;
+			
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
 		}
 		
 		#header-container {
 			width: 100%;
-			height: 110px;
-			padding: 5px;
+/*			padding: 5px;*/
+			margin-bottom: 10px;
 		}
 		
 		#images {
 			float: left;
 			background-color: black;
 			width: 200px;
-			height: 106px;
+			height: 128px;
 			margin-right: 5px;
+			
+			border-radius: 2px;
+		}
+		
+		#text {
+			float: left;
+		}
+		
+		#header {
+			height: 98px;
+		}
+		
+		#header h1, #header h2 {
+			width: 315px;
+			background-color: #0C2538;
+			color: #EDECC8;
+			padding: 5px;
 		}
 		
 		#header h1 {
@@ -1334,6 +1358,12 @@
 			font-size: 3.0em;
 			margin-top: 0px;
 			margin-bottom: 0px;
+			
+/*			border: 1px solid #36464C;*/
+/*			width: 150px;*/
+			border-top-left-radius: 2px;
+			border-top-right-radius: 2px;
+			
 		}
 		
 		#header h2 {
@@ -1342,6 +1372,9 @@
 			font-size: 1.2em;
 			margin-top: 0px;
 			margin-bottom: 0px;
+			
+			border-bottom-left-radius: 2px;
+			border-bottom-right-radius: 2px;
 		}
 		
 		.section-button {
@@ -1349,14 +1382,19 @@
 			font-size: 1.1em;
 			margin-right: 5px;
 			margin-top: 5px;
-			background-color: #aaa;
-			padding: 2px;
+			background-color: #2B434F;
+			padding: 3px;
+			
+			color: #EDECC8;
 			
 			cursor: pointer;
+			border-radius: 3px;
 		}
 		
 		.selected {
-			background-color: #555;
+			background-color: #0C2538;
+			color: #EDE059;
+			
 		}
 		
 		#content {
@@ -1419,6 +1457,7 @@
 
 		    margin: 18px 0;
 		    padding: 18px 20px;
+		
 		    background-color: #eef4f9;
 		    /* easy rounded corners for modern browsers */
 		    -moz-border-radius: 6px;
@@ -1450,6 +1489,7 @@
 		    _filter: chroma(color=pink);
 		}
 		
+		
 		.callout .left {
 			left: 20px !important;
 		}
@@ -1459,11 +1499,18 @@
 		}
 		
 		#footer {
-			width: 545px;
-			background-color: #444;
-			color: white;
-			padding: 3px;
+			padding: 5px;
 			font-size: 0.8em;
+			
+			background-color: #0C2538;
+			color: #EDECC8;
+			
+			border-bottom: 1px solid #36464C;
+			border-left: 1px solid #36464C;
+			border-right: 1px solid #36464C;
+			
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
 		}
 		
 		#footer a {
@@ -1473,6 +1520,14 @@
 		
 		#footer a:visited {
 			color:white;
+		}
+
+		.roar {
+			background-color: #0C2538;
+			color: #EDECC8;
+			font-weight: bold;
+			padding-left: 2px;
+			padding-right: 2px;
 		}
 
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
@@ -1513,6 +1568,7 @@
 					pulse
 				</div>
 			</div>
+			<br class="clear">
 		</div>
 		<div id="content">
 			<div id="overview-sect">
@@ -1530,7 +1586,7 @@
 		</div>
 	</div>
 	<div id="footer">
-		<a href="http://roar.media.mit.edu/">ROAR</a> was designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a>
+		<a href="http://roar.media.mit.edu/">ROAR</a> was designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a> with the <a href="http://media.mit.edu/speech/">Speech + Mobility Group</a>
 	</div>	
 	<div id="hide">
 		hide
