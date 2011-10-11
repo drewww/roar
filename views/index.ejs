@@ -1286,11 +1286,11 @@
 			top: 0px;
 			left: 0px;
 			
-			background-color: #0C2538;
-			opacity: 0.4;
+			background-color: black;
+			opacity: 0.5;
 			width: 100%;
 			height: 100%;
-			z-index: 8000;
+			z-index: 7999;
 		}
 		
 		#container {
@@ -1312,9 +1312,9 @@
 			background-color: #f0f0f0;
 			box-shadow: 3px 3px 3px black;
 			padding: 10px;
-			border-top: 1px solid #36464C;
-			border-right: 1px solid #36464C;
-			border-left: 1px solid #36464C;
+			border-top: 3px solid #36464C;
+			border-right: 3px solid #36464C;
+			border-left: 3px solid #36464C;
 			
 			color: #0C2538;
 			
@@ -1469,7 +1469,7 @@
 			font-family: Helvetica, sans-serif;
 		}
 		
-		.callout .notch {
+		.callout .notch, .callout .border-notch {
 		    position: absolute;
 		    bottom: -10px;
 		    margin: 0;
@@ -1489,12 +1489,38 @@
 		    _filter: chroma(color=pink);
 		}
 		
+		.border-callout {
+			border: 3px solid #36464C; padding: 17px 19px;
+		}
 		
-		.callout .left {
+		.border-callout .border-notch {
+			border-top: 11px solid #36464C;
+			
+			border-left: 12px solid transparent;
+		    border-right: 12px solid transparent;
+		    
+			
+/*			border-right: 12px solid #36464C;
+			border-left: 12px solid #36464C;
+*//*			height: 0px;*/
+/*			bottom: 11px;*/
+			bottom: -13px;
+		}
+		
+		.border-notch.left {
+		    left: 19px !important;
+		}
+		
+		.border-notch.right {
+			right: 19px !important;
+		}
+		
+		
+		.notch.left {
 			left: 20px !important;
 		}
 		
-		.callout .right {
+		.notch.right {
 			right: 20px !important;
 		}
 		
@@ -1505,9 +1531,9 @@
 			background-color: #0C2538;
 			color: #EDECC8;
 			
-			border-bottom: 1px solid #36464C;
-			border-left: 1px solid #36464C;
-			border-right: 1px solid #36464C;
+			border-bottom: 3px solid #36464C;
+			border-left: 3px solid #36464C;
+			border-right: 3px solid #36464C;
 			
 			border-bottom-left-radius: 5px;
 			border-bottom-right-radius: 5px;
@@ -1600,33 +1626,33 @@
 
 <div class="callout border-callout" id="name-callout">
 	You can change your nickname by clicking here and entering a new one.
-    <b class="border-notch notch left"></b>
+    <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="chat-callout">
 	Type your message here! If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections.
-    <b class="border-notch notch left"></b>
+    <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="section-callout">
 	Use this to choose which section of the crowd you want to be in. You can choose an existing section or type in the name of your own custom section. A pop-up window will show you which sections have the most people and how active they are.
-    <b class="border-notch notch notch right"></b>
-    <b class="notch notch right"></b>
+    <b class="border-notch right"></b>
+    <b class="notch right"></b>
 </div>
 
 
 <div class="callout border-callout" id="bots-callout">
 	This chat is coming from bots trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way for me to test the visualization with real content. You can tell the bots to stop talking by saying <span class="command">/level 0</span> in chat. <span class="command">/level vary</span> will make them normal again. 
-    <b class="border-notch notch notch left"></b>
-    <b class="notch notch left"></b>
+    <b class="border-notch left"></b>
+    <b class="notch left"></b>
 </div>
 
 <div class="callout border-callout" id="pulse-callout">
 	This is the pulse visualization area. The words shown here are the most popular terms across <emph>all</emph> sections. The more words visible, the more active the crowd is right now. The more solid the word, the longer it has been visible.
-    <b class="border-notch notch notch right"></b>
-    <b class="notch notch right"></b>
+    <b class="border-notch right"></b>
+    <b class="notch right"></b>
 </div>
 
 <div id="chat-explainer" class="explainer">
