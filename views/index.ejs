@@ -771,8 +771,9 @@
 			for (var roomIndex in metaRooms) {
 				var room = metaRooms[roomIndex];
 				
-				var result = room["short_name"].search(string);
-				var resultName = room["name"].search(string);
+				var result = room["short_name"].toLowerCase().search(
+					string.toLowerCase());
+				// var resultName = room["name"].toLowerCase().search(string);
 				
 				if (result>-1) {
 					candidateMetaRooms.push(room);
