@@ -195,6 +195,17 @@
 
 		$(document).ready(function() {
 			
+			var isTested = false;
+			if($.browser.safari || $.browser.webkit) {
+				if(parseInt($.browser.version) >= 534) isTested = true;
+			} else if($.browser.mozilla){
+				if(parseInt($.browser.version[0]) >= 6) isTested = true;
+			}
+			
+			if(!isTested) {
+				alert("This prototype is only tested in recent versions of Chrome, Safari, and Firefox. Your browser is not supported and may fail in interesting (or boring) ways. Your mileage may vary! Future versions will hopefully have broader support. In any event, you can learn more about the project even if the demo itself doesn't work.");
+			}
+			
 			// Setup default visibility.
 			$("#identity-message").hide();
 			$("#chat-history").hide();
