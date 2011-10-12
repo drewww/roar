@@ -746,7 +746,7 @@ function _checkShoutExpiration() {
 // think about heavily caching the room list in a dedicated key at some point.
 // Send an update with summary information about the current roomlist
 // to populate client side room autocomplete information. 
-var _updateRoomsCallCount = 0;
+var _updateRoomsCallCount = 1;
 function _updateRooms(socket) {
     // For each room we want to include the room name and the number
     // of people in each room. This is all stored in redis, so we can
@@ -775,7 +775,7 @@ function _updateRooms(socket) {
                     // is ALL rooms - divide by the room count to normalize
                     // it properly.
                     var roomMessagesPerSecond = roomMessages /
-                        (5*_updateRoomsCallCount);
+                        (5*(_updateRoomsCallCount));
                     var relativeRoomActivity = roomMessagesPerSecond/
                         (total_activity/roomCount);
                 
@@ -798,8 +798,8 @@ function _updateRooms(socket) {
                     // called to low-pass a little better.
                     _updateRoomsCallCount++;
                     
-                    if(_updateRoomsCallCount%12==0) {
-                        _updateRoomsCallCount=0;
+                    if(_updateRoomsCallCount%6==0) {
+                        _updateRoomsCallCount=1;
                         client.del("rooms.activity");
                     }
                     
