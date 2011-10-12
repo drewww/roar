@@ -120,7 +120,7 @@ io.sockets.on('connection', function(socket) {
                             //         socket.emit('message', msgObj);
                             //     }
                             // Doing it here ensures that it appears after the past messages.
-                                socket.emit('message', {text:"Welcome to roar!", admin:"true"});
+                                socket.emit('message', {text:"Welcome to ROAR!", admin:"true"});
                             }
                             
                             // push an initial room state down.
@@ -596,8 +596,8 @@ function joinRoom(socket, newRoomName) {
                         client.hset("rooms", newRoomName, JSON.stringify(room));
                         if (socket) {
                             sendAdminMessage(socket,
-                                "You have joined room '" + newRoomName +
-                                "' with "+population+" total person.");
+                                "You're now in section '" + newRoomName +
+                                "' with "+population+" other person.");
                         }
                 });
             });
@@ -618,9 +618,9 @@ function joinRoom(socket, newRoomName) {
                                     JSON.stringify(room),
                                     function(err, res) {
                                         if (socket) sendAdminMessage(socket, 
-                                            "You have joined room '" + newRoomName +
+                                            "You're now in section '" + newRoomName +
                                             "' with " + room["population"] +
-                                            " total people.");
+                                            " other people.");
                                 });
                             });
                     }
