@@ -203,6 +203,8 @@
 			$("#sections-sect").hide();
 			$("#pulse-sect").hide();
 			
+			$("#demo-header").hide();
+			
 			$(".callout").hide();
 			
 			if("roar-start-hidden" in localStorage) {
@@ -957,6 +959,8 @@
 			font-size: 2em;
 			width: 108px;
 			text-align: center;
+			
+			letter-spacing: -2px;
 		}
 		
 		#chat {
@@ -1585,7 +1589,54 @@
 			padding-left: 2px;
 			padding-right: 2px;
 		}
+		
+		
+		#demo-header {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			
+			height: 150px;
+			width: 100%;
+			
+			background-color: #0C2538;
+			border-bottom: 3px solid #36464C;
+			color: #EDECC8;
+			
+			z-index: 9999;
+			
+			font-family: helvetica, sans-serif;
+			padding-left: 50px;
+		}
+		
+		#demo-header .title {
+			float: left;
 
+			height: 100%;
+			width: 500px;
+			
+			font-size: 8.5em;
+			font-weight: bold;
+			
+			letter-spacing: -8px;
+		}
+		
+		#demo-header .subtitle, #demo-header .byline {
+			float: left;
+			height: 45%;
+		}
+		
+		#demo-header .subtitle {
+			font-weight: bold;
+			font-size: 4em;
+			margin-top: 8px;
+		}
+		
+		#demo-header .byline {
+			font-style: italic;
+			font-size: 3em;
+		}
+		
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
 	    .default-text { }
 	    .default-text-active { color: #a1a1a1; font-style: italic; }
@@ -1599,6 +1650,11 @@
 </head>
 <body>
 
+
+<div id="demo-header">
+<div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
+</div>
+
 <img id="stream-img" src="/static/starcraft.png">
 
 <div id="container">
@@ -1608,7 +1664,7 @@
 			<div id="text">
 				<div id="header">
 					<h1>ROAR</h1>
-					<h2>large scale chat for spectators</h2>
+					<h2>super scale chat for online crowds</h2>
 				</div>
 				<div id="overview-title" class="section-button selected">
 					overview
