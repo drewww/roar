@@ -173,8 +173,13 @@
 				.append($("<br class='clear'>"))
 				.appendTo($("#shout-live"));
 				
-				
-				
+				// Expire all shouts after a minute. This is a temporary thing
+				// because bots keep them alive forever with infinite voting.
+				setTimeout(function() {
+					shoutEl.hide(200, function() {
+						$(this).remove();
+					});
+				}, 60000);
 		});
 		
 		socket.on('shout.vote', function(data) {

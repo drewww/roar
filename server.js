@@ -337,6 +337,8 @@ function spreadShoutToRoom(room, shoutId) {
     var shoutKey = "shout:" + shoutId;
     console.log("shoutKey: " + shoutKey);
     
+    if(typeof shoutKey == 'undefined' || shoutKey=="undefined") return;
+    
     client.hgetall(shoutKey, function(err, res) {
         // Feels silly to bounce off redis like this,
         // but whatever.
@@ -363,6 +365,7 @@ function spreadShoutToRoom(room, shoutId) {
            if(res==null) {
                client.hset(shoutKey, "expiration", Date.now() + 60000);
            } else {
+               
                client.hincrby(shoutKey, "expiration", 60000);
                
                // putting the admin message here because this only happens
@@ -381,6 +384,9 @@ function spreadShoutToRoom(room, shoutId) {
 }
 
 function voteForShout(socket, shoutId, callback) {
+    
+    if(typeof shoutId == 'undefined' || shoutId=="undefined") return;
+    
     var shoutKey = "shout:" + shoutId;
     
     // TODO Need to make sure asking for invalid shouts doesn't bring the
@@ -496,9 +502,6 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                                 // now roomNameSet has all the rooms that
                                 // haven't seen this shout yet. roll the
                                 // dice and expand to two of them.
-                                // (this is not quite a fair search, but
-                                // since we're going to take two adjacent
-                                // rooms, it'll do for now.)
                                 
                                 for(var i=0; i<2; i++) {
                                     if(roomNameSet.size()==0) {
@@ -517,7 +520,6 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
                     }
             });
         });
-        
     });
     
     // boost the total vote count by 1.
@@ -539,14 +541,24 @@ function writeShoutVoteFromRoom(room, shoutId, callback) {
 }
 
 function handleMaxShout(shoutId) {
-    console.log("Shout has reached max promotion.");
     
     var socket = getSocketListForRoom("shout:" + shoutId +":owner")[0];
     
-    sendAdminMessage(socket, "Everyone has seen your shout!");
+    socket.get("shout:" + shoutId + ":max-promotion-notice",
+        function(err, hasSeenPromotionNotice) {
+        
+            if(hasSeenPromotionNotice!=null) return;
+        
+            console.log("Shout has reached max promotion.");
+
+
+            sendAdminMessage(socket, "Everyone has seen your shout!");
+
+            // and then remove them from the channel
+            socket.leave("shout:" + shoutId + ":owner");
+            socket.set("shout:" + shoutId + ":max-promotion-notice", true);
+    });
     
-    // and then remove them from the channel
-    socket.leave("shout:" + shoutId + ":owner");
     
 }
 
@@ -1216,8 +1228,6 @@ function _chatBotTick() {
                             }
                         }
                     }
-                    
-                    // console.log("bots=", bots);
                 }
             });
         }
