@@ -861,7 +861,7 @@
 				.appendTo(roomItem);
 				
 			if(room["num_instances"]!=0) {
-				roomName.text(room.short_name + " ("+room.population+" in "+room.num_instances+" sections)");
+				roomName.text(room.short_name + " ("+room.population+"/"+room.num_instances+")");
 			}
 			
 			
@@ -965,7 +965,7 @@
 		}
 		
 		#room-select input {
-			width: 180px;
+			width: 135px;
 		}
 		
 		#room-select {
@@ -974,7 +974,7 @@
 			float: right;
 			padding-top: 15px;
 			padding-left: 10px;
-			width: 260px;
+			width: 215px;
 			
 			z-index: 8000;
 		}
@@ -1090,7 +1090,7 @@
 			color: #EDECC8;
 			position:fixed;
 			
-			width: 270px;
+			width: 225px;
 			bottom: -200px;
 			right: 0%;
 			
@@ -1130,7 +1130,7 @@
 		}
 		
 		#rooms-container li:hover {
-			background-color: #ccc;
+			background-color: #0C2538;
 		}
 
 		.activity {
@@ -1835,7 +1835,7 @@ shout
 <div id="rooms-container">
 <h1>top sections</h1>
 <ul id="top-rooms-list"></ul>
-<h1>suggested rooms</h1>
+<h1>suggested sections</h1>
 <ul id="suggested-rooms-list"></ul>
 </div>
 
