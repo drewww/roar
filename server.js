@@ -595,9 +595,12 @@ function joinRoom(socket, newRoomName) {
                         
                         client.hset("rooms", newRoomName, JSON.stringify(room));
                         if (socket) {
+                            // sendAdminMessage(socket,
+                            //     "You're now in section '" + newRoomName +
+                            //     "' with "+population+" other person.");
                             sendAdminMessage(socket,
                                 "You're now in section '" + newRoomName +
-                                "' with "+population+" other person.");
+                                "'.");
                         }
                 });
             });
@@ -654,7 +657,7 @@ function leaveRoom(socket, newRoomName) {
             socket.leave(roomName);
             
             socket.emit('message', {text:
-                "You have left room '"+roomName+"'.", admin:"true"});
+                "You have left section '"+roomName+"'.", admin:"true"});
             
             socket.get("nickname", function(err, nickname) {
                 if(newRoomName == null) {

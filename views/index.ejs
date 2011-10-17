@@ -222,11 +222,11 @@
 				$("#backdrop").hide();
 				$("#container").addClass("minimized");
 				$("#container").offset({top:-424}, 0);
-				$("#hide").text("about this project");
+				$("#hide").text("");
 			}
 			
 			$(window).blur(function() {
-				pulseEnabled = false;
+				pulseEnabled = true;
 			});
 			
 			$(window).focus(function() {
@@ -566,6 +566,7 @@
 		
 		function updatePulse(pulse) {
 			if(!pulseEnabled) return;
+
 			
 			// Take the activity metrics and turn one into messages/min and
 			// put it into the right place in the DOM.
@@ -883,7 +884,6 @@
 				$("#stream-img").hide();
 			}
 		}
-		
 	</script>
 	
 	<style type="text/css" media="screen">
@@ -1685,7 +1685,7 @@
 <div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
 </div>
 
-<img id="stream-img" src="/static/starcraft.png">
+<iframe width="1280" height="720" src="http://www.youtube.com/embed/RXMWLWhHtUI?rel=0&autoplay=1&enablejsapi=1#t=16m30s" frameborder="0" allowfullscreen></iframe>
 
 <div id="container">
 	<div id="information">
