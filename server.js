@@ -1092,8 +1092,8 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "Team Liquid 1", "Team Liquid 2", "Team Liquid 3", "Team Liquid 4",
     "Reddit 1", "Reddit 2", "Reddit 3", "Reddit 4",
     "Wellplayed.org 1", "Wellplayed.org 2", "Wellplayed.org 3",
-    "col.MVP Fans", "mouz fans", "Zerg Strategy",
-    "Terran Strategy", "Protoss Strategy",
+    "MC Fans", "Thorzain fans", "Zerg Players",
+    "Terran Players", "Protoss Players",
     "Francais", "Deutch", "Espangol"];
 var botChatOddsOffset = 0.0;
 
