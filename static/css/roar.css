@@ -103,7 +103,7 @@
 		}
 		
 		#chat {
-			width: 345px;
+			width: 375px;
 			padding-top: 15px;
 			
 			font-size: 1.0em;
@@ -133,26 +133,39 @@
 			margin-left: 10px;
 		}
 		
-		#show-history {
+		.toggle-button {
 			width: 25px;
 			height: 25px;
 			float: left;
 			margin-left: 5px;
-			background-image: url('/static/img/comments.png');
-			background-repeat: no-repeat;
-			background-position: center;
 			
 			-moz-border-radius: 5px;
 			border-radius: 5px;
 			
 			cursor: pointer;
+			
+			background-repeat: no-repeat;
+			background-position: center;
 		}
-		#show-history:hover {
+
+		.toggle-button:hover {
 			background-color: #2B434F;
 		}
 		
-		#show-history.pressed {
+		.toggle-button.pressed {
 			background-color: #999;
+		}
+		
+		#show-history {
+			background-image: url('/static/img/comments.png');
+		}
+		
+		#bots-mute {
+		    background-image: url('/static/img/status_online.png');
+		}
+		
+		#bots-mute.pressed {
+		    background-image: url('/static/img/status_busy.png');
 		}
 		
 		#identity-form, #chat-form {

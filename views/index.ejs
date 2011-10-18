@@ -192,6 +192,19 @@
 			$("#shout-" + data["id"]).remove();
 		});
 
+		socket.on('bots', function(data) {
+			// Just update the disabled status of the bots button.
+			
+			var buttonEl = $("#bots-mute");
+			if(data["mute"]==true) {
+				buttonEl.addClass("pressed");
+				
+			} else {
+				buttonEl.removeClass("pressed");
+				
+				
+			}
+		});
 
 		$(document).ready(function() {
 			
@@ -229,6 +242,16 @@
 			
 			$(window).focus(function() {
 				pulseEnabled = true;
+			});
+			
+			$("#bots-mute").click(function (event) {
+				
+				var mute = true;
+				if($(this).is(".pressed")) {
+					mute = false;
+				}
+				
+				socket.emit("bots", {"mute":mute});
 			});
 			
 			$("#chat-input").attr("disabled", true);
@@ -957,7 +980,7 @@
 </div>
 
 <div class="callout border-callout" id="chat-callout">
-	<span class="highlight">Type your message here!</span> If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections.
+	<span class="highlight">Type your message here!</span> If you press "chat" (or hit return) the message will go to your section. If you press "shout", the message will start in your section and if enough people vote for it it will spread to other sections. Use the buttons to the right of the chat box to see chat history and mute/unmute the bots.
     <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
@@ -970,7 +993,7 @@
 
 
 <div class="callout border-callout" id="bots-callout">
-	This <span class="highlight">chat is coming from bots</span> trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way for me to test the visualization with real content. You can tell the bots to stop talking by saying <span class="command">/level 0</span> in chat. <span class="command">/level vary</span> will make them normal again. 
+	This <span class="highlight">chat is coming from bots</span> trained to talk about live Starcraft 2 matches. It can be a little incoherent (and occasionally a bit rude) but it's a nice way to test the visualization with real content. 
     <b class="border-notch left"></b>
     <b class="notch left"></b>
 </div>
@@ -1003,7 +1026,8 @@
 <div id="chat">
 <form id="chat-form">
 	<input type="text" name="chat-input" title="say something!" value="" id="chat-input" class="default-text" autocomplete="off">
-	<div id="show-history"></div>
+	<div id="show-history" class="toggle-button" title="Toggle history panel"></div>
+	<div id="bots-mute" class="toggle-button" title="Mute/unmute bots"></div>
 </form>
 
 

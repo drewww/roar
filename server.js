@@ -68,9 +68,8 @@ app.use("/static", express.static(__dirname + '/static'));
 // conneciton is actually alive.
 io.sockets.on('connection', function(socket) {
     
-    
     // Do some user welcoming stuff. 
-    
+    socket.emit("bots", {"mute":botsMuted});
     
     // Sets up all the per-connection events that we need to think about.
     // For now, this is just a response to chat messages.   
@@ -238,7 +237,6 @@ io.sockets.on('connection', function(socket) {
                     // also, register this socket as the owner of the shout
                     console.log("Joining socket to " + "shout:" + shoutId + ":owner");
                     socket.join("shout:" + shoutId + ":owner");
-                    // console.log(getSocketListForRoom(shoutKey +":owner")[0]);
                 });
             });
         });
@@ -249,10 +247,31 @@ io.sockets.on('connection', function(socket) {
         voteForShout(socket, data["shout_id"], null);
     });
     
+    socket.on('bots', function(data) {
+        socket.get("nickname", function(err, nickname) {
+            if(data["mute"]==true) {
+                io.sockets.emit('bots', {"mute":true});
+
+                broadcastAdminMessage(null, "Bots have been muted by "
+                    + nickname + ".");
+                    
+                botsMuted = true;
+            } else {
+                io.sockets.emit('bots', {"mute":false});
+
+                broadcastAdminMessage(null, "Bots have been un-muted by "
+                    + nickname + ".");
+                botsMuted = false;
+            }            
+        });
+    });
+    
     socket.on('disconnect', function() {
         leaveRoom(socket, null);
         releaseNickname(socket);
     });
+    
+    
 });
 
 
@@ -1106,6 +1125,7 @@ var botChatOddsOffset = 0.0;
 var BASE_CHAT_ODDS = 0.002;
 
 var varyBotParticipation = true;
+var botsMuted = false;
 
 function setupBots(num) {
     // Generate num names and store them.
@@ -1145,6 +1165,7 @@ function _chatBotTick() {
             * Math.sin((2.0*Math.PI) * timeFactor);
     }
     
+    
     if(spikeProgress>-1) {
         // for the first 20 ticks, decrease talking over time.
         // then spike to super high for 10 ticks, then stop.
@@ -1161,10 +1182,11 @@ function _chatBotTick() {
             spikeProgress=-1;
         }
     }
+    
 
     // Each tick, run through the list and see if that bot wants to say
     // something to its room.
-    processBotChat();
+    if(!botsMuted) processBotChat();
     
     // get a list of active shouts (keys shout:*)
     // hgetall for each one, put them in a hash based on what rooms each
