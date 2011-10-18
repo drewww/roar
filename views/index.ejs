@@ -218,12 +218,10 @@
 			
 			$(".callout").hide();
 			
-			if("roar-start-hidden" in localStorage) {
-				$("#backdrop").hide();
-				$("#container").addClass("minimized");
-				$("#container").offset({top:-424}, 0);
-				$("#hide").text("about this project");
-			}
+			$("#backdrop").hide();
+			$("#container").addClass("minimized");
+			$("#container").offset({top:-424}, 0);
+			$("#hide").text("about this project");
 			
 			$(window).blur(function() {
 				pulseEnabled = false;
