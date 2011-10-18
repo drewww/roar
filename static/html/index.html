@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title>ROAR &mdash; super scale chat for online crowds</title>
+	<link rel="stylesheet" href="/static/css/roar.css" type="text/css" media="screen" charset="utf-8">
+		<script src="/static/js/jquery-1.6.2.min.js" type="text/javascript"></script>
+
+	<script type="text/javascript" charset="utf-8">
+		
+		$(document).ready(function() {
+			
+			// Setup default visibility.
+			$("#identity-message").hide();
+			$("#chat-history").hide();
+			$("#rooms-container").hide();
+			$("#chat-sect").hide();
+			$("#sections-sect").hide();
+			$("#pulse-sect").hide();
+			
+			$("#demo-header").hide();
+			
+			
+			$(".section-button").click(function (event) {
+				$(".selected").removeClass("selected");
+				
+				$("#content").children().hide();
+				$("#" + this.id.split("-")[0] + "-sect").show();
+				
+				$(this).addClass("selected");
+			});
+			
+			
+			$("#hide").click(hideInfoPanel);
+			$("#backdrop").click(hideInfoPanel);
+			
+			})
+		
+	</script>
+	
+	
+</head>
+<body>
+
+
+<div id="demo-header">
+<div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
+</div>
+
+<img id="stream-img" src="/static/img/ROAR-screenshot.png">
+
+<div id="container">
+	<div id="information">
+		<div id="header-container">
+			<img id="images" src="/static/img/sc2-audience.jpg">
+			<div id="text">
+				<div id="header">
+					<h1>ROAR</h1>
+					<h2>super scale chat for online crowds</h2>
+				</div>
+				<div id="overview-title" class="section-button selected">
+					overview
+				</div>
+				<div id="chat-title" class="section-button">
+					chat &amp; shouts
+				</div>
+				<div id="sections-title" class="section-button">
+					sections
+				</div>
+				<div id="pulse-title" class="section-button">
+					pulse
+				</div>
+			</div>
+			<br class="clear">
+		</div>
+		<div id="content">
+			<div id="overview-sect">
+<p>The experience of being in a crowd is visceral. We feel a sense of connection and belonging through shared experiences like watching a sporting event, speech, or performance. In online environments, though, we are often part of a crowd without feeling it. <span class="roar">ROAR</span> is designed to allow very large groups of distributed spectators have <span class="highlight">meaningful conversations</span> with strangers or friends while creating a <span class="highlight">sense of presence</span> of thousands of other spectators. <span class="roar">ROAR</span> is also interested in creating opportunities for <span class="highlight">collective action</span> among spectators and providing flexible ways to share content among very large groups. These systems combine to let you feel the roar of the crowd even if you're alone in your bedroom.</p>
+	
+<p>This is an <b>early prototype</b> and is not tested in anything other than the very latest WebKit-based browsers like <i>Safari</i> or <i>Chrome</i>.</p>
+			</div>
+			<div id="chat-sect">
+				At its heart, <span class="roar">ROAR</span> is about chat. You can send two different kinds of text-based messages. Like a normal chat system, you can send <span class="highlight">chat</span> messages to other people in your section of the crowd. These messages rapidly expire, but you can send them as often as you like. <span class="highlight">Shouts</span>, on the other hand, have a life of their own. When you shout something, everyone in your section sees it first and if enough of them like it (by clicking '+1') people in other sections will see it too. 
+			</div>
+			<div id="sections-sect">
+				<span class="highlight">Sections</span> in <span class="roar">ROAR</span> are your way of deciding what kind of chat experience you want to have. Sections can be named anything you want&mdash;you can make your own section by just typing in any name you like. All sections are public, but only the most popular sections are shown in the suggested list, so you can make a section for just you and your friends if you like. Suggested sections all have a small activity indicator to help you gauge how active that section is; the more dots, the more chatting going on there. 
+			</div>
+			<div id="pulse-sect">
+				Pulse is what really brings the crowd together in <span class="roar">ROAR</span>. The words you see bubbling up below are the <span class="highlight">most common recent terms across <emph>all</emph> sections</span>. The more words there are, the more active the crowd is; when there are very few words, the crowd has gone silent. Well-coordinated crowds can manipulate this display by coordinating common outbursts (perhaps using the shout feature) to force the system to display their chosen words. 
+			</div>
+		</div>
+	</div>
+	<div id="footer">
+		<a href="http://roar.media.mit.edu/">ROAR</a> was designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a> with the <a href="http://media.mit.edu/speech/">Speech + Mobility Group</a>
+	</div>	
+</div>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-841537-6']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</body>

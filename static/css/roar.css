@@ -1,0 +1,789 @@
+		body {
+			background-color: black;
+			margin: 0px;
+			
+			overflow:hidden;
+		}
+		
+		#roar-container {
+			font-family: Helvetica, sans-serif;
+		}
+		
+		#roar-bar {
+			background-color: #928B33;
+			
+			background: -webkit-gradient(linear, left top, left bottom, from(#2B434F), to(#0C2538)); /* for webkit browsers */
+			background: -moz-linear-gradient(top,  #2B434F,  #0C2538); /* for firefox 3.6+ */
+			
+			position: fixed;
+			bottom: 0px;
+			
+			width: 100%;
+			height: 50px;
+			
+			color: #EDECC8;
+			
+			
+			border-top: 1px solid #36464C;
+			
+			z-index: 7000;
+		}
+		
+		#chat, #roar-bar .button, #logo, #identity {
+			border-right: 1px solid #36464C;
+			height: 100%;
+			float: left;
+		}
+		
+		#identity {
+			border-right: 0px !important;
+			padding-top: 15px;
+			padding-left: 10px;
+		}
+		
+		#stats {
+			float: right;
+/*			width: 150px;*/
+			border-left: 1px solid #36464C;
+			
+			height: 100%;
+			
+			text-align: center;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+
+		#stats table {
+			width: 130px;
+			float: left;
+		}
+
+		#stats .label {
+			font-style: italic;
+			font-size: 0.8em;
+			text-align: right;
+		}
+		
+		#stats .stat {
+			font-weight: bold;
+			font-size: 1.0em;
+			text-align: left;
+		}
+		
+		#room-select label {
+			font-weight: bold;
+			text-align: right;
+			margin-right: 5px;
+		}
+		
+		#room-select input {
+			width: 135px;
+		}
+		
+		#room-select {
+			border-left: 1px solid #36464C;
+			height: 100%;
+			float: right;
+			padding-top: 15px;
+			padding-left: 10px;
+			width: 215px;
+			
+			z-index: 8000;
+		}
+		
+		#logo {
+			padding-top: 7px;
+			
+			font-weight: bold;
+			font-size: 2em;
+			width: 108px;
+			text-align: center;
+			
+			letter-spacing: -2px;
+		}
+		
+		#chat {
+			width: 345px;
+			padding-top: 15px;
+			
+			font-size: 1.0em;
+		}
+		
+		.chat {
+			padding-left: 5px;
+		}
+		
+		.past {
+			color: #777;
+		}
+		
+		.admin {
+			background-color: rgba(50, 50, 50, 0.8);
+			color: #eee;
+			text-align: center;
+		}
+		
+		.error {
+			color: #EE011D;
+		}
+		
+		#chat-form input {
+			width: 295px;
+			float: left;
+			margin-left: 10px;
+		}
+		
+		#show-history {
+			width: 25px;
+			height: 25px;
+			float: left;
+			margin-left: 5px;
+			background-image: url('static/img/comments.png');
+			background-repeat: no-repeat;
+			background-position: center;
+			
+			-moz-border-radius: 5px;
+			border-radius: 5px;
+			
+			cursor: pointer;
+		}
+		#show-history:hover {
+			background-color: #2B434F;
+		}
+		
+		#show-history.pressed {
+			background-color: #999;
+		}
+		
+		#identity-form, #chat-form {
+			margin-left: auto;
+			margin-right:auto;
+		}
+
+		#chat-container {
+			background-color: rgba(0,0,0,0.0);
+			position: fixed;
+			bottom: 51px;
+			left: 109px;
+			width: 450px;
+		}
+		
+		#chat-live {
+			color: #EDECC8;
+			text-shadow: 1px 1px 0px #111;
+			width: 100%;
+			float: left;
+		}
+
+		#shout-live {
+			float: left;
+			width: 100%;
+		}
+
+		#chat-history {
+			background-color: rgba(43, 67, 79, 0.9);
+			border: #36464C;
+			color: #EDECC8;
+			
+			overflow-y: scroll;
+			position:fixed;
+			
+			width: 450px;
+			height: 300px;
+			bottom: -200px;
+			left: 109px;
+			
+			z-index: 6000;
+		}
+		
+		#rooms-container {
+			background-color: rgba(43, 67, 79, 0.9);
+			border: 1px solid #36464C;
+			color: #EDECC8;
+			position:fixed;
+			
+			width: 225px;
+			bottom: -200px;
+			right: 0%;
+			
+			z-index: 5000;
+			
+		}
+		
+		#rooms-container h1 {
+			margin: 0px;
+			font-size: 1.0em;
+			background-color: #0C2538;
+			color: #EDECC8;
+			padding: 5px;
+			margin-bottom: 5px;
+			
+		}
+		
+		#rooms-container ul {
+			padding-left: 0px;
+			margin: 0px;
+		}
+		
+		#rooms-container li {
+			cursor: pointer;
+			
+			list-style-type: none;
+			
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+			
+			margin-right: 5px;
+			margin-left: 5px;
+			margin-bottom: 0px;
+		}
+		
+		#rooms-container li:hover {
+			background-color: #0C2538;
+		}
+
+		.activity {
+			margin-right: 5px;
+		}
+		
+		.level-green {
+			background-color: green !important;
+		}
+		
+		.level-yellow {
+			background-color: yellow !important;
+		}
+		
+		.level-red { 
+			background-color: red !important;
+		}
+		
+		.pixel {
+			width: 5px;
+			height: 5px;
+			background-color: #EDECC8;
+			margin-right: 2px;
+			float: left;
+			margin-top: 7px;
+		}
+		
+		
+		#roar-bar .button {
+			width: 70px;
+			text-align: center;
+			font-size: 1.3em;
+			font-variant: small-caps;
+			font-weight: bold;
+			padding-top: 10px;
+			height: 40px;
+			
+			text-shadow: 1px 1px 0px #111;
+			
+/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+		}
+		
+		#roar-bar .disabled {
+			color: #555;
+			background-color: #0C2538;
+		}
+		
+		#roar-bar .disabled:active {
+			background: inherit !important;
+		}
+		
+		#roar-bar .button:active{
+/*			background-color: #413D1B;*/
+			
+			background: -webkit-gradient(linear, left top, left bottom, from(#0C2538), to(#2B434F)); /* for webkit browsers */
+			background: -moz-linear-gradient(top,  #0C2538,  #0C2538); /* for firefox 3.6+ */
+		}
+		
+		#roar-bar .button:hover {
+			cursor:pointer;
+		}
+		
+		p {
+			margin-top: 0px;
+		}
+		
+		#name {
+			width: 100px;
+			float: left;
+		}
+		
+		#submit-name {
+			magin-left: 10px;
+			margin-bottom: 10px;
+		}
+
+		#identity-message {
+			background-color: #EDECC8;
+			padding: 3px;
+			color: #333;
+			font-size: 0.5em;
+		}
+		
+		#nickname {
+			font-weight: bold;
+			font-size: 1.0em;
+			
+			border-radius: 5px;
+			-moz-border-radius: 5px;
+			padding: 2px;
+		}
+		
+		#nickname:hover {
+			background-color: #2B434F;
+		}
+
+		.shout {
+			background-color: rgba(43, 67, 79, 0.9);
+			border: 1px solid #36464C;
+			color: #EDECC8;
+			text-shadow: none;
+			padding-left: 5px;
+		}
+		
+		.shout .from, .shout .text {
+			float: left;
+		}
+		
+		.shout .from {
+			margin-right: 2px;
+		}
+		
+		.shout .text {
+			max-width: 370px;
+		}
+		
+		.shout .from:after {
+			content:': ';
+		}
+		
+		.shout .votes-container {
+			float: right;
+		}
+
+		.votes-container .votes {
+			float: left;
+			font-style: italic;
+			margin-right: 5px;
+		}
+		
+		.votes-container .vote-button {
+			float: left;
+			background-color: rgba(43, 67, 79, 1.0);
+			border: 1px solid #36464C;
+			color: #EDECC8;
+			cursor: pointer;
+			
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+		}
+
+
+		#stream-img {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+			margin-top: 50px;
+			height: 90%;
+			border: 1px solid #333;
+		}
+
+		#pulse {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			background: rgba(1,1,1,0.0);
+			width: 100%;
+			height: 100%;
+			
+			/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
+			-webkit-user-select: none;
+			-khtml-user-select: none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			user-select: none;
+		}
+		
+		.pulse-word {
+			position: fixed;
+			color: white;
+			text-shadow: 1px 1px 0px #111;
+			font-weight: bold;
+			opacity: 0.7;
+		}
+		
+		.blur {
+			color: transparent;
+			text-shadow: 0 0 4px white;
+			opacity: 0.5;
+		}
+		
+
+		#word-buffer {
+			position: fixed;
+			right: -10px;
+			bottom: -10px;
+			text-shadow: 1px 1px 0px #111;
+			font-weight: bold;
+		}
+		
+		/* Styles for the static webpage part of the site. */
+		
+		#backdrop {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			
+			background-color: black;
+			opacity: 0.5;
+			width: 100%;
+			height: 100%;
+			z-index: 7999;
+		}
+		
+		#container {
+			position: fixed;
+			
+			top: 10px;
+			left: 50%;
+			
+			width: 580px;
+			
+			margin-left: -290px;
+			
+			z-index: 8001;
+			
+			font-family: Helvetica, sans-serif;
+		}
+		
+		#information {
+			background-color: #f0f0f0;
+			box-shadow: 3px 3px 3px black;
+			padding: 10px;
+			border-top: 3px solid #36464C;
+			border-right: 3px solid #36464C;
+			border-left: 3px solid #36464C;
+			
+			color: #0C2538;
+			
+			border-top-left-radius: 5px;
+			border-top-right-radius: 5px;
+		}
+		
+		#header-container {
+			width: 100%;
+/*			padding: 5px;*/
+			margin-bottom: 10px;
+		}
+		
+		#images {
+			float: left;
+			background-color: black;
+			width: 200px;
+			height: 128px;
+			margin-right: 5px;
+			
+			border-radius: 2px;
+		}
+		
+		#text {
+			float: left;
+		}
+		
+		#header {
+			height: 98px;
+		}
+		
+		#header h1, #header h2 {
+			width: 315px;
+			background-color: #0C2538;
+			color: #EDECC8;
+			padding: 5px;
+		}
+		
+		#header h1 {
+			font-weight: bold;
+			font-size: 3.0em;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			
+/*			border: 1px solid #36464C;*/
+/*			width: 150px;*/
+			border-top-left-radius: 2px;
+			border-top-right-radius: 2px;
+			
+		}
+		
+		#header h2 {
+			font-style: italic;
+			font-weight: normal;
+			font-size: 1.2em;
+			margin-top: 0px;
+			margin-bottom: 0px;
+			
+			border-bottom-left-radius: 2px;
+			border-bottom-right-radius: 2px;
+		}
+		
+		.section-button {
+			float: left;
+			font-size: 1.1em;
+			margin-right: 5px;
+			margin-top: 5px;
+			background-color: #2B434F;
+			padding: 3px;
+			
+			color: #EDECC8;
+			
+			cursor: pointer;
+			border-radius: 3px;
+		}
+		
+		.selected {
+			background-color: #0C2538;
+			color: #EDE059;
+			
+		}
+		
+		#content {
+			padding: 5px;
+		}
+		
+		.explainer {
+			width: 300px;
+			position: absolute;
+			height: 200px;
+			
+			bottom: 51px;
+			left: 50px;
+			z-index: 8000;
+		}
+		
+		#hide {
+			margin-left: 20px;
+			font-weight: bold;
+			width: 300px;
+			color: white;
+			cursor: pointer;
+			font-size: 1.6em;
+		}
+		
+		#name-callout {
+			left: 120px;
+			bottom: 51px;
+		}
+		
+		#chat-callout {
+			left: 300px;
+			bottom: 51px;
+			width: 300px;
+		}
+		
+		#section-callout {
+			right: 50px;
+			bottom: 51px;
+			width: 300px;
+		}
+		
+		#pulse-callout {
+			right: 40%;
+			bottom: 30%;
+			width: 300px;
+		}
+		
+		#bots-callout {
+			left: 150px;
+			bottom: 200px;
+			width: 300px;
+		}
+
+		.command {
+			background-color: #EDECC8;
+			font-family: monospace;
+		}
+		
+		.highlight {
+			background-color: #EDECC8;
+		}
+		
+		/* using this strategy: http://mrcoles.com/blog/callout-box-css-border-triangles-cross-browser/ */
+		.callout {
+		    position: absolute;
+			width: 200px;
+
+
+		    margin: 18px 0;
+		    padding: 18px 20px;
+		
+		    background-color: #eef4f9;
+		    /* easy rounded corners for modern browsers */
+		    -moz-border-radius: 6px;
+		    -webkit-border-radius: 6px;
+		    border-radius: 6px;
+			
+			z-index: 8000;
+			
+			font-family: Helvetica, sans-serif;
+		}
+		
+		.callout .notch, .callout .border-notch {
+		    position: absolute;
+		    bottom: -10px;
+		    margin: 0;
+		    border-bottom: 0;
+		    border-left: 10px solid transparent;
+		    border-right: 10px solid transparent;
+		    border-top: 10px solid #eef4f9;
+		    padding: 0;
+		    width: 0;
+		    height: 0;
+		    /* ie6 height fix */
+		    font-size: 0;
+		    line-height: 0;
+		     /* ie6 transparent fix */
+		    _border-right-color: pink;
+		    _border-left-color: pink;
+		    _filter: chroma(color=pink);
+		}
+		
+		.border-callout {
+			border: 3px solid #36464C; padding: 17px 19px;
+		}
+		
+		.border-callout .border-notch {
+			border-top: 11px solid #36464C;
+			
+			border-left: 12px solid transparent;
+		    border-right: 12px solid transparent;
+		    
+			
+/*			border-right: 12px solid #36464C;
+			border-left: 12px solid #36464C;
+*//*			height: 0px;*/
+/*			bottom: 11px;*/
+			bottom: -13px;
+		}
+		
+		.border-notch.left {
+		    left: 19px !important;
+		}
+		
+		.border-notch.right {
+			right: 19px !important;
+		}
+		
+		
+		.notch.left {
+			left: 20px !important;
+		}
+		
+		.notch.right {
+			right: 20px !important;
+		}
+		
+		#footer {
+			padding: 5px;
+			font-size: 0.8em;
+			
+			background-color: #0C2538;
+			color: #EDECC8;
+			
+			border-bottom: 3px solid #36464C;
+			border-left: 3px solid #36464C;
+			border-right: 3px solid #36464C;
+			
+			border-bottom-left-radius: 5px;
+			border-bottom-right-radius: 5px;
+			
+			text-align: center;
+		}
+		
+		#footer a {
+			font-weight: bold;
+			color: white;
+		}
+		
+		#footer a:visited {
+			color:white;
+		}
+
+		.roar {
+			background-color: #0C2538;
+			color: #EDECC8;
+			font-weight: bold;
+			padding-left: 2px;
+			padding-right: 2px;
+		}
+		
+		
+		#demo-header {
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			
+			height: 100px;
+			width: 100%;
+			
+			background-color: #0C2538;
+			border-bottom: 3px solid #36464C;
+			color: #EDECC8;
+			
+			z-index: 9999;
+			
+			font-family: helvetica, sans-serif;
+			padding-left: 50px;
+		}
+		
+		#demo-header .title {
+			float: left;
+
+			height: 100%;
+			width: 300px;
+			
+			font-size: 6em;
+			font-weight: bold;
+			
+			letter-spacing: -8px;
+		}
+		
+		#demo-header .subtitle, #demo-header .byline {
+			float: left;
+			height: 45%;
+		}
+		
+		#demo-header .subtitle {
+			font-weight: bold;
+			font-size: 3em;
+			margin-top: 8px;
+		}
+		
+		#demo-header .byline {
+			font-style: italic;
+			font-size: 1.5em;
+		}
+		
+		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
+	    .default-text { }
+	    .default-text-active { color: #a1a1a1; font-style: italic; }
+		
+		.clear {
+			clear: both;
+		}
+		
+		#live_embed_player_flash {
+			z-index: -1000;
+		}
