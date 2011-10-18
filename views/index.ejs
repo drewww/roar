@@ -226,7 +226,7 @@
 			}
 			
 			$(window).blur(function() {
-				pulseEnabled = true;
+				pulseEnabled = false;
 			});
 			
 			$(window).focus(function() {
@@ -407,7 +407,7 @@
 					top: -($("#container").height()-55)
 				}, 800, function() {
 					$(this).addClass("minimized");
-					hideEl.text(" ");
+					hideEl.text("about this project");
 
 					
 					if(usingDemoName) {
@@ -1028,7 +1028,7 @@
 			height: 25px;
 			float: left;
 			margin-left: 5px;
-			background-image: url('static/comments.png');
+			background-image: url('static/img/comments.png');
 			background-repeat: no-repeat;
 			background-position: center;
 			
@@ -1687,7 +1687,7 @@
 <div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
 </div>
 
-<iframe width="1280" height="720" src="http://www.youtube.com/embed/RXMWLWhHtUI?rel=0&autoplay=1&enablejsapi=1#t=16m30s" frameborder="0" allowfullscreen></iframe>
+<img id="stream-img" src="/static/img/sc2-stream.png">
 
 <div id="container">
 	<div id="information">
