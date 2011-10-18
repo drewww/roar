@@ -15,6 +15,7 @@ program.version('0.2')
     .option('-p, --port [num]', 'Set the server port (default 8080)')
     .option('-b, --bots [num]', 'Creates [num] server-side chat bots.')
     .option('-m, --model [filename]', "Specifies a specific chat model to load for bots. No effect without -b.")
+    .option('-d, --disable', "Disables the shout system.")
     .parse(process.argv);
     
 
@@ -52,7 +53,6 @@ if(program.bots) {
         setupBots(program.bots);
     });
 }
-
 
 app.listen(port);
 
@@ -199,6 +199,12 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('shout', function (data) {
+        
+        if(program.disable) {
+            sendAdminMessage(socket, "Shouting is disabled right now, sorry!");
+            return;
+        }
+        
         // {text:(shout_text)}
         
         // create the shout datastructure
