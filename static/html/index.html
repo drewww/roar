@@ -30,11 +30,12 @@
 				$(this).addClass("selected");
 			});
 			
+			$("#start-demo-button").click(function() {
+				console.log("click!");
+				window.location.href=window.location.href + "/demo/";
+			});
 			
-			$("#hide").click(hideInfoPanel);
-			$("#backdrop").click(hideInfoPanel);
-			
-			})
+			});
 		
 	</script>
 	
@@ -76,8 +77,9 @@
 		<div id="content">
 			<div id="overview-sect">
 <p>The experience of being in a crowd is visceral. We feel a sense of connection and belonging through shared experiences like watching a sporting event, speech, or performance. In online environments, though, we are often part of a crowd without feeling it. <span class="roar">ROAR</span> is designed to allow very large groups of distributed spectators have <span class="highlight">meaningful conversations</span> with strangers or friends while creating a <span class="highlight">sense of presence</span> of thousands of other spectators. <span class="roar">ROAR</span> is also interested in creating opportunities for <span class="highlight">collective action</span> among spectators and providing flexible ways to share content among very large groups. These systems combine to let you feel the roar of the crowd even if you're alone in your bedroom.</p>
-	
-<p>This is an <b>early prototype</b> and is not tested in anything other than the very latest WebKit-based browsers like <i>Safari</i> or <i>Chrome</i>.</p>
+
+<iframe width="100%" height="320px" src="http://www.youtube.com/embed/MbKKR-1UdYw?rel=0" frameborder="0" allowfullscreen></iframe>
+
 			</div>
 			<div id="chat-sect">
 				At its heart, <span class="roar">ROAR</span> is about chat. You can send two different kinds of text-based messages. Like a normal chat system, you can send <span class="highlight">chat</span> messages to other people in your section of the crowd. These messages rapidly expire, but you can send them as often as you like. <span class="highlight">Shouts</span>, on the other hand, have a life of their own. When you shout something, everyone in your section sees it first and if enough of them like it (by clicking '+1') people in other sections will see it too. 
@@ -89,7 +91,13 @@
 				Pulse is what really brings the crowd together in <span class="roar">ROAR</span>. The words you see bubbling up below are the <span class="highlight">most common recent terms across <emph>all</emph> sections</span>. The more words there are, the more active the crowd is; when there are very few words, the crowd has gone silent. Well-coordinated crowds can manipulate this display by coordinating common outbursts (perhaps using the shout feature) to force the system to display their chosen words. 
 			</div>
 		</div>
+	
+	<div id="demo">
+		<div id="start-demo-button">Launch Prototype</div>
+		<div id="button-label">The prototype is potentially buggy and unstable, and only works in the latest browsers. Beware!</div>
 	</div>
+	<br class="clear">
+</div>
 	<div id="footer">
 		<a href="http://roar.media.mit.edu/">ROAR</a> was designed at the <a href="http://mit.edu">MIT</a> <a href="http://media.mit.edu/">Media Lab</a> by <a href="http://web.media.mit.edu/~dharry/">Drew Harry</a> with the <a href="http://media.mit.edu/speech/">Speech + Mobility Group</a>
 	</div>	

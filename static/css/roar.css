@@ -472,7 +472,7 @@
 		
 		#information {
 			background-color: #f0f0f0;
-			box-shadow: 3px 3px 3px black;
+			box-shadow: 8px 8px 8px black;
 			padding: 10px;
 			border-top: 3px solid #36464C;
 			border-right: 3px solid #36464C;
@@ -702,6 +702,8 @@
 			background-color: #0C2538;
 			color: #EDECC8;
 			
+			box-shadow: 8px 8px 8px black;
+			
 			border-bottom: 3px solid #36464C;
 			border-left: 3px solid #36464C;
 			border-right: 3px solid #36464C;
@@ -774,6 +776,40 @@
 		#demo-header .byline {
 			font-style: italic;
 			font-size: 1.5em;
+		}
+
+		#demo div {
+			float: left;
+			margin-top: 10px;
+			margin-bottom: 5px;
+		}
+		
+		#start-demo-button {
+			background-color: #0C2538;
+			border: 2px solid #36464C;
+			border-radius: 3px;
+			
+			color: #EDECC8;
+			font-size: 1.4em;
+			
+			text-align: center;
+			margin-left: 5px;
+			margin-right: 10px;
+            width: 200px;
+            cursor: pointer;
+            
+            background: -webkit-gradient(linear, left top, left bottom, from(#2B434F), to(#0C2538)); /* for webkit browsers */
+			background: -moz-linear-gradient(top,  #2B434F,  #0C2538); /* for firefox 3.6+ */
+		}
+		
+		#start-demo-button:hover {
+		    background: #2B434F;
+		}
+		
+		#button-label {
+		    color: red;
+		    font-size: 0.8em;
+		    width: 325px;
 		}
 		
 		/* Using this approach: http://www.dailycoding.com/Posts/default_text_fields_using_simple_jquery_trick.aspx */
