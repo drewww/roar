@@ -16,6 +16,7 @@ program.version('0.2')
     .option('-b, --bots [num]', 'Creates [num] server-side chat bots.')
     .option('-m, --model [filename]', "Specifies a specific chat model to load for bots. No effect without -b.")
     .option('-d, --disable', "Disables the shout system.")
+    .option('-D, --database [num]', "Set the redis database index (default 0)")
     .parse(process.argv);
     
 
@@ -56,11 +57,13 @@ if(program.bots) {
 
 app.listen(port);
 
+// Setup the index page.
 app.get('/', function(req, res) {
     res.render('index.ejs', {layout:false, locals:{"server":server,
         "port":port}});
 });
 
+// Setup static serving from the static directory.
 app.use(app.router);
 app.use("/static", express.static(__dirname + '/static'));
 
@@ -288,34 +291,42 @@ client.on("error", function(err) {
 // do this on shutdown, but I haven't found a way to capture that event
 // yet. 
 client.once("ready", function(err) {
-    client.hgetall("global:connectedUsers", function(err, res) {
-        for(key in res) {
-            client.hdel("global:connectedUsers", key);
-        }
-    });
-    
-    client.hgetall("rooms", function(err, res) {
-        for(key in res) {
-            client.hdel("rooms", key);
-        }
-    });
-    
-    client.hgetall("rooms.population", function(err, res) {
-        for(key in res) {
-            client.hdel("rooms.population", key);
-        }
-    });
-    
-    // Start the periodic data worker threads.
-    // TODO split this into separate settimeouts to stagger them to avoid
-    // them all running at the same time and competing?
-    setTimeout(function() {
-        _processPulse();
-        _updateRooms(null);
-        _checkShoutExpiration();
-        _chatBotTick();
-    }, 0);
+    // set the database.
+    if(program.database) {
+        if(program.database == parseInt(program.database)) {
+            client.select(program.database, function() {
+                console.log("Selected database " + program.database);
+                
+            client.hgetall("global:connectedUsers", function(err, res) {
+                for(key in res) {
+                    client.hdel("global:connectedUsers", key);
+                }
+            });
 
+            client.hgetall("rooms", function(err, res) {
+                for(key in res) {
+                    client.hdel("rooms", key);
+                }
+            });
+
+            client.hgetall("rooms.population", function(err, res) {
+                for(key in res) {
+                    client.hdel("rooms.population", key);
+                }
+            });
+
+            // Start the periodic data worker threads.
+            // TODO split this into separate settimeouts to stagger them to avoid
+            // them all running at the same time and competing?
+            setTimeout(function() {
+                _processPulse();
+                _updateRooms(null);
+                _checkShoutExpiration();
+                _chatBotTick();
+            }, 0);
+            });
+        }
+    }
 });
 
 function getSocketListForRoom(room) {
