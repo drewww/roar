@@ -34,7 +34,7 @@ if(program.port) {
     port = program.port;
 }
 
-io.set("log level", 2);
+io.set("log level", 0);
 if(program.verbose) {
     io.set("log level", 3);
 }
@@ -82,10 +82,6 @@ io.sockets.on('connection', function(socket) {
         // Check and see if this socket already has a nick. If they do,
         // log it out and THEN add the new one in.
         socket.get("nickname", function(err, nickname) {
-            
-            console.log("identify: " + data["username"] +
-                " (past: "+nickname+")");
-            
             var hasPrevNickname = nickname!=null;
             if(hasPrevNickname) {
                 releaseNickname(socket);

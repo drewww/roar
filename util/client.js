@@ -1,12 +1,16 @@
 var program = require('commander')
   , client = require('socket.io-client')
   , async = require('async')
-  , logger = require('winston')
+  , winston = require('winston')
 ;
 
-logger.cli();
-logger.default.transports.console.timestamp = true;
-logger.setLevels()
+
+var logger = new (winston.Logger)({
+    transports: [
+      new (winston.transports.Console)({timestamp:true, level:"info", colorize:true}),
+    ]
+  });
+
 
 var verbose = false;
 
@@ -26,7 +30,7 @@ function connect(url, connections, callback) {
     var inits = [];
     for(var i=0; i<connections; ++i) {
         inits.push(function(next) {
-            logger.debug("Starting connection ", i);
+            logger.verbose("Starting connection ", i);
             var conn = client.connect(program.url, {'force new connection': true});
             conn.on('connect', function() {
                logger.info("connected sessionid=" + conn.socket.sessionid);
@@ -36,12 +40,12 @@ function connect(url, connections, callback) {
 
             conn.on('identify', function(data) {
                 if("state" in data && data["state"]=="OK") {
-                    logger.debug(conn.socket.sessionid + ": server ACK identify");
+                    logger.verbose(conn.socket.sessionid + ": server ACK identify");
                     // For now default to a specific room. 
                     conn.emit("room", {"name":"General Chat 1"});
                     clients.push(conn);
                 } else if ("state" in data && data["state"] == "TAKEN") {
-                    logger.debug(conn.socket.sessionid + ": server FAIL identify, retry");
+                    logger.verbose(conn.socket.sessionid + ": server FAIL identify, retry");
                     conn.emit("identify", {username:"user-" +
                      (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
                 }
