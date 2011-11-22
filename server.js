@@ -83,6 +83,9 @@ io.sockets.on('connection', function(socket) {
         // log it out and THEN add the new one in.
         socket.get("nickname", function(err, nickname) {
             
+            console.log("identify: " + data["username"] +
+                " (past: "+nickname+")");
+            
             var hasPrevNickname = nickname!=null;
             if(hasPrevNickname) {
                 releaseNickname(socket);

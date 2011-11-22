@@ -21,9 +21,21 @@ function connect(url, connections, callback) {
       con.on('connect', function() {
         logger.debug('connected sessionid=' + con.socket.sessionid);
         clients.push(con);
-        con.emit("identify", {usernae:"user-" + i});
+        con.emit("identify", {username:"user-" + (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
+        });
+    
+    con.on('message', function(data) {
+        if(data["text"] == "MARCO") {
+            con.emit("message", {text:"POLO"});
+        }
+        });
+    
+    con.on("identify", function(data) {
+        // ignore the response, just blind join a room for now.
+        con.emit("room", {"name":"General Chat 1"});
+        
         next();
-     });
+    });
     });
   }
 
@@ -46,6 +58,6 @@ function disconnect(clients) {
   }
 }
 
-connect("http://localhost:8080/", 100, function(clients) {
+connect("http://localhost:8080/", 1000, function(clients) {
     logger.debug("all clients connected!");
 });
