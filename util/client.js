@@ -6,58 +6,71 @@ var program = require('commander')
 
 logger.cli();
 logger.default.transports.console.timestamp = true;
+logger.setLevels()
 
 var verbose = false;
 
+program.version('0.1')
+    .option('-u, --url <url>', 'base URL of the server to test')
+    .option('-c, --connections <connections>', 'number of connections, default 1', Number, 1)
+    .parse(process.argv)
+
+
+clients = [];
 
 function connect(url, connections, callback) {
-  console.log('Connect to %s (%d connections)', url, connections);
-  var clients = []
-    , inits = [];
-
-  for (var i = 0; i < connections; ++i) {
-    inits.push(function(next) {
-      var con = client.connect(url, { 'force new connection': true });
-      con.on('connect', function() {
-        logger.debug('connected sessionid=' + con.socket.sessionid);
-        clients.push(con);
-        con.emit("identify", {username:"user-" + (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
-        });
     
-    con.on('message', function(data) {
-        if(data["text"] == "MARCO") {
-            con.emit("message", {text:"POLO"});
-        }
-        });
+    logger.info("Connect to " + url + "x" + connections);
     
-    con.on("identify", function(data) {
-        // ignore the response, just blind join a room for now.
-        con.emit("room", {"name":"General Chat 1"});
-        
-        next();
-    });
-    });
-  }
+    // try doing this serially for now.
+    var inits = [];
+    for(var i=0; i<connections; ++i) {
+        inits.push(function(next) {
+            logger.debug("Starting connection ", i);
+            var conn = client.connect(program.url, {'force new connection': true});
+            conn.on('connect', function() {
+               logger.info("connected sessionid=" + conn.socket.sessionid);
+               conn.emit("identify", {username:"user-" +
+                (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
+            });
 
-  async.parallel(inits, function(err) {
-      if (err) {
-        console.log(err);
-        process.exit(1);
-      }
-      console.log('conection setup completed');
-      callback(clients);
+            conn.on('identify', function(data) {
+                if("state" in data && data["state"]=="OK") {
+                    logger.debug(conn.socket.sessionid + ": server ACK identify");
+                    // For now default to a specific room. 
+                    conn.emit("room", {"name":"General Chat 1"});
+                    clients.push(conn);
+                } else if ("state" in data && data["state"] == "TAKEN") {
+                    logger.debug(conn.socket.sessionid + ": server FAIL identify, retry");
+                    conn.emit("identify", {username:"user-" +
+                     (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
+                }
+            });
+
+            conn.on('message', function(data) {
+                if(data.text=="MARCO") {
+                    conn.emit("message", {text:"POLO"});
+                } else if(data.text=="CIAO") {
+                    conn.disconnect();
+                }
+            });
+            next();
+        });
     }
-  );
+    
+    async.series(inits, function(err) {
+        if(err) {
+            logger.error("Error initing connections: " + err);
+            process.exit(1);
+        }
+        
+        logger.info("Connection setup complete.");
+        callback(clients);
+    });
 }
 
-function disconnect(clients) {
-  for (var i = 0, l = clients.length; i < l; ++i) {
-    var c = clients[i];
-    logger.debug('disconnect sessionid=' + c.socket.sessionid);
-    c.disconnect();
-  }
-}
-
-connect("http://localhost:8080/", 1000, function(clients) {
-    logger.debug("all clients connected!");
+connect(program.url, program.connections, function() {
+   logger.info("Initialized all connections!");
 });
+
+
