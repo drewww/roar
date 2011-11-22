@@ -313,20 +313,29 @@ client.once("ready", function(err) {
                     client.hdel("rooms.population", key);
                 }
             });
-
             // Start the periodic data worker threads.
             // TODO split this into separate settimeouts to stagger them to avoid
             // them all running at the same time and competing?
-            setTimeout(function() {
-                _processPulse();
-                _updateRooms(null);
-                _checkShoutExpiration();
-                _chatBotTick();
-            }, 0);
+            startWorkers();
             });
         }
+    } else {
+        startWorkers();
     }
 });
+
+function startWorkers() {
+    // Start the periodic data worker threads.
+    // TODO split this into separate settimeouts to stagger them to avoid
+    // them all running at the same time and competing?
+    setTimeout(function() {
+        _processPulse();
+        _updateRooms(null);
+        _checkShoutExpiration();
+        _chatBotTick();
+    }, 0);
+    
+}
 
 function getSocketListForRoom(room) {
     var sockets = [];
