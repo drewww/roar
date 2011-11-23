@@ -50,7 +50,7 @@
 		// Now we need to start listening for an identify response.
 		socket.on('identify', _handleIdentityResponse);
 		
-		socket.on('message', function (data) {
+		socket.on("chat", function (data) {
 			appendChat(data);
 		});
 		
@@ -471,7 +471,7 @@
 				return;
 			}
 			
-			socket.emit("message", {"text":chatTextElement.val()});
+			socket.emit("chat", {"text":chatTextElement.val()});
 			chatTextElement.val("");
 			
 			if(event!=null) event.preventDefault();

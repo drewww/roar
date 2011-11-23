@@ -121,7 +121,7 @@ io.sockets.on('connection', function(socket) {
                             //         socket.emit('message', msgObj);
                             //     }
                             // Doing it here ensures that it appears after the past messages.
-                                socket.emit('message', {text:"Welcome to ROAR!", admin:"true"});
+                                socket.emit("chat", {text:"Welcome to ROAR!", admin:"true"});
                             }
                             
                             // push an initial room state down.
@@ -135,7 +135,7 @@ io.sockets.on('connection', function(socket) {
     });
         
     
-    socket.on('message', function(data) {
+    socket.on('chat', function(data) {
         // setup some internal commands so I can easily manipulate state
         // from messages.
         if(data.text[0]=="/") {
@@ -268,7 +268,8 @@ io.sockets.on('connection', function(socket) {
         });
     });
     
-    socket.on('disconnect', function() {
+    socket.on('disconnect', function(data) {
+        console.log("disconnect info: ", data);
         leaveRoom(socket, null);
         releaseNickname(socket);
     });
@@ -351,21 +352,21 @@ function getSocketListForRoom(room) {
 function broadcastAdminMessage(room, message) {
     if(room==null || typeof room == 'undefined') {
         // broadcast to EVERYONE.
-        io.sockets.emit('message', {text:message, admin:"true"});
+        io.sockets.emit("chat", {text:message, admin:"true"});
     } else {
-        io.sockets.in(room).emit('message', {text:message, admin:"true"});
+        io.sockets.in(room).emit("chat", {text:message, admin:"true"});
     }
 }
 
 function sendAdminMessage(socket, message) {
-    socket.emit('message', {text:message, admin:"true"});
+    socket.emit("chat", {text:message, admin:"true"});
 }
 
 function sendChatToRoom(roomName, nickname, messageText) {
     messageDict = {text:messageText, from:nickname,
         timestamp:Date.now(), room:roomName};
 
-    io.sockets.in(roomName).emit('message', messageDict);
+    io.sockets.in(roomName).emit("chat", messageDict);
 
     // By pushing and trimming, we keep it from growing indefinitely 
     // We don't need to trim; pulse will trim for us, to avoid having to
@@ -700,16 +701,16 @@ function leaveRoom(socket, newRoomName) {
             // 3. Potentially delete the channel if there's no one left.
             socket.leave(roomName);
             
-            socket.emit('message', {text:
+            socket.emit("chat", {text:
                 "You have left section '"+roomName+"'.", admin:"true"});
             
             socket.get("nickname", function(err, nickname) {
                 if(newRoomName == null) {
-                    io.sockets.in(roomName).emit("message",
+                    io.sockets.in(roomName).emit("chat",
                     {text:nickname + " has logged off.",
                     admin:"true"});
                 } else {
-                    io.sockets.in(roomName).emit("message",
+                    io.sockets.in(roomName).emit("chat",
                     {text:nickname + " has moved to " + newRoomName + ".",
                     admin:"true"});
                 }

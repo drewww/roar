@@ -33,7 +33,7 @@ function connect(url, connections, callback) {
             logger.verbose("Starting connection ", i);
             var conn = client.connect(program.url, {'force new connection': true});
             conn.on('connect', function() {
-               logger.info("connected sessionid=" + conn.socket.sessionid);
+               logger.verbose("connected sessionid=" + conn.socket.sessionid);
                conn.emit("identify", {username:"user-" +
                 (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
             });
@@ -51,13 +51,26 @@ function connect(url, connections, callback) {
                 }
             });
 
-            conn.on('message', function(data) {
+            conn.on("chat", function(data) {
                 if(data.text=="MARCO") {
-                    conn.emit("message", {text:"POLO"});
+                    setTimeout(function() {
+                        conn.emit("chat", {text:"POLO"});                        
+                    }, Math.random()*45000);
                 } else if(data.text=="CIAO") {
                     conn.disconnect();
+                } else if(data.text!="POLO" && !("admin" in data)){
+                    //logger.info("chat: " + data.text);
                 }
             });
+            
+            conn.on('disconnect', function(data) {
+                logger.warning(conn.socket.sessionid + ": disconnected ", data);
+            });
+            
+            conn.on('heartbeat', function(data) {
+                logger.verbose("heartbeat");
+            })
+            
             next();
         });
     }
