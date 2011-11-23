@@ -1082,7 +1082,9 @@ function _processPulse() {
                         });
                         popularWordsList.reverse();
 
-                        console.log("activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
+                        var messagesPerMin = messagesInWindow*(60/WINDOW_SIZE);
+
+                        console.log("messagesPerMin: " + messagesPerMin + " activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
                         
                         // square the activity factor to make it more nonlinear
                         dict = popularWordsList.slice(0, activityFactor*40.0);
@@ -1114,10 +1116,11 @@ function _processPulse() {
                         
                         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
                         // console.log(dict);
+                        
                         io.sockets.emit('pulse', {"words":dict,
                             "activity":{"total":totalActivity, "window":windowActivity,
                             "relative":relativeActivity,
-                            "messages-per-min-instant":messagesInWindow*(60/WINDOW_SIZE)}});
+                            "messages-per-min-instant":messagesPerMin}});
                     });
                 });
             });

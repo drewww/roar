@@ -50,27 +50,11 @@ function connect(url, connections, callback) {
                      (Math.random()*Date.now()).toFixed(0).substring(0, 6)});
                 }
             });
-
-            conn.on("chat", function(data) {
-                if(data.text=="MARCO") {
-                    setTimeout(function() {
-                        conn.emit("chat", {text:"POLO"});                        
-                    }, Math.random()*45000);
-                } else if(data.text=="CIAO") {
-                    conn.disconnect();
-                } else if(data.text!="POLO" && !("admin" in data)){
-                    //logger.info("chat: " + data.text);
-                }
-            });
             
             conn.on('disconnect', function(data) {
                 logger.warning(conn.socket.sessionid + ": disconnected ", data);
             });
-            
-            conn.on('heartbeat', function(data) {
-                logger.verbose("heartbeat");
-            })
-            
+                        
             next();
         });
     }
@@ -88,6 +72,24 @@ function connect(url, connections, callback) {
 
 connect(program.url, program.connections, function() {
    logger.info("Initialized all connections!");
+   
+   
+   // Now periodically run through all the clients and make them say things
+   setTimeout(_processChat, 100);
 });
 
 
+function _processChat() {
+    
+    setTimeout(_processChat, 100);
+
+    for (var index in clients) {
+        var client = clients[index];
+
+        var random = Math.random();
+
+        if (random < 0.002)
+            client.emit("chat", {text:"robot chat testing throughput"});
+    }
+
+}
