@@ -3,43 +3,79 @@
 """
 client.py
 
+Based heavily on:
+ - https://github.com/mtah/python-websocket/blob/master/examples/echo.py
+ - http://stackoverflow.com/a/7586302/316044
+
 Created by Drew Harry on 2011-11-28.
 Copyright (c) 2011 MIT Media Lab. All rights reserved.
 """
 
-import websocket, httplib, sys, asyncore
-
-
+import websocket, httplib, sys, asyncore, json
 
 '''
     connect to the socketio server
 
     1. perform the HTTP handshake
     2. open a websocket connection '''
-def connect(server, port):
     
-    print("connecting to: %s:%d x%d" %(server, port, num_clients))
     
-    conn  = httplib.HTTPConnection(server + ":" + str(port))
-    conn.request('POST','/socket.io/1/')
-    resp  = conn.getresponse() 
-    hskey = resp.read().split(':')[0]
-
-    _ws = websocket.WebSocket(
-                    'ws://'+server+':'+str(port)+'/socket.io/1/websocket/'+hskey,
-                    onopen   = _onopen,
-                    onmessage = _onmessage,
-                    onclose = _onclose)
+class Client:
     
+    DISCONNECTED = 0
+    CONNECTED = 1
+    IDENTIFIED = 2
+    JOINED_ROOM = 3
+    
+    def __init__(self, server, port):
+        print("connecting to: %s:%d" %(server, port))
+    
+        conn  = httplib.HTTPConnection(server + ":" + str(port))
+        conn.request('POST','/socket.io/1/')
+        resp  = conn.getresponse() 
+        hskey = resp.read().split(':')[0]
 
-def _onopen():
-    print("opened!")
+        self.ws = websocket.WebSocket(
+                        'ws://'+server+':'+str(port)+'/socket.io/1/websocket/'+hskey,
+                        onopen   = self._onopen,
+                        onmessage = self._onmessage,
+                        onclose = self._onclose)
+        self.state = self.DISCONNECTED
 
-def _onmessage(msg):
-    print("msg: " + str(msg))
+    def _onopen(self):
+        self.state = self.CONNECTED
+        
+        print("opened: " + str(self))
+    
+        # send identify message. we're not going to be a full client here, so just
+        # phone it in.
+        
+        self.ws.send('5:::{"name":"identify", "args":[{"username":"user-'+str(id(self))+'"}]}')
+    
+    def _onmessage(self, msg):
+        
+        if(msg[0]=="5"):
+            payload = json.loads(msg.lstrip('5:'))
+        
+            if(self.state == self.CONNECTED):
+                if(payload["name"]=="identify"):
+                    # server has acknowledged identification. join a room.
+                    self.state = self.IDENTIFIED
+                    
+                    self.ws.send('5:::{"name":"room", "args":[{"name":"General Chat 1"}]}')
+                    # this command is not acknowledge from the server, so we just assume
+                    # it worked okay.
+                    
+                    self.state = self.JOINED_ROOM
+            elif(self.state == self.JOINED_ROOM):
+                print(str(id(self)) + ": " + payload["name"])
+        
 
-def _onclose():
-    print("closed!")
+    def _onclose(self):
+        print("closed!")
+    
+    def close(self):
+        self.ws.close()
 
 
 if __name__ == '__main__':
@@ -51,12 +87,13 @@ if __name__ == '__main__':
     port = int(sys.argv[2])
     num_clients = int(sys.argv[3])
     
-    connect(server, port)
+    # for index in range(0, num_clients):
+    client = Client(server, port)
     
     try:
         asyncore.loop()
     except KeyboardInterrupt:
-        ws.close()
+        client.close()
     
     
 
