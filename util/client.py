@@ -28,7 +28,6 @@ class Client:
     JOINED_ROOM = 3
     
     def __init__(self, server, port):
-        print("connecting to: %s:%d" %(server, port))
     
         conn  = httplib.HTTPConnection(server + ":" + str(port))
         conn.request('POST','/socket.io/1/')
@@ -45,7 +44,7 @@ class Client:
     def _onopen(self):
         self.state = self.CONNECTED
         
-        print("opened: " + str(self))
+        print(str(id(self)) + " opened")
     
         # send identify message. we're not going to be a full client here, so just
         # phone it in.
@@ -68,15 +67,18 @@ class Client:
                     
                     self.state = self.JOINED_ROOM
             elif(self.state == self.JOINED_ROOM):
-                print(str(id(self)) + ": " + payload["name"])
+                pass
+                # print(str(id(self)) + ": " + payload["name"])
         
 
     def _onclose(self):
-        print("closed!")
+        print(str(id(self)) + " closed")
     
     def close(self):
         self.ws.close()
 
+
+clients = []
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
@@ -87,13 +89,20 @@ if __name__ == '__main__':
     port = int(sys.argv[2])
     num_clients = int(sys.argv[3])
     
-    # for index in range(0, num_clients):
-    client = Client(server, port)
+    print("connecting to: %s:%d x%d" %(server, port, num_clients))
+    
+    
+    for index in range(0, num_clients):
+        client = Client(server, port)
+        clients.append(client)
+    
     
     try:
         asyncore.loop()
     except KeyboardInterrupt:
-        client.close()
+        print("Closing all connections...")
+        for client in clients:
+            client.close()
     
     
 
