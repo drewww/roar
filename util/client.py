@@ -11,7 +11,7 @@ Created by Drew Harry on 2011-11-28.
 Copyright (c) 2011 MIT Media Lab. All rights reserved.
 """
 
-import websocket, httplib, sys, asyncore, json
+import websocket, httplib, sys, asyncore, json, threading
 
 '''
     connect to the socketio server
@@ -66,6 +66,8 @@ class Client:
                     # it worked okay.
                     
                     self.state = self.JOINED_ROOM
+                    
+                    self.heartbeat()
             elif(self.state == self.JOINED_ROOM):
                 pass
                 # print(str(id(self)) + ": " + payload["name"])
@@ -76,6 +78,14 @@ class Client:
     
     def close(self):
         self.ws.close()
+        self.state = self.DISCONNECTED
+        
+    def heartbeat(self):
+        if(self.state!=self.DISCONNECTED):
+            threading.Timer(5.0, self.heartbeat).start()
+            self.ws.send('2:::')
+            print(str(id(self)) + "-heartbeat")
+        
 
 
 clients = []
