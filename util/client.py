@@ -27,7 +27,14 @@ class Client(object):
     IDENTIFIED = 2
     JOINED_ROOM = 3
     
+    messageQueue = []
+    messageFlushingEngaged = False
+    
+    
     def __init__(self, server, port):
+        if(Client.messageFlushingEngaged is False):
+            Client.messageFlushingEngaged = True
+            threading.Timer(1.0, Client.flushEventQueue).start()
     
         conn  = httplib.HTTPConnection(server + ":" + str(port))
         conn.request('POST','/socket.io/1/')
@@ -42,12 +49,14 @@ class Client(object):
                         onmessage = self._onmessage,
                         onclose = self._onclose,
                         onerror = self._onerror)
-        self.state = self.DISCONNECTED
+        self.state = Client.DISCONNECTED
+        
+            
 
     def _onopen(self):
-        self.state = self.CONNECTED
+        self.state = Client.CONNECTED
         
-        print(str(id(self)) + " opened")
+        Client.addMessage("open")
     
         # send identify message. we're not going to be a full client here, so just
         # phone it in.
@@ -55,6 +64,9 @@ class Client(object):
         self.ws.send('5:::{"name":"identify", "args":[{"username":"user-'+str(id(self))+'"}]}')
     
     def _onmessage(self, msg):
+        
+        Client.addMessage("message")
+        
         # print(str(id(self)) + ": " + msg)
         if(msg[0]=="5"):
             payload = json.loads(msg.lstrip('5:'))
@@ -62,38 +74,68 @@ class Client(object):
             if(self.state == self.CONNECTED):
                 if(payload["name"]=="identify"):
                     # server has acknowledged identification. join a room.
-                    self.state = self.IDENTIFIED
+                    self.state = Client.IDENTIFIED
                     
                     self.ws.send('5:::{"name":"room", "args":[{"name":"General Chat 1"}]}')
                     # this command is not acknowledge from the server, so we just assume
                     # it worked okay.
                     
-                    self.state = self.JOINED_ROOM
+                    self.state = Client.JOINED_ROOM
                     
                     self.heartbeat()
-            elif(self.state == self.JOINED_ROOM):
+            elif(self.state == Client.JOINED_ROOM):
                 pass
                 # print(str(id(self)) + ": " + payload["name"])
         
 
     def _onclose(self):
-        print(str(id(self)) + " closed")
+        Client.addMessage("close")
+        
     
     def _onerror(self, t, e, trace):
+        Client.addMessage("error")
+        
         traceback.print_tb(trace)
         print(str(id(self)) + " ERR: " + str(e) + "; " + str(t))
     
     def close(self):
         self.ws.close()
-        self.state = self.DISCONNECTED
+        self.state = Client.DISCONNECTED
         
     def heartbeat(self):
-        if(self.state!=self.DISCONNECTED):
+        if(self.state!=Client.DISCONNECTED):
+            
+            Client.addMessage("heartbeat")
+            
             threading.Timer(15.0, self.heartbeat).start()
             self.ws.send('2:::')
-            # print(str(id(self)) + "-heartbeat")
+    
+    @staticmethod
+    def addMessage(event):
+        Client.messageQueue.append(event)
+    
+    @staticmethod
+    def flushEventQueue():
+        if(not Client.messageFlushingEngaged):
+            return
+            
+        # if(Client.lastMessageFlush is None or ((time.time() - Client.lastMessageFlush)>1)):
+        threading.Timer(1.0, Client.flushEventQueue).start()
+        Client.lastMessageFlush = time.time()
         
-
+        # count up all the different types and do a one line summary
+        d = {"open":0, "close":0, "heartbeat":0, "error":0, "message":0}
+        for i in set(Client.messageQueue):
+            d[i] = Client.messageQueue.count(i)
+        
+        Client.messageQueue = []
+        
+        outputString = ""
+        for i in d:
+            outputString = outputString + i + ": {:<5} ".format(str(d[i]))
+            # outputString = outputString + i + ": " + str(d[i]) + " "
+            
+        print(outputString)
 
 clients = []
 
@@ -117,6 +159,7 @@ if __name__ == '__main__':
         asyncore.loop()
     except KeyboardInterrupt:
         print("Closing all connections...")
+        Client.messageFlushingEngaged = False
         for client in clients:
             client.close()
     
