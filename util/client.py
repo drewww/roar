@@ -11,7 +11,7 @@ Created by Drew Harry on 2011-11-28.
 Copyright (c) 2011 MIT Media Lab. All rights reserved.
 """
 
-import websocket, httplib, sys, asyncore, json, threading
+import websocket, httplib, sys, asyncore, json, threading, traceback
 
 '''
     connect to the socketio server
@@ -34,11 +34,14 @@ class Client:
         resp  = conn.getresponse() 
         hskey = resp.read().split(':')[0]
 
+        print(" got hskey: " + hskey)
+
         self.ws = websocket.WebSocket(
                         'ws://'+server+':'+str(port)+'/socket.io/1/websocket/'+hskey,
                         onopen   = self._onopen,
                         onmessage = self._onmessage,
-                        onclose = self._onclose)
+                        onclose = self._onclose,
+                        onerror = self._onerror)
         self.state = self.DISCONNECTED
 
     def _onopen(self):
@@ -49,32 +52,36 @@ class Client:
         # send identify message. we're not going to be a full client here, so just
         # phone it in.
         
-        self.ws.send('5:::{"name":"identify", "args":[{"username":"user-'+str(id(self))+'"}]}')
+        # self.ws.send('5:::{"name":"identify", "args":[{"username":"user-'+str(id(self))+'"}]}')
     
     def _onmessage(self, msg):
-        
-        if(msg[0]=="5"):
-            payload = json.loads(msg.lstrip('5:'))
-        
-            if(self.state == self.CONNECTED):
-                if(payload["name"]=="identify"):
-                    # server has acknowledged identification. join a room.
-                    self.state = self.IDENTIFIED
-                    
-                    self.ws.send('5:::{"name":"room", "args":[{"name":"General Chat 1"}]}')
-                    # this command is not acknowledge from the server, so we just assume
-                    # it worked okay.
-                    
-                    self.state = self.JOINED_ROOM
-                    
-                    self.heartbeat()
-            elif(self.state == self.JOINED_ROOM):
-                pass
-                # print(str(id(self)) + ": " + payload["name"])
+        pass
+        # if(msg[0]=="5"):
+        #     payload = json.loads(msg.lstrip('5:'))
+        # 
+        #     if(self.state == self.CONNECTED):
+        #         if(payload["name"]=="identify"):
+        #             # server has acknowledged identification. join a room.
+        #             self.state = self.IDENTIFIED
+        #             
+        #             self.ws.send('5:::{"name":"room", "args":[{"name":"General Chat 1"}]}')
+        #             # this command is not acknowledge from the server, so we just assume
+        #             # it worked okay.
+        #             
+        #             self.state = self.JOINED_ROOM
+        #             
+        #             # self.heartbeat()
+        #     elif(self.state == self.JOINED_ROOM):
+        #         pass
+        #         # print(str(id(self)) + ": " + payload["name"])
         
 
     def _onclose(self):
         print(str(id(self)) + " closed")
+    
+    def _onerror(self, t, e, trace):
+        traceback.print_tb(trace)
+        print(str(id(self)) + " ERR: " + str(e) + "; " + str(t))
     
     def close(self):
         self.ws.close()
@@ -100,7 +107,6 @@ if __name__ == '__main__':
     num_clients = int(sys.argv[3])
     
     print("connecting to: %s:%d x%d" %(server, port, num_clients))
-    
     
     for index in range(0, num_clients):
         client = Client(server, port)

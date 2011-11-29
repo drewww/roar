@@ -17,6 +17,7 @@ program.version('0.2')
     .option('-m, --model [filename]', "Specifies a specific chat model to load for bots. No effect without -b.")
     .option('-d, --disable', "Disables the shout system.")
     .option('-D, --database [num]', "Set the redis database index (default 0)")
+    .option('-H, --disableheartbeats', "Disable heartbeats.")
     .parse(process.argv);
     
 
@@ -37,6 +38,10 @@ if(program.port) {
 io.set("log level", 0);
 if(program.verbose) {
     io.set("log level", 3);
+}
+
+if(program.disableheartbeats) {
+    io.set("heartbeats", false)
 }
 
 var modelFilename = __dirname + "/chat_model.json";
