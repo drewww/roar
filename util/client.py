@@ -41,8 +41,6 @@ class Client(object):
         resp  = conn.getresponse() 
         hskey = resp.read().split(':')[0]
 
-        print(" got hskey: " + hskey)
-
         self.ws = websocket.WebSocket(
                         'ws://'+server+':'+str(port)+'/socket.io/1/websocket/'+hskey,
                         onopen   = self._onopen,
