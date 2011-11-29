@@ -72,9 +72,15 @@ app.get('/', function(req, res) {
 app.use(app.router);
 app.use("/static", express.static(__dirname + '/static'));
 
+
+// GLOBALS
+var numConnectedUsers = 0;
+
+
 // TODO Do some sort of blocking on accepting connections until the redis
 // conneciton is actually alive.
 io.sockets.on('connection', function(socket) {
+    numConnectedUsers++;
     
     // Do some user welcoming stuff. 
     socket.emit("bots", {"mute":botsMuted});
@@ -276,9 +282,13 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('disconnect', function(data) {
-        console.log("disconnect info: ", data);
+        if(data) {
+            console.log("disconnect info: ", data);
+        }
         leaveRoom(socket, null);
         releaseNickname(socket);
+        
+        numConnectedUsers--;
     });
     
     
@@ -1092,7 +1102,7 @@ function _processPulse() {
 
                         var messagesPerMin = messagesInWindow*(60/WINDOW_SIZE);
 
-                        console.log("messagesPerMin: " + messagesPerMin + " activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + "; relativeActivity: " + relativeActivity.toFixed(3) + " messagesInWindow: " + messagesInWindow + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
+                        console.log("users: " + numConnectedUsers + " messagesPerMin: " + messagesPerMin + " activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
                         
                         // square the activity factor to make it more nonlinear
                         dict = popularWordsList.slice(0, activityFactor*40.0);
