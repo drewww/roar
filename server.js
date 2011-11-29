@@ -351,6 +351,7 @@ function startWorkers() {
         _updateRooms(null);
         _checkShoutExpiration();
         _chatBotTick();
+        _logPerformanceData();
     }, 0);
     
 }
@@ -880,7 +881,7 @@ var WINDOW_SIZE = 10;
 
 function _processPulse() {
     
-    setTimeout(_processPulse, 2000);
+    setTimeout(_processPulse, 2500);
     
     // In each loop, grab the whole message history (in recent_messages) and
     // generate a new pulse command.
@@ -1078,9 +1079,9 @@ function _processPulse() {
                         // console.log("totalMessages: " + totalMessages);
                         // console.log("timeSinceStart: " + (Date.now() - startTime));
                         
-                        var totalActivity = (totalMessages / ((Date.now() - startTime)/1000));
-                        var windowActivity = messagesInWindow / WINDOW_SIZE;
-                        var relativeActivity = windowActivity / totalActivity;
+                        totalActivity = (totalMessages / ((Date.now() - startTime)/1000));
+                        windowActivity = messagesInWindow / WINDOW_SIZE;
+                        relativeActivity = windowActivity / totalActivity;
 
                         // cache totalActivity (messages/second) in redis
                         // for other parts of the system to use.
@@ -1089,7 +1090,7 @@ function _processPulse() {
                         // so with current settings, relativeActivity goes from about 0 to 
                         // 2.0, so lets scale that way.
 
-                        var activityFactor = relativeActivity/2.0;
+                        activityFactor = relativeActivity/2.0;
                         if(activityFactor > 1) {
                             activityFactor = 1;
                         }
@@ -1100,9 +1101,8 @@ function _processPulse() {
                         });
                         popularWordsList.reverse();
 
-                        var messagesPerMin = messagesInWindow*(60/WINDOW_SIZE);
+                        messagesPerMin = messagesInWindow*(60/WINDOW_SIZE);
 
-                        console.log("users: " + numConnectedUsers + " messagesPerMin: " + messagesPerMin + " activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
                         
                         // square the activity factor to make it more nonlinear
                         dict = popularWordsList.slice(0, activityFactor*40.0);
@@ -1144,6 +1144,16 @@ function _processPulse() {
             });
         });
     });
+}
+
+var messagesPerMin = 0;
+var activityFactor = 0;
+var totalActivity = 0;
+var windowActivity = 0;
+
+function _logPerformanceData() {
+    setTimeout(_logPerformanceData, 2000);
+    console.log("@" + Math.floor(Date.now()/1000) + " users: " + numConnectedUsers + " messagesPerMin: " + messagesPerMin + " activityFactor: " + activityFactor.toFixed(2) + " totalActivity: " + totalActivity.toFixed(1) + "; windowActivity: " + windowActivity.toFixed(1) + " botChatOddsOffset: " + botChatOddsOffset.toFixed(4));
 }
 
 
