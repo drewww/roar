@@ -282,9 +282,9 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on('disconnect', function(data) {
-        if(data) {
-            console.log("disconnect info: ", data);
-        }
+        // if(data) {
+            // console.log("disconnect info: ", data);
+        // }
         leaveRoom(socket, null);
         releaseNickname(socket);
         
@@ -711,7 +711,7 @@ function joinRoom(socket, newRoomName) {
 function leaveRoom(socket, newRoomName) {
     // See if this socket is in a room already.
     socket.get("room", function(err, roomName) {
-        console.log("leaving room: " + roomName);
+        // console.log("leaving room: " + roomName);
         if(roomName!=null) {
             // We need to leave that room first.
             // 1. Unsubscribe the socket.
