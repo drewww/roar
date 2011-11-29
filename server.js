@@ -191,7 +191,9 @@ io.sockets.on('connection', function(socket) {
         var newRoomName = data["name"];
 
         socket.get("room", function (err, oldRoomName) {
-            leaveRoom(socket, oldRoomName);
+            if(oldRoomName != null) {
+                leaveRoom(socket, oldRoomName);
+            }
             
             socket.set("room", newRoomName, function() {
                 joinRoom(socket, newRoomName);
