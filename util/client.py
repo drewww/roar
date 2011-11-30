@@ -12,6 +12,7 @@ Copyright (c) 2011 MIT Media Lab. All rights reserved.
 """
 
 import websocket, httplib, sys, asyncore, json, threading, traceback, time
+import argparse, random
 
 '''
     connect to the socketio server
@@ -63,12 +64,14 @@ class Client(object):
     
     def _onmessage(self, msg):
         
-        Client.addMessage("message")
+        # Client.addMessage("message")
         
         # print(str(id(self)) + ": " + msg)
         if(msg[0]=="5"):
             payload = json.loads(msg.lstrip('5:'))
-        
+            
+            Client.addMessage("m_" + payload["name"])
+            
             if(self.state == self.CONNECTED):
                 if(payload["name"]=="identify"):
                     # server has acknowledged identification. join a room.
@@ -108,6 +111,9 @@ class Client(object):
             threading.Timer(15.0, self.heartbeat).start()
             self.ws.send('2:::')
     
+    def sendChat(self, msg):
+        self.ws.send('5:::{"name":"chat", "args":[{"text":"'+msg+'"}]}')
+    
     @staticmethod
     def addMessage(event):
         Client.messageQueue.append(event)
@@ -122,7 +128,7 @@ class Client(object):
         Client.lastMessageFlush = time.time()
         
         # count up all the different types and do a one line summary
-        d = {"open":0, "close":0, "heartbeat":0, "error":0, "message":0}
+        d = {"open":0, "close":0, "heartbeat":0, "error":0, "m_identify":0, "m_chat":0, "m_pulse":0, "m_rooms":0, "m_bots":0}
         for i in set(Client.messageQueue):
             d[i] = Client.messageQueue.count(i)
         
@@ -135,29 +141,61 @@ class Client(object):
             
         print(outputString)
 
+
+# this is going to be called once a second, so figure out how many messages
+# we're supposed to send to keep up.
+def processChat():
+    global shutdown
+    if(shutdown):
+        return
+    
+    threading.Timer(1.0, processChat).start()
+    messagesPerClientPerSecond = chat/60
+    
+    for i in range(0, int(messagesPerClientPerSecond)):
+        clients[i].sendChat("this is my silly random message hooray!")
+    
+
 clients = []
+chat = 0.0
+shutdown = False
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        sys.stderr.write('usage: python client.py <server> <port> <num-clients>\n')
-        sys.exit(1)
     
-    server = sys.argv[1]
-    port = int(sys.argv[2])
-    num_clients = int(sys.argv[3])
+    parser = argparse.ArgumentParser(description="Load tester for socket.io applications (customized for ROAR)")
+    parser.add_argument('-p', '--port', action='store', default=8888)
+    parser.add_argument('-c', '--concurrency', type=int, default=1)
+    parser.add_argument('-C', '--chat',metavar="MSGS_PER_MIN_CLIENT", default=0)
+    parser.add_argument('server')
+    
+    args = parser.parse_args(sys.argv[1:])
+    print(str(args))
+    
+    server = args.server
+    port = int(args.port)
+    num_clients = args.concurrency
+    
+    global chat
+    chat = int(args.chat)
     
     print("connecting to: %s:%d x%d" %(server, port, num_clients))
     
     for index in range(0, num_clients):
         client = Client(server, port)
         clients.append(client)
-        # time.sleep(0.01)
+    
+    if(chat>0):
+        threading.Timer(30.0, processChat).start()
+    
+    print("All clients created!")
     
     try:
         asyncore.loop()
     except KeyboardInterrupt:
         print("Closing all connections...")
         Client.messageFlushingEngaged = False
+        global shutdown
+        shutdown = True
         for client in clients:
             client.close()
     
