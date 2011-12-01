@@ -150,10 +150,11 @@ def processChat():
         return
     
     threading.Timer(1.0, processChat).start()
-    messagesPerClientPerSecond = chat/60
+    messagesPerSecond = chat/60
     
-    for i in range(0, int(messagesPerClientPerSecond)):
+    for i in range(0, int(messagesPerSecond)):
         clients[i].sendChat("this is my silly random message hooray!")
+        time.sleep(1.0/messagesPerSecond)
     
 
 clients = []
@@ -185,7 +186,7 @@ if __name__ == '__main__':
         clients.append(client)
     
     if(chat>0):
-        threading.Timer(30.0, processChat).start()
+        threading.Timer(5.0, processChat).start()
     
     print("All clients created!")
     
