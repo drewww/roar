@@ -692,14 +692,15 @@ function joinRoom(socket, newRoomName) {
                     }
                 });
             }
-        
-        if(socket) socket.get("nickname", function(err, nickname) {
-            // Kinda wanted to say where they came from here, but
-            // that turns out to be a little tedious with the callback
-            // structure. Figure out some way to cache that to make it
-            // accessible?
-            broadcastAdminMessage(newRoomName, nickname + " has arrived.");
-        });
+
+        // turn this off since it makes mass joining a disaster
+        // if(socket) socket.get("nickname", function(err, nickname) {
+        //     // Kinda wanted to say where they came from here, but
+        //     // that turns out to be a little tedious with the callback
+        //     // structure. Figure out some way to cache that to make it
+        //     // accessible?
+        //     broadcastAdminMessage(newRoomName, nickname + " has arrived.");
+        // });
 
         // doing this after the arrival broadcast message means
         // it doens't go to that user, which is nice. We have separate
