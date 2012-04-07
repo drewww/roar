@@ -40,7 +40,9 @@ if(program.process) {
     for(var messageNodeIndex in messageNodes) {
         var messageNode = messageNodes[messageNodeIndex];
         
-        chatMessages.push(messageNode.text());
+        var datetime = new Date(messageNode.attr("received").value());
+        
+        chatMessages.push({"text":messageNode.text(), "time":datetime.getTime()});
     }
     
     // now dump it.
@@ -48,6 +50,9 @@ if(program.process) {
     fs.writeFileSync("names.json", JSON.stringify(namesSet.array()));
 } else if (program.tfidf) {
     console.log("Performing TF-IDF analysis");
+    
+    
+    
 } else if (program.index) {
     console.log("Indexing");
 } else if (program.numutterances) {
