@@ -87,6 +87,8 @@ if(program.process) {
     // tracking window position
     var nextWindowThreshold = false;
     
+    var numDocs = 0;
+    
     for (var messageIndex in messages) {
         var message = messages[messageIndex];
         // console.log(message.time);
@@ -96,6 +98,7 @@ if(program.process) {
         } else if (nextWindowThreshold < message.time) {
             // handle the end of the window - push things into document
             // frequency.
+            numDocs++;
             
             // two things:
             // merge termFrequencyDocument into termFrequencyGlobal
@@ -164,6 +167,29 @@ if(program.process) {
     
     console.log("Ending TFIDF");
     
+    
+    var tfidf = {};
+    var sortedTFIDF = [];
+    
+    for(var word in termFrequencyGlobal) {
+        
+        var df = 10000000000000000;
+        if(word in documentFrequency) {
+            df = documentFrequency[word];
+        } else {
+            console.log("weird issue: " + word + " is in termFreq but not documentFreq. should never happen!");
+        }
+        
+        var idf = Math.log(numDocs/df)/Math.log(10);
+        
+        tfidf[word] = termFrequencyGlobal[word] * idf;
+        sortedTFIDF.push({"word":word, "score":tfidf[word]});
+    }
+    
+    sortedTFIDF.sort(function(a,b) {
+        return b.score - a.score;
+    });
+    
     // okay now sort the lists.
     var sortableTFGlobal = [];
     for(var word in termFrequencyGlobal) {
@@ -174,32 +200,32 @@ if(program.process) {
         return b.freq - a.freq;
     });
     
-    var sortableDFGlobal = [];
-    for(var word in documentFrequency) {
-        sortableDFGlobal.push({"word":word, "freq":documentFrequency[word]});
+    for(var i in sortedTFIDF) {
+        var item = sortedTFIDF[i];
+        
+        console.log(item["score"] + "\t" + item["word"]);
+        
+        if(i > 50) break;
     }
     
-    sortableDFGlobal.sort(function(a,b) {
-        return b.freq - a.freq;
-    });
     
-    console.log("TOP TERM FREQ");
-    for(var i in sortableTFGlobal) {
-        var item = sortableTFGlobal[i];
-        
-        console.log(item["word"] + " " + item["freq"]);
-        
-        if(i > 30) break;
-    }
-
-    console.log("TOP DOCUMENT FREQ");
-    for(var i in sortableDFGlobal) {
-        var item = sortableDFGlobal[i];
-        
-        console.log(item["word"] + " " + item["freq"]);
-        
-        if(i > 30) break;
-    }
+    // console.log("TOP TERM FREQ");
+    // for(var i in sortableTFGlobal) {
+    //     var item = sortableTFGlobal[i];
+    //     
+    //     console.log(item["word"] + " " + item["freq"]);
+    //     
+    //     if(i > 30) break;
+    // }
+    // 
+    // console.log("TOP DOCUMENT FREQ");
+    // for(var i in sortableDFGlobal) {
+    //     var item = sortableDFGlobal[i];
+    //     
+    //     console.log(item["word"] + " " + item["freq"]);
+    //     
+    //     if(i > 30) break;
+    // }
 
     
     
