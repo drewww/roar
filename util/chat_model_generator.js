@@ -9,7 +9,7 @@ var libxml = require("libxmljs"),
     ;
 
 // Set the window size in seconds to 3 minutes.
-var WINDOW_SIZE_MSECONDS = 60*3*1000;
+var WINDOW_SIZE_MSECONDS = 60*5*1000;
 
 var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
@@ -180,7 +180,7 @@ if(program.process) {
             console.log("weird issue: " + word + " is in termFreq but not documentFreq. should never happen!");
         }
         
-        var idf = Math.log(numDocs/df)/Math.log(10);
+        var idf = Math.log((numDocs)/df)/Math.log(10);
         
         tfidf[word] = termFrequencyGlobal[word] * idf;
         sortedTFIDF.push({"word":word, "score":tfidf[word]});
@@ -203,9 +203,9 @@ if(program.process) {
     for(var i in sortedTFIDF) {
         var item = sortedTFIDF[i];
         
-        console.log(item["score"] + "\t" + item["word"]);
+        console.log(item["score"] + "\t" + item["word"] + "\t" + termFrequencyGlobal[item["word"]] + "\t" + documentFrequency[item["word"]]);
         
-        if(i > 50) break;
+        if(i > 200) break;
     }
     
     
