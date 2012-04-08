@@ -72,6 +72,19 @@ if(program.process) {
 } else if (program.tfidf) {
     console.log("Performing TF-IDF analysis");
     
+    // load the messages in
+    
+    // now iterate through the messages, up until we hit a document
+    // boundary (which will be a time-based window, will also try message
+    // count-based)
+    
+    // while iterating through messages, keep a hash that is
+    // word -> appearance count. that's global frequency. when we hit
+    // the end of a window, take all the keys in that hash and increment
+    // the document frequency count by one for each of them, adding keys
+    // as necessary.
+    
+    
     var contents = fs.readFileSync(program.tfidf);
     
     var messages = JSON.parse(contents);
@@ -210,43 +223,6 @@ if(program.process) {
     //     
     //     if(i > 200) break;
     // }
-    
-    
-    // console.log("TOP TERM FREQ");
-    // for(var i in sortableTFGlobal) {
-    //     var item = sortableTFGlobal[i];
-    //     
-    //     console.log(item["word"] + " " + item["freq"]);
-    //     
-    //     if(i > 30) break;
-    // }
-    // 
-    // console.log("TOP DOCUMENT FREQ");
-    // for(var i in sortableDFGlobal) {
-    //     var item = sortableDFGlobal[i];
-    //     
-    //     console.log(item["word"] + " " + item["freq"]);
-    //     
-    //     if(i > 30) break;
-    // }
-
-    
-    
-    // load the messages in
-    
-    // now iterate through the messages, up until we hit a document
-    // boundary (which will be a time-based window, will also try message
-    // count-based)
-    
-    // while iterating through messages, keep a hash that is
-    // word -> appearance count. that's global frequency. when we hit
-    // the end of a window, take all the keys in that hash and increment
-    // the document frequency count by one for each of them, adding keys
-    // as necessary.
-    
-    
-    
-    
     
 } else if (program.index) {
     console.log("Indexing");
