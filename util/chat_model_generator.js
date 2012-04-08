@@ -226,6 +226,37 @@ if(program.process) {
     
 } else if (program.index) {
     console.log("Indexing");
+    
+    // load in messages + keywords
+    var messages = JSON.parse(fs.readFileSync("messages.json"));
+    var keywords = JSON.parse(fs.readFileSync("keywords.json")).slice(0, 30);
+    
+    // console.log(JSON.stringify(keywords));
+    // run through every message and create an index object that is 
+    // keyword -> [ids of messages that contain that keyword]
+    var index = {};
+    
+    for(var id in messages) {
+        var message = messages[id];
+        for(var keywordIndex in keywords) {
+            var keyword = keywords[keywordIndex];
+            
+            if(message.text.indexOf(keyword.word)!=-1) {
+                // console.log("\tyes!");
+                if(keyword.word in index) {
+                    var indexOptions = index[keyword.word];
+                    indexOptions.push(id);
+                    
+                    index[keyword.word] = indexOptions;
+                } else {
+                    index[keyword.word] = [id];
+                }
+            }
+        }
+    }
+    
+    fs.writeFileSync("index.json", JSON.stringify(index));
+    
 } else if (program.numutterances) {
     console.log("Generating utterances.");
 
