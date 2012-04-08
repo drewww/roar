@@ -10,7 +10,7 @@ var libxml = require("libxmljs"),
     ;
 
 // Set the window size in seconds to 3 minutes.
-var WINDOW_SIZE_MSECONDS = 60*5*1000;
+var WINDOW_SIZE_MSECONDS = 60*10*1000;
 
 var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
@@ -87,7 +87,7 @@ if(program.process) {
     // as necessary.
     
     
-    var contents = fs.readFileSync(program.tfidf);
+    var contents = fs.readFileSync("messages.json");
     
     var messages = JSON.parse(contents);
     console.log("performing tfidf on " + messages.length + " messages");
@@ -109,7 +109,6 @@ if(program.process) {
         // console.log(message.time);
         if(nextWindowThreshold==false) {
             nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
-            console.log("setting next window threshold: " + nextWindowThreshold);
         } else if (nextWindowThreshold < message.time) {
             // handle the end of the window - push things into document
             // frequency.
