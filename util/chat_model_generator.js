@@ -5,6 +5,7 @@ var libxml = require("libxmljs"),
     logger = require('util'),
     fs = require('fs'),
     sets = require('simplesets'),
+    _ = require('underscore')._,
     program = require('commander')
     ;
 
@@ -31,10 +32,11 @@ var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all
 "your":1,"yours":1,"yourself":1,"yourselves":1};
 
 program.version('0.2')
-    .option('-i, --index [messages] [keywords]', 'Builds an index of chat messages using top keywords from the keywords file.')
-    .option('-t, --tfidf [messages]', 'Performs TF-IDF on the corpus, generating a ranking of all terms in the corpus.')
-    .option('-p, --process [chatxml]', 'Turns chat xml into a javascript object with indicies assigned to messages and a list of unique names.')
-    .option('-n, --numutterances [num]', 'Generate a specified number of utterances (default 1)')
+    .option('-i, --index', 'Builds an index of chat messages using top keywords from the keywords file.')
+    .option('-t, --tfidf', 'Performs TF-IDF on the corpus, generating a ranking of all terms in the corpus.')
+    .option('-p, --process <chatxml>', 'Turns chat xml into a javascript object with indicies assigned to messages and a list of unique names.')
+    .option('-g, --generate [keyword]', 'Generate utterances for a keyword')
+    .option('-l, --list', 'List statistics about the current model.')
     .parse(process.argv);
 
 
@@ -245,7 +247,7 @@ if(program.process) {
                 // console.log("\tyes!");
                 if(keyword.word in index) {
                     var indexOptions = index[keyword.word];
-                    indexOptions.push(id);
+                    indexOptions.push(parseInt(id));
                     
                     index[keyword.word] = indexOptions;
                 } else {
@@ -257,26 +259,57 @@ if(program.process) {
     
     fs.writeFileSync("index.json", JSON.stringify(index));
     
-} else if (program.numutterances) {
-    console.log("Generating utterances.");
-
-    // going to need to update the loading significantly, but will just
-    // leave this here for now.
-    var model = JSON.parse(fs.readFileSync("chat_model.json", 'utf-8'));
+} else if (program.generate) {
+    var keyword = program.generate;
     
-    if(program.printmodel) {
-        console.log(model);
+    // load in the pieces
+    var messages = JSON.parse(fs.readFileSync("messages.json"));
+    var index = JSON.parse(fs.readFileSync("index.json"));
+    var keywords = JSON.parse(fs.readFileSync("keywords.json"));
+    
+    console.log("Loaded models, " + messages.length + " total messages.");
+    
+    var actualKeywords = _.pluck(keywords, 'word');
+    
+    if(keyword == "") {
+        console.log("Missing keyword, picking one randomly from the top 30");
+        keyword = actualKeywords[Math.floor(Math.random()*30)];
+    } else if(actualKeywords.indexOf(keyword)==-1) {
+        console.log("Specified keyword must be a keyword for this corpus. Use -l to get a list of valid keywords.");
+        return;
     }
     
-    var numUtterances = 1;
+    var messageIndicesForKeyword = index[keyword];
     
-    if(program.numutterances) {
-        numUtterances = program.numutterances;
+    console.log("Number of messages containing '"+keyword+"': "
+        + messageIndicesForKeyword.length);
+    
+    // now pick five random ones.
+    for(var i=0; i<5; i++) {
+        var randomIndex = Math.floor(Math.random()*messageIndicesForKeyword.length);
+        var messageIndex = index[keyword][randomIndex];
+        
+        var message = messages[messageIndex];
+        
+        console.log(message.text);
     }
     
-    for(var i=0; i<numUtterances; i++) {
-        console.log(generateUtterance(model));
+} else if(program.list) {
+    var messages = JSON.parse(fs.readFileSync("messages.json"));
+    var index = JSON.parse(fs.readFileSync("index.json"));
+    var keywords = JSON.parse(fs.readFileSync("keywords.json"));
+    
+    console.log("Total messages: " + messages.length);
+    console.log("Total keywords: " + keywords.length);
+    console.log("------------");
+    console.log("Top keywords by score: ");
+    
+    for(var i=0; i<50; i++) {
+        var keyword = keywords[i];
+        
+        console.log(keyword["score"] + "\t" + keyword["word"]);
     }
+    
 }
 
 function generateUtterance(model) {
