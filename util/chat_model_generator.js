@@ -190,6 +190,9 @@ if(program.process) {
         return b.score - a.score;
     });
     
+    // write it out.
+    fs.writeFileSync("keywords.json", JSON.stringify(sortedTFIDF));
+    
     // okay now sort the lists.
     var sortableTFGlobal = [];
     for(var word in termFrequencyGlobal) {
@@ -200,13 +203,13 @@ if(program.process) {
         return b.freq - a.freq;
     });
     
-    for(var i in sortedTFIDF) {
-        var item = sortedTFIDF[i];
-        
-        console.log(item["score"] + "\t" + item["word"] + "\t" + termFrequencyGlobal[item["word"]] + "\t" + documentFrequency[item["word"]]);
-        
-        if(i > 200) break;
-    }
+    // for(var i in sortedTFIDF) {
+    //     var item = sortedTFIDF[i];
+    //     
+    //     console.log(item["score"] + "\t" + item["word"] + "\t" + termFrequencyGlobal[item["word"]] + "\t" + documentFrequency[item["word"]]);
+    //     
+    //     if(i > 200) break;
+    // }
     
     
     // console.log("TOP TERM FREQ");
