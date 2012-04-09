@@ -7,6 +7,7 @@
 	<script src="/static/js/jquery-1.6.2.min.js" type="text/javascript"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="/static/js/jquery.md5.js"></script>
+	<script src="/static/js/underscore.js"></script>
 
 	<script type="text/javascript" charset="utf-8">
 		
@@ -56,6 +57,7 @@
 		
 		socket.on('pulse', function (data) {
 			// updatePulse(data);
+			updatePulseNew(data);
 		});
 		
 		socket.on('rooms', function(data) {
@@ -580,12 +582,32 @@
 			$("#chat-input").focus();
 		}
 		
+		function updatePulseNew(pulse) {
+			// wipe the contents of #pulse and replace it with
+			// new pulse words, sorted by score.
+			var pulseDiv = $("#pulse");
+			pulseDiv.empty();
+			
+			pulseWords = pulse.words;
+			pulseWords.sort(function(a, b) {
+				return b["score"] - a["score"];
+			});
+			
+			var wordCount = 0;
+			_.each(pulseWords, function(pulseItem) {
+				wordCount++;
+				
+				if(wordCount > 10) return;
+			$("<div class='pulseWord'>" + pulseItem["word"] + "</div>").appendTo(pulseDiv);
+				
+			});
+		}
+		
 		// This function is the heart of the visualization system. Everytime
 		// we receive a message from the server with aggregate data about
 		// keywords across all rooms. Given the picture of the state, animate
 		// from where it is now to where it needs to be. What this function
 		// will receive is a list of word/score combos.
-		
 		function updatePulse(pulse) {
 			if(!pulseEnabled) return;
 
