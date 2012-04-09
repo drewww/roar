@@ -64,6 +64,7 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
 
 var model = {};
 
+var autoKeywords = true;
 var keywords = [null, null, null];
 
 var bots = {};
@@ -74,7 +75,6 @@ var BASE_CHAT_ODDS = 0.002;
 
 var varyBotParticipation = true;
 var botsMuted = false;
-
 
 
 if(program.bots) {
@@ -183,6 +183,7 @@ io.sockets.on('connection', function(socket) {
             command = command.slice(1);
             
             switch(command) {
+                case "l":
                 case "level":
                     if(args[0]=="vary") {
                         varyBotParticipation = true;
@@ -200,6 +201,26 @@ io.sockets.on('connection', function(socket) {
                 case "spike":
                     spikeProgress=0;
                     break;
+                    
+                case "k":
+                case "keyword":
+                    
+                    if(args[0]=="add") {
+                        if(args[1]) addKeyword(args[1], 3);
+                        autoKeywords = false;
+                    } else if(args[0]=="remove") {
+                        if(args[1]) removeKeyword(args[1]);
+                        autoKeywords = false;
+                    } else if(args[0]=="clear") {
+                        clearKeywords();
+                        autoKeywords = false;
+                    } else if(args[0]=="auto") {
+                        autoKeywords = true;
+                    }
+                    
+                    
+                    break;
+                
                 default:
                     sendAdminMessage(socket,
                             "Unknown command '" + command + "'.");
@@ -907,8 +928,7 @@ function _updateRooms(socket) {
 function _manageKeywords() {
     setTimeout(_manageKeywords, 2500);
     console.log("KEY: " + JSON.stringify(keywords));
-    updateKeywords();
-    
+    if(autoKeywords) updateKeywords();
 }
 
 var lastDocumentProcessed = Date.now();
@@ -1403,7 +1423,7 @@ function chooseKeyword() {
 
 function clearKeywords() {
     // removes any non-null keywords
-    keywords = _.filter(keywords, function(keyword) { return filter==null;});
+    keywords = _.filter(keywords, function(keyword) { return keyword==null;});
 }
 
 function removeKeyword(keywordToRemove) {
