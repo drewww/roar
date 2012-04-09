@@ -57,7 +57,7 @@
 		
 		socket.on('pulse', function (data) {
 			// updatePulse(data);
-			updatePulseNew(data);
+			updatePulseRiver(data);
 		});
 		
 		socket.on('rooms', function(data) {
@@ -582,13 +582,77 @@
 			$("#chat-input").focus();
 		}
 		
-		function updatePulseNew(pulse) {
+		function updatePulseRiver(pulse) {
+			console.log("pulse river. words length: " + pulse.words.length);
+			// make words appear on the left edge
+			// set their size based on score
+			// make them animate to the right, faster for smaller ones
+			
+			var pulseDiv = $("#pulse");
+			
+			pulseWords = pulse.words;
+			pulseWords.sort(function(a, b) {
+				return b["score"] - a["score"];
+			});
+			
+			var wordCount = 0;
+			_.each(pulseWords, function(pulseItem) {
+				wordCount++;
+				
+				if(wordCount > pulse.words.length*0.75) return;
+				
+				// check and see if the word already exists.
+				var wordId = "pulse-word-" + $.md5(pulseItem["word"]);
+				
+				if($("#" + wordId).length) {
+					wordEl = $("#"+wordId);
+					
+					// now make it bigger and move slower
+					var newSize = parseInt(wordEl.css("font-size")) + 4;
+					wordEl.css("font-size", newSize);
+					
+					var newYPos = parseInt(wordEl.css("top")) - 2;
+					wordEl.css("top", newYPos);
+					
+					wordEl.css("z-index", Math.floor(pulseItem["score"]*10));
+					
+					
+				} else {
+					var newWord = $("<div class='pulseWordRiver'>" + pulseItem["word"] + "</div>");
+					
+					newWord.attr("id", wordId);
+					newWord.css("font-size", 30*pulseItem["score"]);
+					newWord.css("top", Math.random()*(50 - 30*pulseItem["score"]));
+					// newWord.css("margin-top", -15*pulseItem["score"]);
+					newWord.css("left", -75);
+					newWord.css("z-index", Math.floor(pulseItem["score"]*10));
+					newWord.appendTo(pulseDiv);
+
+					setTimeout(function() {
+						newWord.animate({
+							left:"100%"
+						}, 20000*pulseItem["score"], "linear", function() {
+							$(this).remove();
+						}, Math.random()*2500);
+					});
+					
+					
+				}
+			});
+			
+			
+			
+			
+		}
+		
+		
+		function updatePulseBar(pulse) {
 			// wipe the contents of #pulse and replace it with
 			// new pulse words, sorted by score.
 			var pulseDiv = $("#pulse");
 			
 			// console.log(pulse);
-			console.log("pulse words length: " + pulse.words.length);
+			// console.log("pulse words length: " + pulse.words.length);
 			
 			pulseDiv.empty();
 			
@@ -620,7 +684,7 @@
 		// keywords across all rooms. Given the picture of the state, animate
 		// from where it is now to where it needs to be. What this function
 		// will receive is a list of word/score combos.
-		function updatePulse(pulse) {
+		function updatePulseBigCloud(pulse) {
 			if(!pulseEnabled) return;
 
 			
