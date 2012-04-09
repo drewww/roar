@@ -1353,7 +1353,6 @@ function processBotChat() {
 }
 
 function updateKeywords() {
-    console.log("Updating keywords");
     // get a list of unique keywords, minus null
     var uniqueKeywords = _.uniq(keywords);
     uniqueKeywords = _.filter(uniqueKeywords, function(keyword) {return keyword!=null});
@@ -1405,14 +1404,11 @@ function chooseKeyword() {
 function clearKeywords() {
     // removes any non-null keywords
     keywords = _.filter(keywords, function(keyword) { return filter==null;});
-    console.log("KEY: Clearing all non-null keywords.");
 }
 
 function removeKeyword(keywordToRemove) {
     keywords = _.filter(keywords, function(keyword)
         {return keyword!=keywordToRemove});
-        
-    console.log("KEY: Removed all copies of " + keywordToRemove);
 }
 
 function removeSomeKeyword(keywordToRemove, instances) {
@@ -1427,16 +1423,12 @@ function removeSomeKeyword(keywordToRemove, instances) {
         
         return true;
     });
-    
-    console.log("KEY: Removing " + instances + "x" + keywordToRemove);
 }
 
 function addKeyword(keyword, instances) {
     for(var i=0; i<instances; i++) {
         keywords.push(keyword);
     }
-    
-    console.log("KEY: Adding keyword: " + keyword + " x" + instances);
 }
 
 
@@ -1467,27 +1459,7 @@ function generateUtterance() {
     return generateUtteranceForKeyword(keyword);
 }
 
-function pickWordFromList(wordList) {
-    
-    var rand = Math.random();
-    
-    // run through the list until we hit that value.
-    var prevScore = 0.0;
-    for(var index in wordList) {
-        var word = wordList[index];
-        
-        if(rand > prevScore && rand < word["prob"]) {
-            // console.log("\tpicking: " + word["word"]);
-            return word["word"];
-        } else {
-            prevScore = word["prob"];
-            // console.log("prevScore=", prevScore);
-        }
-    }
-}
-
-
-// TOD try getting rid of these - tf-idf should handle all this stuff.
+// TODO try getting rid of these - tf-idf should handle all this stuff.
 var stopWords = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
 "below":1,"between":1,"both":1,"but":1,"by":1,"can't":1,"cannot":1,"could":1,"couldn't":1,"did":1,
