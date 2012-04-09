@@ -586,6 +586,10 @@
 			// wipe the contents of #pulse and replace it with
 			// new pulse words, sorted by score.
 			var pulseDiv = $("#pulse");
+			
+			// console.log(pulse);
+			console.log("pulse words length: " + pulse.words.length);
+			
 			pulseDiv.empty();
 			
 			pulseWords = pulse.words;
@@ -594,12 +598,20 @@
 			});
 			
 			var wordCount = 0;
+			var currentXPos = 0;
 			_.each(pulseWords, function(pulseItem) {
 				wordCount++;
 				
-				if(wordCount > 10) return;
-			$("<div class='pulseWord'>" + pulseItem["word"] + "</div>").appendTo(pulseDiv);
+				if(wordCount > pulse.words.length*0.75) return;
+				var newWord = $("<div class='pulseWord'>" + pulseItem["word"] + "</div>");
+				newWord.css("font-size", 30*pulseItem["score"]);
+				newWord.css("margin-top", -15*pulseItem["score"]);
+				newWord.css("left", currentXPos);
+				newWord.appendTo(pulseDiv);
 				
+				currentXPos = currentXPos + newWord.width() + 5;
+				
+				// console.log(pulseItem["word"] + " - " + pulseItem["score"]);
 			});
 		}
 		
