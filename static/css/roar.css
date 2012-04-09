@@ -16,7 +16,7 @@
 			background: -moz-linear-gradient(top,  #2B434F,  #0C2538); /* for firefox 3.6+ */
 			
 			position: fixed;
-			bottom: 0px;
+			bottom: 50px;
 			
 			width: 100%;
 			height: 50px;
@@ -46,7 +46,7 @@
 /*			width: 150px;*/
 			border-left: 1px solid #36464C;
 			
-			height: 100%;
+			height: 50px;
 			
 			text-align: center;
 			padding-left: 10px;
@@ -82,7 +82,7 @@
 		
 		#room-select {
 			border-left: 1px solid #36464C;
-			height: 100%;
+			height: 35px;
 			float: right;
 			padding-top: 15px;
 			padding-left: 10px;
@@ -98,14 +98,14 @@
 			font-size: 2em;
 			width: 108px;
 			text-align: center;
-			
+			height: 43px;
 			letter-spacing: -2px;
 		}
 		
 		#chat {
 			width: 375px;
 			padding-top: 15px;
-			
+			height: 35px;
 			font-size: 1.0em;
 		}
 		
@@ -176,7 +176,7 @@
 		#chat-container {
 			background-color: rgba(0,0,0,0.0);
 			position: fixed;
-			bottom: 51px;
+			bottom: 101px;
 			left: 109px;
 			width: 450px;
 		}
@@ -434,11 +434,11 @@
 
 		#pulse {
 			position: fixed;
-			top: 0px;
-			left: 0px;
-			background: rgba(1,1,1,0.0);
+            bottom: 0px;
+            background: green;
+/*          background: rgba(1,1,1,0.0);*/
 			width: 100%;
-			height: 100%;
+			height: 50px;
 			
 			/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting */
 			-webkit-user-select: none;
