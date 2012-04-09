@@ -63,7 +63,8 @@ var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
 
 
 var model = {};
-var currentKeywordFocus = false;
+
+var keywords = [null, null, null];
 
 var bots = {};
 
@@ -86,8 +87,6 @@ if(program.bots) {
     console.log("Loaded model. " + model.messages.length + " messages available.");
     
     setupBots(program.bots);
-    currentKeywordFocus = chooseKeyword();
-    console.log("keyword: " + currentKeywordFocus);
 }
 
 app.listen(port);
@@ -379,6 +378,7 @@ function startWorkers() {
         _checkShoutExpiration();
         _chatBotTick();
         _logPerformanceData();
+        _manageKeywords();
     }, 0);
     
 }
@@ -904,6 +904,13 @@ function _updateRooms(socket) {
     });
 }
 
+function _manageKeywords() {
+    setTimeout(_manageKeywords, 2500);
+    console.log("KEY: " + JSON.stringify(keywords));
+    updateKeywords();
+    
+}
+
 var lastDocumentProcessed = Date.now();
 var WINDOW_SIZE = 10;
 
@@ -1345,6 +1352,48 @@ function processBotChat() {
     }
 }
 
+function updateKeywords() {
+    console.log("Updating keywords");
+    // get a list of unique keywords, minus null
+    var uniqueKeywords = _.uniq(keywords);
+    uniqueKeywords = _.filter(uniqueKeywords, function(keyword) {return keyword!=null});
+    
+    // okay now for each of these, run the odds.
+    _.each(uniqueKeywords, function(keyword) {
+        var num = Math.random();
+        
+        if(num > 0.9) {
+            // expand
+            addKeyword(keyword, 1);
+        } else if (num > 0.8) {
+            // contract
+            removeKeyword(keyword, 1);
+        } else {
+            // do nothing.
+            
+        }
+    });
+    
+    if(uniqueKeywords.length == 3) {
+        var num = Math.random();
+        
+        if(num > 0.8) {
+            // remove a keyword
+            var index = Math.floor(Math.random()*3);
+            removeKeyword(uniqueKeywords[index]);
+        }
+    } else {
+        var num = Math.random();
+        
+        if(num > 0.8) {
+            // add a keyword
+            var volume = Math.floor(Math.random()*5 + 1);
+            addKeyword(chooseKeyword(), volume);
+        }
+    }
+    
+}
+
 function chooseKeyword() {
     var actualKeywords = _.pluck(model.keywords, 'word');
     
@@ -1353,19 +1402,69 @@ function chooseKeyword() {
     return keyword;
 }
 
-function generateUtterance(model) {
+function clearKeywords() {
+    // removes any non-null keywords
+    keywords = _.filter(keywords, function(keyword) { return filter==null;});
+    console.log("KEY: Clearing all non-null keywords.");
+}
+
+function removeKeyword(keywordToRemove) {
+    keywords = _.filter(keywords, function(keyword)
+        {return keyword!=keywordToRemove});
+        
+    console.log("KEY: Removed all copies of " + keywordToRemove);
+}
+
+function removeSomeKeyword(keywordToRemove, instances) {
+    var count = 0;
+    keywords = _.filter(keywords, function(keyword) {
+        if(keyword==keywordToRemove) {
+            if(count < instances) {
+                count++;
+                return false;
+            }
+        }
+        
+        return true;
+    });
     
+    console.log("KEY: Removing " + instances + "x" + keywordToRemove);
+}
+
+function addKeyword(keyword, instances) {
+    for(var i=0; i<instances; i++) {
+        keywords.push(keyword);
+    }
+    
+    console.log("KEY: Adding keyword: " + keyword + " x" + instances);
+}
+
+
+function generateUtteranceForKeyword(keyword) {
     // this is really easy - just look at keyword and grab a random example
     // that includes that keyword.
-    var messageIndicesForKeyword = model.index[currentKeywordFocus];
-    var randomIndex = Math.floor(Math.random()*messageIndicesForKeyword.length);
-    var messageIndex = messageIndicesForKeyword[randomIndex];
+    
+    var messageIndex;
+    if(keyword==null) {
+        messageIndex = Math.floor(Math.random()*model.messages.length);
+    } else {
+        var messageIndicesForKeyword = model.index[keyword];
+        var randomIndex = Math.floor(Math.random()*messageIndicesForKeyword.length);
+        messageIndex = messageIndicesForKeyword[randomIndex];
+    }
     
     var message = model.messages[messageIndex];
-    
-    console.log("chatting: " + message.text);
-    
+    // console.log("chatting: " + message.text);
     return message.text;
+}
+
+function generateUtterance() {
+    // pick a random keyword
+    
+    var keywordIndex = Math.floor(Math.random()*keywords.length);
+    var keyword = keywords[keywordIndex];
+    
+    return generateUtteranceForKeyword(keyword);
 }
 
 function pickWordFromList(wordList) {
