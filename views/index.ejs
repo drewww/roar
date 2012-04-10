@@ -582,6 +582,9 @@
 			$("#chat-input").focus();
 		}
 		
+		
+		var currentWords = {};
+		
 		function updatePulseRiver(pulse) {
 			console.log("pulse river. words length: " + pulse.words.length);
 			// make words appear on the left edge
@@ -655,15 +658,20 @@
 						
 						wordEl.removeAttr("untouched");
 						
+						
+						currentWords[pulseItem["word"]] = currentWords[pulseItem["word"]]+2;
+						
 						// wordEl.css("z-index", Math.floor(pulseItem["score"]*10));
 					}
 					
 					
 				} else {
-						
+					
 					var newWord = $("<div class='pulseWordRiver'>" + pulseItem["word"] + "</div>");
 					
 					newWord.attr("id", wordId);
+					
+					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*3);
 					
 					var fontSize = 22*pulseItem["score"]+8
 					
@@ -694,6 +702,7 @@
 							left:pulseDiv.width()
 						}, animationDuration, "linear", function() {
 							$(this).remove();
+							delete currentWords[$(this).text()];
 						});
 					}, Math.random()*2500);
 				}
@@ -703,15 +712,25 @@
 				var element = $(this);
 			
 				if(element.attr("untouched")!=null) {
-					console.log("DROPPING ELEMENT: " + element.text());
-					// just fade it.
-					$(this).stop();
-					$(this).animate({
-						opacity: 0.0,
-						left: "+=" + 100
-					}, 2000, function() {
-						$(this).remove();
-					});
+					
+					currentWords[element.text()] = currentWords[element.text()]-1;
+					
+					if(currentWords[element.text()] < 1) {
+						console.log("DROPPING ELEMENT: " + element.text());
+						
+						// just fade it.
+						var that = this;
+						setTimeout(function() {
+							$(that).stop();
+							$(that).animate({
+								opacity: 0.0,
+								left: "+=" + 100
+							}, 1500, "linear", function() {
+								$(that).remove();
+								delete currentWords[$(that).text()];
+							});
+						}, 900, this);
+					}
 				}
 			});
 		}
