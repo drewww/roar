@@ -208,6 +208,15 @@
 				
 			}
 		});
+		
+		socket.on('search-result', function(data) {
+			var messages = JSON.parse(data.messages);
+			console.log("got " + messages.length + " messages for '" + data.keyword + "'");
+			console.log(messages[0]);
+			console.log(messages[1]);
+			console.log(messages[2]);
+			console.log(messages[3]);
+		});
 
 		$(document).ready(function() {
 			
@@ -479,6 +488,9 @@
 			if(event!=null) event.preventDefault();
 		}
 		
+		function searchForKeyword(keyword) {
+			socket.emit("search", {"keyword":keyword});
+		}
 		
 		function appendChat(message) {
 			

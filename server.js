@@ -304,6 +304,35 @@ io.sockets.on('connection', function(socket) {
         });
     });
     
+    socket.on('search', function(data) {
+        var keyword = data["keyword"];
+        
+        client.lrange("messages.recent", 0, -1, function (err, res) {
+            var messagesInWindow = 0;
+
+            var popularWordsInWindow = {};
+
+            // data contains all the messages in the room queue.
+            var messagesWithKeyword = [];
+            for(msgKey in res) {
+                var msg = JSON.parse(res[msgKey]);
+                
+                // search the message looking for the keyword that we want.
+                // if we find it, add it to the list. if we've found
+                // enough examples, end and dump the messages on the client.
+                
+                if(msg.text.indexOf(keyword)!=-1) {
+                    messagesWithKeyword.push(msg);
+                }
+            }
+            
+            messagesWithKeyword.reverse();
+            
+            socket.emit('search-result', {"keyword":keyword, "messages":
+                JSON.stringify(messagesWithKeyword)});
+        });
+    });
+    
     socket.on('shout.vote', function (data) {
         // {shout_id:(id)}
         voteForShout(socket, data["shout_id"], null);
