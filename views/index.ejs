@@ -58,6 +58,25 @@
 		socket.on('pulse', function (data) {
 			// updatePulse(data);
 			updatePulseRiver(data);
+			
+			// whichever mode we're in, attach listeners to every word
+			// that causes a search.
+			// if($("#pulse").children().length==0) return;
+			
+			$("#pulse div").each(function(index, word) {
+				
+				word = $(word);
+				
+				if(word.attr("handled")=="true") return;
+				
+				word.click(function(event) {
+					searchForKeyword($(this).text());
+				});
+				
+				word.attr("handled", true);
+			});
+			
+			$("#pulse").children()
 		});
 		
 		socket.on('rooms', function(data) {

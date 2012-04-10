@@ -450,6 +450,13 @@
 			user-select: none;
 		}
 		
+		#pulse div:hover {
+		    background-color: #444;
+		    color: white;
+		    opacity: 1.0;
+		    z-index: 100000;
+		}
+		
 		.pulseWordRiver {
 		    position: absolute;
 			color: white;
