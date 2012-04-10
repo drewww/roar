@@ -726,9 +726,9 @@
 					
 					newWord.attr("id", wordId);
 					
-					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*2);
+					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*2 + 2);
 					
-					var fontSize = 22*pulseItem["score"]+8
+					var fontSize = 22*pulseItem["score"]+8;
 					
 					newWord.css("font-size", fontSize);
 					newWord.css("top", Math.random()*(50 - 50*pulseItem["score"]));
@@ -796,8 +796,9 @@
 			
 			// max speed is going to be 30 px/s
 			// min speed is going to be 5 px/s
-			var pixelSpeed = 15 + 60*(1-(size/50.0));
+			var pixelSpeed = 15 + 120*(1-((size-8)/22.0));
 			
+			pixelSpeed = pixelSpeed + Math.random() * 30;
 			// now convert to time
 			var animationDuration = pixelWidth / pixelSpeed;
 			animationDuration = animationDuration*1000;
