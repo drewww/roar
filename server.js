@@ -307,7 +307,7 @@ io.sockets.on('connection', function(socket) {
     socket.on('search', function(data) {
         var keyword = data["keyword"];
         
-        client.lrange("messages.recent", 0, -1, function (err, res) {
+        client.lrange("messages.less_recent", 0, -1, function (err, res) {
             var messagesInWindow = 0;
 
             var popularWordsInWindow = {};
@@ -467,6 +467,14 @@ function sendChatToRoom(roomName, nickname, messageText) {
     // We don't need to trim; pulse will trim for us, to avoid having to
     // push more data around than is strictly necessary.
     client.rpush("messages.recent", JSON.stringify(messageDict));
+    
+    // these are in a separate list that can hold more stuff, so clicking 
+    // on a top term doesn't return few results even though that term
+    // WAS huge, just more than 2.5 seconds ago. 
+    client.rpush("messages.less_recent", JSON.stringify(messageDict));
+    
+    // make sure this doesn't get over 2000 elements. 
+    client.ltrim("messages.less_recent", -2000, -1);
     
     // increment the counter for room activity.
     client.hincrby("rooms.activity", roomName, 1);

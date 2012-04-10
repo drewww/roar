@@ -883,7 +883,7 @@
 		    background: white;
 		    color: black;
 		    
-		    overflow: hidden;
+		    overflow: scroll;
 		}
 		
 		#search-results .highlight {
