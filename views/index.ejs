@@ -231,10 +231,33 @@
 		socket.on('search-result', function(data) {
 			var messages = JSON.parse(data.messages);
 			console.log("got " + messages.length + " messages for '" + data.keyword + "'");
-			console.log(messages[0]);
-			console.log(messages[1]);
-			console.log(messages[2]);
-			console.log(messages[3]);
+			
+			var resultsDiv = $("#search-results");
+			resultsDiv.empty();
+			
+			
+			$("<h1>" + data.keyword + "<div id='close-search'>X</div></h1>").appendTo(resultsDiv);
+			
+			$("#close-search").click(function() {
+				resultsDiv.hide();
+			});
+			
+			var totalElement = $("<div id='total-messages'>" + messages.length + " total messages.</div>");
+			totalElement.appendTo(resultsDiv);
+			
+			_.each(messages, function(message) {
+				
+				var text = message.text;
+				
+				text = text.replace(data.keyword, "<span class='highlight'>" + data.keyword + "</span>");
+				
+				
+				
+				var chatDiv = $("<div class='chat'>" + text + "</div>");
+				chatDiv.appendTo(resultsDiv);
+			});
+			
+			resultsDiv.show();
 		});
 
 		$(document).ready(function() {
@@ -257,6 +280,7 @@
 			$("#chat-sect").hide();
 			$("#sections-sect").hide();
 			$("#pulse-sect").hide();
+
 			
 			$("#demo-header").hide();
 			
@@ -266,6 +290,9 @@
 			$("#container").addClass("minimized");
 			$("#container").offset({top:-424}, 0);
 			$("#hide").text("about this project");
+			
+			$("#search-results").hide();
+			
 			
 			$(window).blur(function() {
 				pulseEnabled = false;
@@ -1310,6 +1337,9 @@ shout
 </div>
 
 <div id="word-buffer">
+</div>
+
+<div id="search-results">
 </div>
 
 </div>

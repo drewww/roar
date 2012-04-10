@@ -869,6 +869,61 @@
 			clear: both;
 		}
 		
+		#search-results {
+		    z-index: 1000;
+		    position: absolute;
+		    width: 400px;
+		    height: 400px;
+		    
+            left: 50%;
+            margin-left: -200px;
+            bottom: 100px;
+            
+            border: 1px solid black;
+		    background: white;
+		    color: black;
+		    
+		    overflow: hidden;
+		}
+		
+		#search-results .highlight {
+		    font-weight: bold;
+		    color: red;
+		    background-color: #ccc;
+		}
+		
+		#search-results .chat {
+		    margin-bottom: 5px;
+		}
+		
+		#search-results h1 {
+		    margin: 0px;
+		    padding: 5px;
+		    background-color: black;
+		    color: white;
+		}
+		
+		#close-search {
+		    font-style: bold;
+		    background-color: #444;
+		    
+		    float: right;
+		}
+		
+		#close-search:hover {
+		    background-color: #666;
+		    cursor: pointer;
+		}
+		
+		#total-messages {
+		    width: 100%;
+		    background-color: #aaa;
+		    color: black;
+		    font-style: italic;
+		    text-align: center;
+		    margin-bottom: 10px;
+		}
+		
 		#live_embed_player_flash {
 			z-index: -1000;
 		}
