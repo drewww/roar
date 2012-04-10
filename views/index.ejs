@@ -598,7 +598,6 @@
 		var currentWords = {};
 		
 		function updatePulseRiver(pulse) {
-			console.log("pulse river. words length: " + pulse.words.length);
 			// make words appear on the left edge
 			// set their size based on score
 			// make them animate to the right, faster for smaller ones
@@ -619,7 +618,6 @@
 				
 				if(wordCount > pulse.words.length*0.4) return;
 				// if(wordCount > 2) return;
-				console.log("word: " + pulseItem["word"]);
 				
 				// check and see if the word already exists.
 				var wordId = "pulse-word-" + $.md5(pulseItem["word"]);
@@ -634,7 +632,6 @@
 					
 					var newSize = currentSize;
 					if(currentSize+4 < 50) {
-						console.log("growing");
 						newSize = currentSize + 4;
 						
 						wordEl.css("font-size", newSize);
@@ -707,7 +704,6 @@
 					
 					var animationDuration = calculateDurationForSize(fontSize);
 					
-					console.log("duration: " + animationDuration + "; word: " + pulseItem["word"]);
 					
 					setTimeout(function() {
 						newWord.animate({
@@ -728,8 +724,6 @@
 					currentWords[element.text()] = currentWords[element.text()]-1;
 					
 					if(currentWords[element.text()] < 1) {
-						console.log("DROPPING ELEMENT: " + element.text());
-						
 						// just fade it.
 						var that = this;
 						setTimeout(function() {
