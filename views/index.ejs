@@ -714,7 +714,7 @@
 						wordEl.removeAttr("untouched");
 						
 						
-						currentWords[pulseItem["word"]] = currentWords[pulseItem["word"]]+2;
+						currentWords[pulseItem["word"]] = currentWords[pulseItem["word"]]+1.5;
 						
 						// wordEl.css("z-index", Math.floor(pulseItem["score"]*10));
 					}
@@ -726,7 +726,7 @@
 					
 					newWord.attr("id", wordId);
 					
-					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*3);
+					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*2);
 					
 					var fontSize = 22*pulseItem["score"]+8
 					
