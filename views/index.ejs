@@ -595,6 +595,9 @@
 				return b["score"] - a["score"];
 			});
 			
+			$("#pulse").children().attr("untouched", "true");
+			
+			
 			var wordCount = 0;
 			_.each(pulseWords, function(pulseItem) {
 				wordCount++;
@@ -642,6 +645,16 @@
 						// });
 						wordEl.css("z-index", newSize);
 						
+						wordEl.css("opacity", pulseItem["score"]*0.9 + 0.1);
+
+						if(pulseItem["score"] < 0.4) {
+							wordEl.addClass("blur");
+						} else {
+							wordEl.removeClass("blur");
+						}
+						
+						wordEl.removeAttr("untouched");
+						
 						// wordEl.css("z-index", Math.floor(pulseItem["score"]*10));
 					}
 					
@@ -657,11 +670,15 @@
 					newWord.css("font-size", fontSize);
 					newWord.css("top", Math.random()*(50 - 50*pulseItem["score"]));
 					
+					newWord.css("opacity", pulseItem["score"]*0.9 + 0.1);
+					
+					if(pulseItem["score"] < 0.4) {
+						newWord.addClass("blur");
+					}
 					
 					// newWord.css("margin-top", -15*pulseItem["score"]);
 					
 					var size = getDimensionsForWord(pulseItem["word"], fontSize);
-					
 					
 					newWord.css("left", -1*size["width"]);
 					newWord.css("z-index", Math.floor(pulseItem["score"]*10));
@@ -679,14 +696,24 @@
 							$(this).remove();
 						});
 					}, Math.random()*2500);
-					
-					
 				}
 			});
 			
+			$("#pulse").children().map(function () {
+				var element = $(this);
 			
-			
-			
+				if(element.attr("untouched")!=null) {
+					console.log("DROPPING ELEMENT: " + element.text());
+					// just fade it.
+					$(this).stop();
+					$(this).animate({
+						opacity: 0.0,
+						left: "+=" + 100
+					}, 2000, function() {
+						$(this).remove();
+					});
+				}
+			});
 		}
 		
 		function calculateDurationForSize(size) {
