@@ -18,7 +18,7 @@
 		
 		var usingDemoName = false;
 		
-		var pulseType = "river";
+		var pulseType = "river+x";
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -63,7 +63,10 @@
 				case "cloud":
 					updatePulseBigCloud(data);
 					break;
-				case "river":
+				case "river+x":
+					updatePulseRiver(data, "+x");
+					break;
+				case "river+y":
 					updatePulseRiver(data, "+y");
 					break;
 				case "bar":
@@ -471,8 +474,7 @@
 		function setPulseType(type) {
 			
 			switch(type) {
-				case "river":
-					
+				case "river+x":
 					$("#pulse").css({
 						position: "fixed",
 						top: "auto",	
@@ -491,6 +493,30 @@
 					$("#pulse").empty();
 					
 					
+					pulseType = type;
+					break;
+					
+				case "river+y":
+					// river y has the bar on the right side of the screen
+					
+					$("#pulse").css({
+						position: "fixed",
+						top: 0,	
+						right: 0,
+						background: "black",
+						width: 300,
+						height: "100%",
+						overflow: "hidden"
+					});
+
+
+					$("#roar-bar").css({
+						bottom: 0
+					});
+
+					$("#pulse").empty();
+
+
 					pulseType = type;
 					break;
 					
