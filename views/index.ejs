@@ -18,6 +18,8 @@
 		
 		var usingDemoName = false;
 		
+		var pulseType = "river";
+		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
 
@@ -56,12 +58,21 @@
 		});
 		
 		socket.on('pulse', function (data) {
-			// updatePulse(data);
-			updatePulseRiver(data);
+			
+			switch(pulseType) {
+				case "cloud":
+					updatePulseBigCloud(data);
+					break;
+				case "river":
+					updatePulseRiver(data);
+					break;
+				case "bar":
+					updatePulseBar(data);
+					break;
+			}
 			
 			// whichever mode we're in, attach listeners to every word
 			// that causes a search.
-			// if($("#pulse").children().length==0) return;
 			
 			$("#pulse div").each(function(index, word) {
 				
@@ -457,6 +468,83 @@
 		    $(".default-text").blur();
 		});
 		
+		function setPulseType(type) {
+			
+			switch(type) {
+				case "river":
+					
+					$("#pulse").css({
+						position: "fixed",
+						top: "auto",
+						bottom: 0,
+						background: "black",
+						width: "100%",
+						height: 50,
+						overflow: "hidden"
+					});
+					
+					
+					$("#roar-bar").css({
+						bottom: 50
+					});
+					
+					$("#pulse").empty();
+					
+					
+					pulseType = type;
+					break;
+					
+				case "bar":
+					
+					
+					$("#pulse").css({
+						position: "fixed",
+						top: "auto",
+						bottom: 0,
+						background: "black",
+						width: "100%",
+						height: 50,
+						overflow: "hidden",
+						paddingTop: 10
+					});
+					
+					$("#roar-bar").css({
+						bottom: 50
+					});
+					
+					$("#pulse").empty();
+					
+					
+					pulseType = type;
+					break;
+					
+				case "cloud":
+					
+					// Move the elements around to put pulse in the right
+					// place.
+					$("#pulse").css({
+						position: "fixed",
+						top: 0,
+						left: 0,
+						background: "rgba(1,1,1,0.0)",
+						width: "100%",
+						height: "100%"
+					});
+					
+					$("#roar-bar").css({
+						bottom: 0
+					});
+					
+					$("#pulse").empty();
+					
+					pulseType = type;
+					break;
+				default:
+					console.log("Bad pulse type given: " + type);
+					break;
+			}
+		}
+		
 		function toggleRoomList(event) {
 			if($("#rooms-container").is(":visible")) {
 				$("#rooms-container").animate({bottom:-300}, 500, function(){
@@ -827,13 +915,14 @@
 				wordCount++;
 				
 				if(wordCount > pulse.words.length*0.75) return;
-				var newWord = $("<div class='pulseWord'>" + pulseItem["word"] + "</div>");
+				var newWord = $("<div class='pulseWordBar'>" + pulseItem["word"] + "</div>");
 				newWord.css("font-size", 30*pulseItem["score"]);
 				newWord.css("margin-top", -15*pulseItem["score"]);
 				newWord.css("left", currentXPos);
+				newWord.css("top", 25);
 				newWord.appendTo(pulseDiv);
 				
-				currentXPos = currentXPos + newWord.width() + 5;
+				currentXPos = currentXPos + newWord.width() + 5 + 5*pulseItem["score"];
 				
 				// console.log(pulseItem["word"] + " - " + pulseItem["score"]);
 			});
@@ -845,7 +934,7 @@
 		// from where it is now to where it needs to be. What this function
 		// will receive is a list of word/score combos.
 		function updatePulseBigCloud(pulse) {
-			if(!pulseEnabled) return;
+			// if(!pulseEnabled) return;
 
 			
 			// Take the activity metrics and turn one into messages/min and
@@ -956,7 +1045,7 @@
 					wordEl.attr("id", wordId);
 					wordEl.css("top", topPos);
 					wordEl.css("left", leftPos);
-					wordEl.addClass("pulse-word");
+					wordEl.addClass("pulseWordCloud");
 					wordEl.html(pulseWord);
 					
 					var size = pulseMagnitude*2*12;

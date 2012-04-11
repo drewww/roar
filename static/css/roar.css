@@ -465,6 +465,16 @@
 			opacity: 0.8;
 		}
 		
+		.pulseWordBar {
+		    position: absolute;
+            float: left;
+			color: white;
+			text-shadow: 1px 1px 0px #111;
+			font-weight: bold;
+			opacity: 0.7;
+			margin: 5px;
+		}
+		
 		.pulseWord {
 		    position: absolute;
             float: left;
@@ -474,6 +484,14 @@
 			opacity: 0.7;
 			margin: 5px;
 		}
+		
+		.pulseWordCloud {
+        			position: fixed;
+        			color: white;
+        			text-shadow: 1px 1px 0px #111;
+        			font-weight: bold;
+        			opacity: 0.7;
+        }
 		
 		.blur {
 			color: transparent;
