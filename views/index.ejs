@@ -475,7 +475,7 @@
 					
 					$("#pulse").css({
 						position: "fixed",
-						top: "auto",
+						top: "auto",	
 						bottom: 0,
 						background: "black",
 						width: "100%",
@@ -731,6 +731,8 @@
 		
 		var currentWords = {};
 		
+		var MAX_FONT_SIZE = 50;
+		
 		function updatePulseRiver(pulse) {
 			// make words appear on the left edge
 			// set their size based on score
@@ -765,46 +767,20 @@
 					var currentSize = parseInt(wordEl.css("font-size"));
 					
 					var newSize = currentSize;
-					if(currentSize+4 < 50) {
+					if(currentSize+4 < MAX_FONT_SIZE) {
 						newSize = currentSize + 4;
 						
 						wordEl.css("font-size", newSize);
 						var newYPos = parseInt(wordEl.css("top")) - 2;
 						wordEl.css("top", newYPos);
-						
-						// wordEl.stop();
-						// wordEl.animate({
-						// 							fontSize:newSize,
-						// 							top:newYPos,
-						// 							// zIndex:newSize
-						// 							left: "+=" + 50,
-						// }, 100, "linear", function() {
-						// 	console.log("GREW!");
-						// 	$(this).stop();
-						// 	$(this).animate({
-						// 		left:$("#pulse").width
-						// 	}, calculateDurationForSize(newSize), "linear", 
-						// 	function() {
-						// 		console.log("post growth reanimate");
-						// 		$(this).remove();
-						// 	});
-						// });
-						wordEl.css("z-index", newSize);
-						
-						wordEl.css("opacity", pulseItem["score"]*0.9 + 0.1);
 
-						if(pulseItem["score"] < 0.4) {
-							wordEl.addClass("blur");
-						} else {
-							wordEl.removeClass("blur");
-						}
+						updateRiverElement(wordEl);
+						animateRiverElement(wordEl, "+x");
 						
 						wordEl.removeAttr("untouched");
 						
 						
 						currentWords[pulseItem["word"]] = currentWords[pulseItem["word"]]+1.5;
-						
-						// wordEl.css("z-index", Math.floor(pulseItem["score"]*10));
 					}
 					
 					
@@ -819,33 +795,17 @@
 					var fontSize = 22*pulseItem["score"]+8;
 					
 					newWord.css("font-size", fontSize);
-					newWord.css("top", Math.random()*(50 - 50*pulseItem["score"]));
-					
-					newWord.css("opacity", pulseItem["score"]*0.9 + 0.1);
-					
-					if(pulseItem["score"] < 0.4) {
-						newWord.addClass("blur");
-					}
-					
-					// newWord.css("margin-top", -15*pulseItem["score"]);
+					newWord.css("top", Math.random()*(MAX_FONT_SIZE - MAX_FONT_SIZE*pulseItem["score"]));
 					
 					var size = getDimensionsForWord(pulseItem["word"], fontSize);
-					
 					newWord.css("left", -1*size["width"]);
-					newWord.css("z-index", Math.floor(pulseItem["score"]*10));
+					
+					updateRiverElement(newWord);
+					
 					newWord.appendTo(pulseDiv);
 					
-					
-					var animationDuration = calculateDurationForSize(fontSize);
-					
-					
 					setTimeout(function() {
-						newWord.animate({
-							left:pulseDiv.width()
-						}, animationDuration, "linear", function() {
-							$(this).remove();
-							delete currentWords[$(this).text()];
-						});
+						animateRiverElement(newWord, "+x");
 					}, Math.random()*2500);
 				}
 			});
@@ -863,35 +823,97 @@
 						setTimeout(function() {
 							$(that).stop();
 							$(that).animate({
+								fontSize: 8,
 								opacity: 0.0,
-								left: "+=" + 100
+								left: "+=" + 100,
+								top: "+=" + (parseInt($(that).css("fontSize"))-8)/2,
 							}, 1500, "linear", function() {
 								$(that).remove();
 								delete currentWords[$(that).text()];
 							});
-						}, 900, this);
+						}, 900*Math.random(), this);
 					}
 				}
 			});
 		}
 		
-		function calculateDurationForSize(size) {
+		function updateRiverElement(element) {
+			var fontSize = parseInt(element.css("font-size"));
+			var scaled = fontSize / MAX_FONT_SIZE;
+			
+			// set transparency based on font size
+			element.css("opacity", scaled*0.8 + 0.2);
+			
+			// set blur based on font-size
+			if(fontSize < 14) {
+				element.addClass("blur");
+			} else {
+				element.removeClass("blur");
+			}
+			
+			// update z-index
+			element.css("z-index", fontSize*100+100);
+			
+			// reset animation speed
+		}
+		
+		function animateRiverElement(element, axis) {
+			
+			var size = parseInt(element.css("font-size"));
+			
+			var position;
+			var maxPosition;
+			var animatedSide;
+			var animationTarget;
+			
+			switch(axis) {
+				case "+x":
+					maxPosition = $("#pulse").width();
+					animatedSide = "left";
+					animationTarget = {left:maxPosition};
+					break;
+				case "-x":
+					maxPosition = $("#pulse").width();
+					animatedSide = "right";
+					animationTarget = {right:maxPosition};
+					break;
+				case "+y":
+					maxPosition = $("#pulse").height();
+					animatedSide = "bottom";
+					animationTarget = {bottom:maxPosition};
+					break;
+				case "-y":
+					maxPosition = $("#pulse").height();
+					animatedSide = "top";
+					animationTarget = {top:maxPosition};
+					break;
+				default:
+					console.log("Bad axis selection: " + axis);
+					break;
+			}
+			
+			position = parseInt(element.css(animatedSide));
+			
 			// rate limit, and figure it based on actual pixel width
 			// of the screen so different screen sizes don't have
 			// different speeds.
 			
-			var pixelWidth = $("#pulse").width();
-			
 			// max speed is going to be 30 px/s
 			// min speed is going to be 5 px/s
-			var pixelSpeed = 15 + 120*(1-((size-8)/22.0));
+			var pixelSpeed = 25 + 50*(1-(size/MAX_FONT_SIZE));
 			
-			pixelSpeed = pixelSpeed + Math.random() * 30;
+			// pixelSpeed = pixelSpeed + Math.random() * 30;
 			// now convert to time
-			var animationDuration = pixelWidth / pixelSpeed;
+			var animationDuration = (maxPosition - position) / pixelSpeed;
 			animationDuration = animationDuration*1000;
 			
-			return animationDuration;
+			// now do the actual animation
+			element.stop();
+
+			element.animate(animationTarget, animationDuration, "linear", function() {
+				$(this).remove();
+				delete currentWords[$(this).text()];
+			});
 		}
 		
 		function updatePulseBar(pulse) {
