@@ -64,7 +64,7 @@
 					updatePulseBigCloud(data);
 					break;
 				case "river":
-					updatePulseRiver(data);
+					updatePulseRiver(data, "+y");
 					break;
 				case "bar":
 					updatePulseBar(data);
@@ -733,7 +733,7 @@
 		
 		var MAX_FONT_SIZE = 50;
 		
-		function updatePulseRiver(pulse) {
+		function updatePulseRiver(pulse, axis) {
 			// make words appear on the left edge
 			// set their size based on score
 			// make them animate to the right, faster for smaller ones
@@ -770,12 +770,31 @@
 					if(currentSize+4 < MAX_FONT_SIZE) {
 						newSize = currentSize + 4;
 						
+						var initialWidth = wordEl.width();
+						
 						wordEl.css("font-size", newSize);
-						var newYPos = parseInt(wordEl.css("top")) - 2;
-						wordEl.css("top", newYPos);
+						
+						
+						// ADJUST POSITION TO MAINTAIN LOCATION
+						// if we're doing x, this is top
+						// if we're doing y, this is left
+						
+						switch(axis) {
+							case "+x":
+								var newYPos = parseInt(wordEl.css("top")) - 2;
+								wordEl.css("top", newYPos);
+								break;
+							case "+y":
+								var widthChange = wordEl.width()-initialWidth;
+								
+								var newXPos = parseInt(wordEl.css("left")) - widthChange/2;
+								wordEl.css("left", newXPos);
+								break;
+						}
+						
 
 						updateRiverElement(wordEl);
-						animateRiverElement(wordEl, "+x");
+						animateRiverElement(wordEl, axis);
 						
 						wordEl.removeAttr("untouched");
 						
@@ -795,17 +814,38 @@
 					var fontSize = 22*pulseItem["score"]+8;
 					
 					newWord.css("font-size", fontSize);
-					newWord.css("top", Math.random()*(MAX_FONT_SIZE - MAX_FONT_SIZE*pulseItem["score"]));
 					
+					// PUT THE WORD IN THE RIGHT PLACE AT THE START
 					var size = getDimensionsForWord(pulseItem["word"], fontSize);
-					newWord.css("left", -1*size["width"]);
+					
+					switch(axis) {
+						case "+x":
+							// for X, we do a random top position and a fixed
+							// left position.
+							newWord.css("top", Math.random()*(MAX_FONT_SIZE - MAX_FONT_SIZE*pulseItem["score"]));
+							newWord.css("left", -1*size["width"]);
+							break;
+						case "+y":
+							// for y, we do a random left position and a
+							// fixed top position.
+							
+							// we want to be somewhere between 0 and 
+							// max-(width)
+							var xPos = Math.random()*(pulseDiv.width() - size["width"]);
+							newWord.css("left", xPos);
+							newWord.css("bottom", -1*size["height"]);
+							break;
+							
+					}
+					
 					
 					updateRiverElement(newWord);
 					
 					newWord.appendTo(pulseDiv);
 					
+					
 					setTimeout(function() {
-						animateRiverElement(newWord, "+x");
+						animateRiverElement(newWord, axis);
 					}, Math.random()*2500);
 				}
 			});
