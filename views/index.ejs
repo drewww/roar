@@ -965,7 +965,7 @@
 		
 		
 		function showSearchDialog(element) {
-			//
+			
 			if(mostRecentSearchData==null) {
 				// loop until it's available. but for now we'll just assume
 				// response times are fast enough. 
@@ -979,8 +979,26 @@
 			
 			// setup both the div itself and position it in the right place, 
 			// e.g. next to the word you've selected.
+			//
+			// - make the header outside the scroll
+			// - add an arrow on the side that's place appropriately to point
+			//   at the selected word
+			// - rounded corners
 			
-			$("<h1>" + mostRecentSearchData.keyword + "<div id='close-search'>X</div></h1>").appendTo(resultsDiv);
+			
+			var contents = $('\
+			<div class="container">\
+			<h1></h1>\
+			<div class="total-messages"></div>\
+			<div class="chat-container">\
+			</div>\
+			</div>\
+			<div class="arrow"><b class="notch"></b>\
+			</div>');
+			
+			resultsDiv.append(contents);
+			
+			$("#search-results h1").html(mostRecentSearchData.keyword + '<div id="close-search">X</div>');
 			
 			$("#close-search").click(function() {
 				resultsDiv.hide();
@@ -991,8 +1009,7 @@
 				animateRiverElement(element, "+y");
 			});
 			
-			var totalElement = $("<div id='total-messages'>" + messages.length + " total messages.</div>");
-			totalElement.appendTo(resultsDiv);
+			$("#search-results .total-messages").text(messages.length + " total messages.");
 			
 			_.each(messages, function(message) {
 				
@@ -1001,8 +1018,31 @@
 				text = text.replace(mostRecentSearchData.keyword, "<span class='highlight'>" + mostRecentSearchData.keyword + "</span>");
 				
 				var chatDiv = $("<div class='chat'>" + text + "</div>");
-				chatDiv.appendTo(resultsDiv);
+				chatDiv.appendTo($("#search-results .chat-container"));
 			});
+			
+			
+			resultsDiv.css("right", 210);
+			
+			// now figure out where the element is. Our desire is to put the 
+			// top of the search dialog aligned with the element and the
+			// arrow at the top. We can do that anywhere except the bottom
+			// 450 pixels of the screen. If we're in that mode, place the
+			// search dialog at 450 and adjust the arrow down. 
+			
+			var elementPosition = parseInt(element.css("bottom")) + parseInt(element.css("font-size"))/2;
+			var totalHeight = $("#pulse").height();
+			
+			console.log("elementPosition: " + elementPosition);
+			
+			if(elementPosition < 450) {
+				resultsDiv.css("bottom", 60);
+				$("#search-results .notch").css("top", 450-elementPosition-8);
+				// adjust the arrow
+			} else {
+				resultsDiv.css("bottom", elementPosition - 362);
+				$("#search-results .notch").css("top", 20);
+			}
 			
 			resultsDiv.show();
 			
