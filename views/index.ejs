@@ -18,7 +18,8 @@
 		
 		var usingDemoName = false;
 		
-		var pulseType = "river+x";
+		var pulseType = "river+y";
+		var mostRecentSearchData;
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -85,6 +86,28 @@
 				
 				word.click(function(event) {
 					searchForKeyword($(this).text());
+					
+					// we also want to stop this word from moving, and slide
+					// it to the left edge.
+					word.stop();
+					
+					
+					if(pulseType=="river+y") {
+						// animate to the left edge? 
+						
+						word.addClass("held");
+						
+						word.animate({
+							backgroundColor: "#444444",
+							left: 5,
+							zIndex: 1000000
+						}, 300, "swing", function() {
+							
+							// once we're there, pull up the dialog
+							// if it's available. 
+							showSearchDialog($(this));
+						});
+					}
 				});
 				
 				word.attr("handled", true);
@@ -243,38 +266,13 @@
 		});
 		
 		socket.on('search-result', function(data) {
-			var messages = JSON.parse(data.messages);
-			console.log("got " + messages.length + " messages for '" + data.keyword + "'");
-			
-			var resultsDiv = $("#search-results");
-			resultsDiv.empty();
-			
-			
-			$("<h1>" + data.keyword + "<div id='close-search'>X</div></h1>").appendTo(resultsDiv);
-			
-			$("#close-search").click(function() {
-				resultsDiv.hide();
-			});
-			
-			var totalElement = $("<div id='total-messages'>" + messages.length + " total messages.</div>");
-			totalElement.appendTo(resultsDiv);
-			
-			_.each(messages, function(message) {
-				
-				var text = message.text;
-				
-				text = text.replace(data.keyword, "<span class='highlight'>" + data.keyword + "</span>");
-				
-				
-				
-				var chatDiv = $("<div class='chat'>" + text + "</div>");
-				chatDiv.appendTo(resultsDiv);
-			});
-			
-			resultsDiv.show();
+			mostRecentSearchData = data;
+			// just store it, and wait for the animation to finish to show it.
 		});
 
 		$(document).ready(function() {
+			
+			setPulseType("river+y");
 			
 			var isTested = false;
 			if($.browser.safari || $.browser.webkit) {
@@ -915,13 +913,25 @@
 			$("#pulse").children().map(function () {
 				var element = $(this);
 			
-				if(element.attr("untouched")!=null) {
+				if(element.attr("untouched")!=null || element.attr("to-be-removed")) {
+					
+					// don't expire elements that are marked as
+					// held. 
 					
 					currentWords[element.text()] = currentWords[element.text()]-1;
 					
 					if(currentWords[element.text()] < 1) {
 						// just fade it.
 						var that = this;
+						
+						if(element.hasClass("held")) {
+							// don't expire this element yes, but mark as
+							// to-be-expired in case we want to insta-expire
+							// when the dialog is closed.
+							element.attr("to-be-removed", true);
+							return;
+						}
+						
 						setTimeout(function() {
 							$(that).stop();
 							
@@ -952,7 +962,57 @@
 			});
 		}
 		
+		
+		
+		function showSearchDialog(element) {
+			//
+			if(mostRecentSearchData==null) {
+				// loop until it's available. but for now we'll just assume
+				// response times are fast enough. 
+				console.log("TRIED TO SHOW SEARCH RESULTS BUT NO RESULTS AVAIL");
+			}
+			
+			var messages = JSON.parse(mostRecentSearchData.messages);
+			
+			var resultsDiv = $("#search-results");
+			resultsDiv.empty();
+			
+			$("<h1>" + mostRecentSearchData.keyword + "<div id='close-search'>X</div></h1>").appendTo(resultsDiv);
+			
+			$("#close-search").click(function() {
+				resultsDiv.hide();
+				
+				// now un-freeze the element.
+				element.removeClass("held");
+				updateRiverElement(element);
+				animateRiverElement(element, "+y");
+			});
+			
+			var totalElement = $("<div id='total-messages'>" + messages.length + " total messages.</div>");
+			totalElement.appendTo(resultsDiv);
+			
+			_.each(messages, function(message) {
+				
+				var text = message.text;
+				
+				text = text.replace(mostRecentSearchData.keyword, "<span class='highlight'>" + mostRecentSearchData.keyword + "</span>");
+				
+				var chatDiv = $("<div class='chat'>" + text + "</div>");
+				chatDiv.appendTo(resultsDiv);
+			});
+			
+			resultsDiv.show();
+			
+			// clear most recent search, since it's on screen now.
+			mostRecentSearchData==null;
+		}
+		
 		function updateRiverElement(element) {
+			
+			// don't touch elements that are "held" because they're currently
+			// selected and should stick around.
+			if(element.hasClass("held")) return;
+			
 			var fontSize = parseInt(element.css("font-size"));
 			var scaled = fontSize / MAX_FONT_SIZE;
 			

@@ -447,6 +447,12 @@
 		    z-index: 100000;
 		}
 		
+		.held {
+		    background-color: #444;
+		    z-index: 100000;
+		    opacity: 1.0;
+		}
+		
 		.pulseWordRiver {
 		    position: absolute;
 			color: white;
