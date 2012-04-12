@@ -490,8 +490,15 @@
 						bottom: 50
 					});
 					
+					$("#chat-container").css({
+						bottom: 100
+					});
+					
 					$("#pulse").empty();
 					
+					$("#stream-img").css({
+						width: "100%"
+					});
 					
 					pulseType = type;
 					break;
@@ -506,15 +513,24 @@
 						background: "black",
 						width: 300,
 						height: "100%",
-						overflow: "hidden"
+						overflow: "hidden",
+						borderLeft: "1px solid #333"
 					});
 
+					$("#chat-container").css({
+						bottom: 50
+					});
 
 					$("#roar-bar").css({
 						bottom: 0
 					});
 
 					$("#pulse").empty();
+
+					$("#stream-img").css({
+						width: "85%"
+					});
+
 
 
 					pulseType = type;
@@ -538,7 +554,16 @@
 						bottom: 50
 					});
 					
+					$("#chat-container").css({
+						bottom: 100
+					});
+					
+					
 					$("#pulse").empty();
+					
+					$("#stream-img").css({
+						width: "100%"
+					});
 					
 					
 					pulseType = type;
@@ -559,6 +584,14 @@
 					
 					$("#roar-bar").css({
 						bottom: 0
+					});
+					
+					$("#chat-container").css({
+						bottom: 50
+					});
+					
+					$("#stream-img").css({
+						width: "100%"
 					});
 					
 					$("#pulse").empty();
@@ -814,6 +847,9 @@
 								var widthChange = wordEl.width()-initialWidth;
 								
 								var newXPos = parseInt(wordEl.css("left")) - widthChange/2;
+								
+								if(newXPos < 0) newXPos = 0;
+								
 								wordEl.css("left", newXPos);
 								break;
 						}
@@ -888,12 +924,25 @@
 						var that = this;
 						setTimeout(function() {
 							$(that).stop();
-							$(that).animate({
-								fontSize: 8,
-								opacity: 0.0,
-								left: "+=" + 100,
-								top: "+=" + (parseInt($(that).css("fontSize"))-8)/2,
-							}, 1500, "linear", function() {
+							
+							var animObj = {};
+							switch(axis) {
+								case "+x":
+									animObj = {
+										fontSize: 8,
+										opacity: 0.0,
+										left: "+=" + 100,
+										top: "+=" + (parseInt($(that).css("fontSize"))-8)/2}
+									break;
+								case "+y":
+									animObj = {
+										opacity: 0.0,
+										bottom: "+=" + 100
+									};
+									break;
+							}
+							
+							$(that).animate(animObj, 1500, "linear", function() {
 								$(that).remove();
 								delete currentWords[$(that).text()];
 							});
