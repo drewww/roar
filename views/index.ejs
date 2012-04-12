@@ -509,7 +509,7 @@
 						top: 0,	
 						right: 0,
 						background: "black",
-						width: 300,
+						width: 200,
 						height: "100%",
 						overflow: "hidden",
 						borderLeft: "1px solid #333"
@@ -788,7 +788,7 @@
 		
 		var currentWords = {};
 		
-		var MAX_FONT_SIZE = 50;
+		var MAX_FONT_SIZE = 30;
 		
 		function updatePulseRiver(pulse, axis) {
 			// make words appear on the left edge
@@ -824,8 +824,8 @@
 					var currentSize = parseInt(wordEl.css("font-size"));
 					
 					var newSize = currentSize;
-					if(currentSize+4 < MAX_FONT_SIZE) {
-						newSize = currentSize + 4;
+					if(currentSize+2 < MAX_FONT_SIZE) {
+						newSize = currentSize + 2;
 						
 						var initialWidth = wordEl.width();
 						
@@ -838,7 +838,7 @@
 						
 						switch(axis) {
 							case "+x":
-								var newYPos = parseInt(wordEl.css("top")) - 2;
+								var newYPos = parseInt(wordEl.css("top")) - 1;
 								wordEl.css("top", newYPos);
 								break;
 							case "+y":
@@ -871,7 +871,7 @@
 					
 					currentWords[pulseItem["word"]] = Math.floor(pulseItem["score"]*2 + 2);
 					
-					var fontSize = 22*pulseItem["score"]+8;
+					var fontSize = 18*pulseItem["score"]+4;
 					
 					newWord.css("font-size", fontSize);
 					
@@ -976,6 +976,9 @@
 			
 			var resultsDiv = $("#search-results");
 			resultsDiv.empty();
+			
+			// setup both the div itself and position it in the right place, 
+			// e.g. next to the word you've selected.
 			
 			$("<h1>" + mostRecentSearchData.keyword + "<div id='close-search'>X</div></h1>").appendTo(resultsDiv);
 			
