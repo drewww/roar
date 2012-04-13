@@ -447,6 +447,35 @@
 		    z-index: 100000;
 		}
 		
+		#pulse h1 {
+		    width: 100%;
+		    margin: 0px;
+		    z-index: 1000000;
+		    background-color: #2B434F;
+		    color: #EDECC8;
+			
+			border-bottom: 1px solid #36464C;
+			
+			text-align: center;
+			
+			font-size: 1.5em;
+		}
+		
+		#pulse h1 div {
+		    position: absolute;
+		    left: 50%;
+		    margin-left: -15px;
+		    margin-top: -3px;
+		    background-color: #333;
+		    color: #aaa;
+		    font-size: 10px;
+		    width: 30px;
+		}
+		
+		#pulse h1 div:hover {
+		    background-color: #555;
+		}
+		
 		.held {
 		    background-color: #444;
 		    z-index: 100000;

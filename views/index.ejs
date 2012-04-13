@@ -60,6 +60,9 @@
 		
 		socket.on('pulse', function (data) {
 			
+			// skip this if pulse is disabled. 
+			if(!pulseEnabled) return;
+			
 			switch(pulseType) {
 				case "cloud":
 					updatePulseBigCloud(data);
@@ -78,7 +81,7 @@
 			// whichever mode we're in, attach listeners to every word
 			// that causes a search.
 			
-			$("#pulse div").each(function(index, word) {
+			$("#pulse-container div").each(function(index, word) {
 				
 				word = $(word);
 				
@@ -305,6 +308,16 @@
 			
 			$("#search-results").hide();
 			
+			$("#pulse h1 div").click(function() {
+				// hide the pulse window
+				$("#pulse").animate({
+					top: "100%"
+				}, 1000, "swing", function() {
+					$("#pulse-container").empty();
+				});
+				pulseEnabled = false;
+			});
+			
 			
 			$(window).blur(function() {
 				pulseEnabled = false;
@@ -512,7 +525,7 @@
 						width: 200,
 						height: "100%",
 						overflow: "hidden",
-						borderLeft: "1px solid #333"
+						borderLeft: "1px solid #36464C"
 					});
 
 					$("#chat-container").css({
@@ -523,7 +536,7 @@
 						bottom: 0
 					});
 
-					$("#pulse").empty();
+					$("#pulse-container").empty();
 
 					$("#stream-img").css({
 						width: "85%"
@@ -557,7 +570,7 @@
 					});
 					
 					
-					$("#pulse").empty();
+					$("#pulse-container").empty();
 					
 					$("#stream-img").css({
 						width: "100%"
@@ -592,7 +605,7 @@
 						width: "100%"
 					});
 					
-					$("#pulse").empty();
+					$("#pulse-container").empty();
 					
 					pulseType = type;
 					break;
@@ -802,7 +815,7 @@
 				return b["score"] - a["score"];
 			});
 			
-			$("#pulse").children().attr("untouched", "true");
+			$("#pulse-container").children().attr("untouched", "true");
 			
 			
 			var wordCount = 0;
@@ -901,7 +914,7 @@
 					
 					updateRiverElement(newWord);
 					
-					newWord.appendTo(pulseDiv);
+					newWord.appendTo($("#pulse-container"));
 					
 					
 					setTimeout(function() {
@@ -910,7 +923,7 @@
 				}
 			});
 			
-			$("#pulse").children().map(function () {
+			$("#pulse-container").children().map(function () {
 				var element = $(this);
 			
 				if(element.attr("untouched")!=null || element.attr("to-be-removed")) {
@@ -970,7 +983,7 @@
 				// loop until it's available. but for now we'll just assume
 				// response times are fast enough. 
 				console.log("TRIED TO SHOW SEARCH RESULTS BUT NO RESULTS AVAIL");
-			}
+			} 
 			
 			var messages = JSON.parse(mostRecentSearchData.messages);
 			
@@ -1142,7 +1155,7 @@
 			// console.log(pulse);
 			// console.log("pulse words length: " + pulse.words.length);
 			
-			pulseDiv.empty();
+			$("#pulse-container").empty();
 			
 			pulseWords = pulse.words;
 			pulseWords.sort(function(a, b) {
@@ -1160,7 +1173,7 @@
 				newWord.css("margin-top", -15*pulseItem["score"]);
 				newWord.css("left", currentXPos);
 				newWord.css("top", 25);
-				newWord.appendTo(pulseDiv);
+				newWord.appendTo($("#pulse-container"));
 				
 				currentXPos = currentXPos + newWord.width() + 5 + 5*pulseItem["score"];
 				
@@ -1664,6 +1677,9 @@ shout
 </div>
 
 <div id="pulse">
+<h1>PULSE<div>v</div></h1>
+<div id="pulse-container">
+</div>
 </div>
 
 <div id="word-buffer">
