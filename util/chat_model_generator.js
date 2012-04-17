@@ -155,6 +155,10 @@ if(program.process) {
         // otherwise, this is a normal message, so split it up and figure out
         // our terms. push them into term frequency global
         
+        // do some simple in-advance replacement to split things up.
+        message.text = message.text.replace(/[\(\)!?,.\"\'\*\=;]/g, " ");
+        message.text = message.text.replace(/\/\//g, " ");
+        
         wordsInMessage = message.text.split(/[\s]+/);
         
         // For each word in the message 
@@ -173,8 +177,8 @@ if(program.process) {
             // compare (for some items, insert spaces to fix some tokenizing
             // issues (e.g. mc's -> mcs, not 'mc s' which would better))
             word = word.toLowerCase();
-            word = word.replace(/[\(\)!?,.\"\'\*;]/g, " ");
-            word = word.replace(/\/\//g, " ");
+            word = word.replace(/[\(\)!?,.\"\'\*\=;]/g, "");
+            word = word.replace(/\/\//g, "");
             if(word == "") continue;
             
             if(word[word.length-1]==":") word=word.slice(0, -1);
@@ -255,7 +259,7 @@ if(program.process) {
         for(var keywordIndex in keywords) {
             var keyword = keywords[keywordIndex];
             
-            if(message.text.indexOf(keyword.word)!=-1) {
+            if(message.text.indexOf(" " + keyword.word + " ")!=-1) {
                 // console.log("\tyes!");
                 if(keyword.word in index) {
                     var indexOptions = index[keyword.word];

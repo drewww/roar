@@ -1010,6 +1010,10 @@ function _processPulse() {
                 // The message is in our window.
                 messagesInWindow = messagesInWindow + 1;
                 
+                msg.text = msg.text.replace(/[\(\)!?,.\"\'\*\=;]/g, " ");
+                msg.text = msg.text.replace(/\/\//g, " ");
+                
+                
                 wordsInMessage = msg["text"].split(/[\s]+/);
                 
                 // For each word in the message 
@@ -1027,9 +1031,12 @@ function _processPulse() {
                     // now strip out stuff that would make the word hard to
                     // compare
                     word = word.toLowerCase();
-                    word = word.replace(/[\(\)!?,.\"\'\*;]/g, "");
+                    word = word.replace(/[\(\)!?,.\"\'\*\;\=\:]/g, "");
                     word = word.replace(/\/\//g, "");
+                    
                     if(word == "") continue;
+                    if(word == " ") continue;
+                    
                     
                     if(word[word.length-1]==":") word=word.slice(0, -1);
                     
@@ -1132,6 +1139,10 @@ function _processPulse() {
                         for(var word in popularWordsInWindow) {
                             var tf = popularWordsInWindow[word];
                             
+                            if(word=="" || word == " " || word.length<2) {
+                                continue;
+                            }
+                            
                             // Drop words that were only mentioned once in
                             // the window. With typos, lots of single-mentions
                             // have a super high idf (basically infinity) 
@@ -1202,6 +1213,9 @@ function _processPulse() {
                         // rescore all the words to make the point decline
                         // sharper than it is in reality (with the bot
                         // distribution, anyway)
+                        
+                        var topWordsLogging = "";
+                        
                         var rescaledDict = [];
                         for(var key in dict) {
                             var entry = dict[key];
@@ -1219,6 +1233,8 @@ function _processPulse() {
 
                             entry["score"] = Math.pow(((dict.length-keyInt) / dict.length), 2);
                             rescaledDict.push(entry);
+                            
+                            topWordsLogging  = topWordsLogging + ", " + entry["word"];
                         }
                         dict = rescaledDict;
                         
@@ -1226,6 +1242,8 @@ function _processPulse() {
                         
                         // dict = {"total":totalActivity, "inWindow":windowActivity, "relative":relativeActivity, "word":topWord, "word-score":bestScore};
                         // console.log(dict);
+                        console.log("WORDS: " + topWordsLogging);
+                        
                         
                         io.sockets.emit('pulse', {"words":dict,
                             "activity":{"total":totalActivity, "window":windowActivity,
