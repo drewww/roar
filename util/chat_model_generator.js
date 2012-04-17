@@ -117,6 +117,14 @@ if(program.process) {
             // two things:
             // merge termFrequencyDocument into termFrequencyGlobal
             for (var word in termFrequencyDocument) {
+                
+                // avoid bad words
+                if(word.indexOf("fuck")!=-1 || 
+                   word.indexOf("shit")!=-1 ||
+                   word.indexOf("fap")!=-1) {
+                    continue;
+                }
+                
                 var frequency = termFrequencyDocument[word];
                 
                 // increment global frequency by the actual total frequency
@@ -162,10 +170,11 @@ if(program.process) {
             }
             
             // now strip out stuff that would make the word hard to
-            // compare
+            // compare (for some items, insert spaces to fix some tokenizing
+            // issues (e.g. mc's -> mcs, not 'mc s' which would better))
             word = word.toLowerCase();
-            word = word.replace(/[\(\)!?,.\"\'\*;]/g, "");
-            word = word.replace(/\/\//g, "");
+            word = word.replace(/[\(\)!?,.\"\'\*;]/g, " ");
+            word = word.replace(/\/\//g, " ");
             if(word == "") continue;
             
             if(word[word.length-1]==":") word=word.slice(0, -1);
@@ -205,7 +214,11 @@ if(program.process) {
     });
     
     // write it out.
-    fs.writeFileSync("keywords.json", JSON.stringify(sortedTFIDF));
+    var keywordsJson = JSON.stringify(sortedTFIDF);
+    
+    keywordsJson = keywordsJson.replace(/\},\{/g, "},\n{");
+    
+    fs.writeFileSync("keywords.json", keywordsJson);
     
     // okay now sort the lists.
     var sortableTFGlobal = [];
