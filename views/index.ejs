@@ -77,6 +77,9 @@
 				case "river+y":
 					updatePulseRiver(data, "+y");
 					break;
+				case "river+ym":
+					updatePulseRiver(data, "+ym");
+					break;
 				case "bar":
 					updatePulseBar(data);
 					break;
@@ -520,7 +523,7 @@
 					
 				case "river+y":
 					// river y has the bar on the right side of the screen
-					
+					// $("#pulse").slideToggle();
 					$("#pulse").css({
 						position: "fixed",
 						top: 0,	
@@ -545,12 +548,25 @@
 					$("#stream-img").css({
 						width: "85%"
 					});
-
-
-
+					
+					// TODO if hidden, slide out. Figure this out when we
+					// make the pulse draw show/hideable.
+					$("#pulse").show();
+					
 					pulseType = type;
 					break;
+				case "river+ym":
+					// this is the minimized version of the river viz
 					
+					$("#pulse").hide();
+					$("#stream-img").css({
+						width: "100%"
+					});
+					
+					pulseType = type;
+					pulseEnabled = true;
+					break;
+				
 				case "bar":
 					
 					
@@ -740,7 +756,6 @@
 			});
 			
 			messagesSent = recentMessages;
-			console.log("returning words: " + JSON.stringify(words));
 			return words;
 		}
 		
@@ -846,7 +861,6 @@
 			$("#chat-input").focus();
 		}
 		
-		
 		var currentWords = {};
 		
 		var MAX_FONT_SIZE = 30;
@@ -856,27 +870,45 @@
 			// set their size based on score
 			// make them animate to the right, faster for smaller ones
 			
-			var pulseDiv = $("#pulse");
+			var pulseDiv;
+			switch(axis) {
+				case "+x":
+				case "+y":
+					pulseDiv = $("#pulse");
+					$("#pulse-container").children().attr("untouched", "true");
+					break;
+				case "+ym":
+					pulseDiv = $("#pulse-min");
+					break;
+			}
 			
 			pulseWords = pulse.words;
 			pulseWords.sort(function(a, b) {
 				return b["score"] - a["score"];
 			});
 			
-			$("#pulse-container").children().attr("untouched", "true");
-			
-			
 			var wordCount = 0;
+			console.log("pulseWords: " + pulseWords.length);
+			
 			_.each(pulseWords, function(pulseItem) {
 				wordCount++;
 				
-				if(wordCount > pulse.words.length*0.6) return;
-				// if(wordCount > 2) return;
+				if(axis=="+ym") {
+					if(wordCount > 1) return;
+				}
 				
+				if(wordCount > pulse.words.length*0.6) return;
+				
+				console.log("processing item: " + JSON.stringify(pulseItem));
 				// check and see if the word already exists.
 				var wordId = "pulse-word-" + $.md5(pulseItem["word"]);
 				
 				if($("#" + wordId).length) {
+					
+					// in minimized mode, we don't do any promotion of
+					// existing words to avoid distraction. 
+					if(axis=="+ym") return;
+					
 					// console.log("   found existing " + pulseItem["word"]);
 					wordEl = $("#"+wordId);
 					
@@ -925,7 +957,7 @@
 					
 					
 				} else {
-					
+					console.log("adding word: " + pulseItem["word"]);
 					var newWord = $("<div class='pulseWordRiver'>" + pulseItem["word"] + "</div>");
 					
 					newWord.attr("id", wordId);
@@ -948,15 +980,18 @@
 					
 					// PUT THE WORD IN THE RIGHT PLACE AT THE START
 					var size = getDimensionsForWord(pulseItem["word"], fontSize);
-					
+
+					var appendTarget;
 					switch(axis) {
 						case "+x":
 							// for X, we do a random top position and a fixed
 							// left position.
 							newWord.css("top", Math.random()*(MAX_FONT_SIZE - MAX_FONT_SIZE*pulseItem["score"]));
 							newWord.css("left", -1*size["width"]);
+							appendTarget = $("#pulse-container");
 							break;
 						case "+y":
+						case "+ym":
 							// for y, we do a random left position and a
 							// fixed top position.
 							
@@ -965,14 +1000,15 @@
 							var xPos = Math.random()*(pulseDiv.width() - size["width"]);
 							newWord.css("left", xPos);
 							newWord.css("bottom", -1*size["height"]);
-							break;
 							
+							if(axis=="+y") appendTarget = $("#pulse-container");
+							else appendTarget = $("#pulse-min");
 					}
-					
 					
 					updateRiverElement(newWord);
 					
-					newWord.appendTo($("#pulse-container"));
+					
+					newWord.appendTo(appendTarget);
 					
 					
 					setTimeout(function() {
@@ -1175,6 +1211,11 @@
 					maxPosition = $("#pulse").height();
 					animatedSide = "top";
 					animationTarget = {top:maxPosition};
+					break;
+				case "+ym":
+					maxPosition = $("#pulse-min").height()*0.95;
+					animatedSide = "bottom";
+					animationTarget = {bottom:maxPosition, opacity:0.0};
 					break;
 				default:
 					console.log("Bad axis selection: " + axis);
@@ -1738,6 +1779,9 @@ shout
 <h1>PULSE<div>v</div></h1>
 <div id="pulse-container">
 </div>
+</div>
+
+<div id="pulse-min">
 </div>
 
 <div id="word-buffer">

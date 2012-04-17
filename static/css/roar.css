@@ -444,6 +444,17 @@
 			z-index: 6998;
 		}
 		
+		#pulse-min {
+		    position: fixed;
+		    bottom: 50px;
+		    background: rgba(1,1,1,0.0);
+		    width: 200px;
+		    right: 0px;
+		    height: 150px;
+		    overflow: hidden;
+		    z-index: 6997;
+		}
+		
 		#pulse-container {
 		    z-index: 1000;
 		}
