@@ -441,7 +441,7 @@
 			-o-user-select: none;
 			user-select: none;
 			
-			z-index: 6999;
+			z-index: 6998;
 		}
 		
 		#pulse-container {
@@ -488,6 +488,12 @@
 		    background-color: #444;
 		    z-index: 100000;
 		    opacity: 1.0;
+		}
+		
+		#pulse #pulse-container div.usedRecently {
+/*          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff00de, 0 0 70px #ff00de, 0 0 80px #ff00de, 0 0 100px #ff00de, 0 0 150px #ff00de;*/
+/*          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #FFAD00, 0 0 70px #FFAD00;*/
+          text-shadow: 0 0 40px #FFAD00, 0 0 50px #FFAD00;
 		}
 		
 		.pulseWordRiver {
@@ -921,7 +927,7 @@
 		}
 		
 		#search-results {
-		    z-index: 1000;
+		    z-index: 6999;
 		    position: absolute;
 		    width: 400px;
 		    height: 400px;

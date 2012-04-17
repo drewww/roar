@@ -21,6 +21,10 @@
 		var pulseType = "river+y";
 		var mostRecentSearchData;
 		
+		// Keeps a list of lists. Each entry is a chat message with a 
+		// timestamp. 
+		var messagesSent = []
+		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
 
@@ -687,13 +691,57 @@
 			}
 			
 			socket.emit("chat", {"text":chatTextElement.val()});
+			messagesSent.push({"text":chatTextElement.val(), "timestamp":new Date().getTime()});
 			chatTextElement.val("");
+			
+			// reapply the recentWords to all current pieces of pulse.
+			_.each(getRecentWordsUsed(), function(word) {
+				var wordId = "#pulse-word-" + $.md5(word);
+				
+				var element = $(wordId);
+				
+				if(element.length) {
+					element.addClass("usedRecently");
+				}
+				
+			})
+			
 			
 			if(event!=null) event.preventDefault();
 		}
 		
 		function searchForKeyword(keyword) {
 			socket.emit("search", {"keyword":keyword});
+		}
+		
+		function getRecentWordsUsed() {
+			// scream through messagesSent. Do a first pass filering for
+			// recent messages. Save that back to messagesSent. That will
+			// avoid it blowing up ver time. Then remove punctuation, split
+			// on spaces, and get a list of unique words used locally.
+			
+			var recentMessages = [];
+			var words = [];
+			
+			_.each(messagesSent, function(message) {
+				var now = new Date().getTime();
+				
+				// words used in the last one minutes.
+				if(now - message.timestamp < 1000*60*1) {
+					recentMessages.push(message);
+				}
+				
+				var text = message.text.replace(/[\(\)!?,.\"\'\*\=;]/g, " ");
+		        text = text.replace(/\/\//g, " ");
+				text = text.toLowerCase();
+		        wordsInMessage = text.split(/[\s]+/);
+		        
+				words = _.union(words, wordsInMessage);
+			});
+			
+			messagesSent = recentMessages;
+			console.log("returning words: " + JSON.stringify(words));
+			return words;
 		}
 		
 		function appendChat(message) {
@@ -887,6 +935,16 @@
 					var fontSize = 18*pulseItem["score"]+4;
 					
 					newWord.css("font-size", fontSize);
+					
+					
+					var recentWords = getRecentWordsUsed();
+					// console.log("word: " + pulseItem["word"] + " in " + JSON.stringify(recentWords) + "?");
+					
+					if(recentWords.indexOf(pulseItem["word"])!=-1) {
+						console.log("adding used recently class for " + pulseItem["word"]);
+						newWord.addClass("usedRecently");
+					}
+					
 					
 					// PUT THE WORD IN THE RIGHT PLACE AT THE START
 					var size = getDimensionsForWord(pulseItem["word"], fontSize);
