@@ -490,7 +490,7 @@
 						position: "fixed",
 						top: "auto",	
 						bottom: 0,
-						background: "black",
+						backgroundImage: "url('/static/img/inflicted.png')",
 						width: "100%",
 						height: 50,
 						overflow: "hidden"
@@ -521,7 +521,7 @@
 						position: "fixed",
 						top: 0,	
 						right: 0,
-						background: "black",
+						backgroundImage: "url('/static/img/inflicted.png')",
 						width: 200,
 						height: "100%",
 						overflow: "hidden",
@@ -554,7 +554,7 @@
 						position: "fixed",
 						top: "auto",
 						bottom: 0,
-						background: "black",
+						backgroundImage: "url('/static/img/inflicted.png')",
 						width: "100%",
 						height: 50,
 						overflow: "hidden",
@@ -1014,7 +1014,7 @@
 			$("#search-results h1").html(mostRecentSearchData.keyword + '<div id="close-search">X</div>');
 			
 			$("#close-search").click(function() {
-				resultsDiv.hide();
+				resultsDiv.slideUp();
 				
 				// now un-freeze the element.
 				element.removeClass("held");
@@ -1057,7 +1057,7 @@
 				$("#search-results .notch").css("top", 20);
 			}
 			
-			resultsDiv.show();
+			resultsDiv.slideDown(500);
 			
 			// clear most recent search, since it's on screen now.
 			mostRecentSearchData==null;
@@ -1083,7 +1083,7 @@
 			}
 			
 			// update z-index
-			element.css("z-index", fontSize*100+100);
+			element.css("z-index", fontSize*10+100);
 			
 			// reset animation speed
 		}
