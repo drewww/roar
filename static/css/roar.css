@@ -26,7 +26,7 @@
 			
 			border-top: 1px solid #36464C;
 			
-			z-index: 7000;
+			z-index: 10000;
 		}
 		
 		#chat, #roar-bar .button, #logo, #identity {
@@ -42,15 +42,25 @@
 		}
 		
 		#stats {
-			float: right;
-/*			width: 150px;*/
+		    position: absolute;
+		    
+		    right: 0px;
+            width: 200px;
 			border-left: 1px solid #36464C;
 			
 			height: 50px;
 			
 			text-align: center;
-			padding-left: 10px;
-			padding-right: 10px;
+			background-color: #111;
+			
+			z-index: 8000;
+		}
+		
+		#stats #population {
+		    opacity: 0.5;
+		    color: white;
+		    font-weight: bold;
+			font-size: 2.6em;
 		}
 
 		#stats table {
@@ -80,13 +90,31 @@
 			width: 135px;
 		}
 		
+		#room-select-form {
+		    float: left;
+		}
+		
+		#population-label {
+		    background-image: url('/static/img/status_online.png');
+		    width: 16px;
+		    height: 16px;
+		}
+		
+		#room-population {
+		    width: 75px;
+		    float: right;
+		}
+		
 		#room-select {
 			border-left: 1px solid #36464C;
 			height: 35px;
-			float: right;
+
 			padding-top: 15px;
 			padding-left: 10px;
 			width: 215px;
+			
+			position: fixed;
+			right: 200px;
 			
 			z-index: 8000;
 		}
@@ -217,7 +245,7 @@
 			
 			width: 225px;
 			bottom: -200px;
-			right: 0%;
+			right: 200px;
 			
 			z-index: 5000;
 			
@@ -473,7 +501,7 @@
 		    background-color: #0C2538;
 		    color: #EDECC8;
 			
-			border-bottom: 1px solid #36464C;
+			border: 1px solid #36464C;
 			
 			text-align: center;
 			

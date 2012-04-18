@@ -315,10 +315,14 @@
 			
 			$("#search-results").hide();
 			
-			$("#pulse h1 div").click(function() {
+			$("#pulse h1").click(function() {
 				// hide the pulse window
+				
+				// move to 50 less than the height of the window
+				
+				
 				$("#pulse").animate({
-					top: "100%"
+					top: $("#pulse").height()-77
 				}, 1000, "swing", function() {
 					$("#pulse-container").empty();
 				});
@@ -1739,41 +1743,41 @@ chat
 shout
 </div>
 
-
-<div id="room-select">
-<form id="room-select-form">
-<label for="room">section</label><input type="text" name="room" value="" id="room">
-</form>
-</div>
-
-<div id="stats">
-	
-	<table>
-	<tr>
-		<td class="label">spectators</td>
-		<td class="stat" id="total-users"></td>
-	</tr>
-	<tr>
-		<td class="label">messages/min</td>
-		<td class="stat" id="messages-per-min"></td>
-	</tr>
-	</table>
+<div id="chat-history">
 </div>
 
 
-</div>
+
 
 
 
 <div id="rooms-container">
 <h1>top sections</h1>
 <ul id="top-rooms-list"></ul>
-<h1>suggested sections</h1>
+<h1>friends' sections</h1>
+<ul id="friends-rooms-list"></ul>
+<h1>search results</h1>
 <ul id="suggested-rooms-list"></ul>
 </div>
 
-<div id="chat-history">
+
+
+<div id="stats">
+<div id="population">
+142,166
 </div>
+</div>
+<!-- </div> -->
+
+<div id="room-select">
+<form id="room-select-form">
+<label for="room">section</label><input type="text" name="room" value="" id="room">
+</form>
+<!-- <div id="room-population"><span id="population-value">12</span><div id="population-label"></div></div>
+<div id="invite">invite</div>
+<div id="lock"></div> -->
+</div>
+
 
 <div id="pulse">
 <h1>PULSE<div>v</div></h1>
