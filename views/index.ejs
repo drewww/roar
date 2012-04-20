@@ -316,7 +316,7 @@
 			
 			$(".callout").hide();
 			
-			$("#backdrop").hide();
+			$("#backdrop").show();
 			$("#container").addClass("minimized");
 			$("#container").offset({top:-424}, 0);
 			$("#hide").text("about this project");
@@ -477,7 +477,14 @@
 			
 			
 			$("#hide").click(hideInfoPanel);
-			$("#backdrop").click(hideInfoPanel);
+			$("#backdrop").click(function(event) {
+				if($("#container").is(".minimized")) {
+					hideAllPanels();
+				} else {
+					hideInfoPanel(event);
+				}
+				$("#backdrop").hide();
+			});
 			
 			// Manage default text.
 			$(".default-text").focus(function(srcc)
@@ -505,7 +512,14 @@
 			$("#welcome table tr").click(function() {
 				joinRoom($(this).attr("section"));
 				$("#welcome").hide();
+				$("#backdrop").hide();
 			});
+			
+			$("#invite").hide();
+			$("#invite-button").click(function() {
+				$("#invite").show();
+				$("#backdrop").show();
+			})
 		});
 		
 		function setPulseType(type) {
@@ -702,6 +716,18 @@
 			}
 			
 			localStorage["roar-start-hidden"] = true;
+		}
+		
+		function hideAllPanels(event) {
+			$("#invite").hide();
+			$("#welcome").hide();
+			$("#search-results").hide();
+			$(".held").each(function(i, el) {
+				el = $(el)
+				el.removeClass("held");
+				updateRiverElement(el);
+				animateRiverElement(el, "+y");
+			});
 		}
 		
 		function sendShout() {
@@ -1174,6 +1200,7 @@
 			
 			// clear most recent search, since it's on screen now.
 			mostRecentSearchData==null;
+			$("#backdrop").show();
 		}
 		
 		function updateRiverElement(element) {
@@ -1627,6 +1654,8 @@
 	</script>
 
 	<link rel="stylesheet" href="/static/css/roar.css" type="text/css" media="screen" charset="utf-8">
+	<link rel="stylesheet" href="/static/css/css-social-buttons/zocial.css" type="text/css" media="screen" charset="utf-8">
+
 	
 </head>
 <body>
@@ -1690,7 +1719,7 @@
 <div id="backdrop">
 </div>
 
-<div id="welcome">
+<div id="welcome" class="overlay">
 <h1>Welcome to ROAR!</h1>
 <h2>Sections with Friends</h2>
 <table border="0">
@@ -1709,6 +1738,21 @@
 	<tr section="france"><td>1273</td><td>france</td></tr>
 	<tr section="EG"><td>1198</td><td>EG</td></tr>
 </table>
+</div>
+
+<div id="invite" class="overlay">
+<h1>Invite friends</h1>
+<p>Share this link to invite a friend to come watch with you.</p>
+<form id="room-select-form">
+<label for="invite-link">invite link</label><input type="text" name="invite-label" value="http://roar.media.mit.edu/invite?key=ac9b28f1h0ad2" id="invite-link">
+<div class="btn">copy</div>
+</form>
+<br class="clear">
+<p>You can automatically invite your friends on any of these social network sites.</p>
+
+<div class="sharing">
+<div class="zocial facebook icon"></div><div class="zocial twitter icon"></div>
+</div>
 </div>
 
 
@@ -1810,7 +1854,7 @@ shout
 </form>
 <div id="room-population"><span id="room-pop-value"></span></div>
 <div id="lock"></div>
-<button id="invite">invite</button>
+<button id="invite-button">invite</button>
 </div>
 
 
