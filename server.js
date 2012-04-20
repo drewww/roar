@@ -768,10 +768,13 @@ function joinRoom(socket, newRoomName) {
                                 client.hset("rooms", newRoomName,
                                     JSON.stringify(room),
                                     function(err, res) {
-                                        if (socket) sendAdminMessage(socket, 
+                                        if (socket) {
+                                            sendAdminMessage(socket, 
                                             "You're now in section '" + newRoomName +
                                             "' with " + room["population"] +
                                             " other people.");
+                                            socket.emit("room-population", {"population":room["population"]});
+                                        }
                                 });
                             });
                     }
@@ -1248,7 +1251,8 @@ function _processPulse() {
                         io.sockets.emit('pulse', {"words":dict,
                             "activity":{"total":totalActivity, "window":windowActivity,
                             "relative":relativeActivity,
-                            "messages-per-min-instant":messagesPerMin}});
+                            "messages-per-min-instant":messagesPerMin},
+                            "total-population":numConnectedUsers+_.keys(bots).length});
                     });
                 });
             });

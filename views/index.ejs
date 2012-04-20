@@ -62,6 +62,10 @@
 			appendChat(data);
 		});
 		
+		socket.on("room-population", function(data) {
+			$("#room-pop-value").text(data["population"]);
+		});
+		
 		socket.on('pulse', function (data) {
 			
 			// skip this if pulse is disabled. 
@@ -84,6 +88,10 @@
 					updatePulseBar(data);
 					break;
 			}
+			
+			// do the high level stats updating
+			var totalPopulation = data["total-population"];
+			$("#population").text(totalPopulation);
 			
 			// whichever mode we're in, attach listeners to every word
 			// that causes a search.
@@ -1109,7 +1117,7 @@
 			
 			resultsDiv.append(contents);
 			
-			$("#search-results h1").html(mostRecentSearchData.keyword + '<div id="close-search">X</div>');
+			$("#search-results h1").html(mostRecentSearchData.keyword + '<div id="close-search">x</div>');
 			
 			$("#close-search").click(function() {
 				resultsDiv.slideUp();
@@ -1764,7 +1772,7 @@ shout
 
 <div id="stats">
 <div id="population">
-142,166
+<canvas></canvas>
 </div>
 </div>
 <!-- </div> -->
@@ -1773,7 +1781,7 @@ shout
 <form id="room-select-form">
 <label for="room">section</label><input type="text" name="room" value="" id="room">
 </form>
-<div id="room-population"><span id="population-value">12</span></div>
+<div id="room-population"><span id="room-pop-value"></span></div>
 <div id="lock"></div>
 <button id="invite">invite</button>
 </div>
