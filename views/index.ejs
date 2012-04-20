@@ -499,6 +499,13 @@
 		    });
 			
 		    $(".default-text").blur();
+			
+			
+			// Setup the joining rooms click handlers
+			$("#welcome table tr").click(function() {
+				joinRoom($(this).attr("section"));
+				$("#welcome").hide();
+			});
 		});
 		
 		function setPulseType(type) {
@@ -854,9 +861,9 @@
 				$(".button").removeClass("disabled");
 				
 				// Join a default room.
-				if(!data["rename"]) {
-					joinRoom("General Chat 1");
-				}
+				// if(!data["rename"]) {
+				// 	joinRoom("General Chat 1");
+				// }
 			} else if ("state" in data && data["state"] == "TAKEN") {
 				// Stay in the same mode.
 				localAdminMessage("'"+data["username"]+"' is taken.", true);
@@ -1683,6 +1690,26 @@
 <div id="backdrop">
 </div>
 
+<div id="welcome">
+<h1>Welcome to ROAR!</h1>
+<h2>Sections with Friends</h2>
+<table border="0">
+	<tr section="MIT"><td>52</td><td>MIT</td><td><img src="/static/img/fb/1.jpg"><img src="/static/img/fb/2.jpg"><img src="/static/img/fb/3.jpg"><img src="/static/img/fb/4.jpg"><img src="/static/img/fb/5.jpg"> ... and 6 more</td></tr>
+	<tr section="reddit"><td>1534</td><td>reddit</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
+	<tr section="Google"><td>178</td><td>Google</td><td><img src="/static/img/fb/8.jpg"></td></tr>
+	<tr section="Cambridge"><td>35</td><td>Cambridge</td><td><img src="/static/img/fb/9.jpg"></td></tr>
+</table>
+<!-- Start with a facebook/twitter login icon. -->
+<!-- Swap in a list of sections with join buttons later. -->
+
+<h2>Popular Sections</h2>
+<table border="0" cellspacing="5" cellpadding="5">
+	<tr section="reddit"><td>1534</td><td>reddit</td></tr>
+	<tr section="TeamLiquid"><td>1390</td><td>TeamLiquid</td></tr>
+	<tr section="france"><td>1273</td><td>france</td></tr>
+	<tr section="EG"><td>1198</td><td>EG</td></tr>
+</table>
+</div>
 
 
 <div class="callout border-callout" id="name-callout">
@@ -1801,6 +1828,8 @@ shout
 
 <div id="search-results">
 </div>
+
+
 
 </div>
 
