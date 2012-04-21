@@ -103,7 +103,7 @@
 		}
 		
 		#lock {
-		    background-image: url('/static/img/lock.png');
+		    background-image: url('/static/img/lock_open.png');
 		    width: 16px;
 		    height: 16px;
 		    margin: 2px;
