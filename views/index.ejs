@@ -14,7 +14,7 @@
 		var socket = io.connect("http://<%= server %>:<%= port %>");
 		var rooms = [];
 		var metaRooms = [];
-		var pulseEnabled = true;
+		var Enabled = true;
 		
 		var usingDemoName = false;
 		
@@ -62,6 +62,8 @@
 			appendChat(data);
 		});
 		
+		// TODO I could merge this into the existing 'room' messages, but 
+		// I'm lazy.
 		socket.on("room-population", function(data) {
 			$("#room-pop-value").text(data["population"]);
 		});
@@ -90,8 +92,8 @@
 			}
 			
 			// do the high level stats updating
-			var totalPopulation = data["total-population"];
-			$("#population").text(totalPopulation);
+			// var totalPopulation = data["total-population"];
+			// $("#population").text(totalPopulation);
 			
 			// whichever mode we're in, attach listeners to every word
 			// that causes a search.
@@ -218,7 +220,14 @@
 				if($("#top-rooms-list").children().length==maxRooms) break;
 			}
 			
-			$("#total-users").text(totalPop);
+			// hardcode the four friend rooms in manually.
+			$("#friends-rooms-list li").remove();
+			_.each(["MIT", "Reddit", "Google", "Cambridge"], function(roomName){
+				var metaRoom = condensedList[roomName];
+				makeRoomItemFromRoom(metaRoom).appendTo($("#friends-rooms-list"));
+			});
+			
+			$("#population").text(totalPop);
 		});
 		
 		socket.on('shout', function(data) {
@@ -1724,7 +1733,7 @@
 <h2>Sections with Friends</h2>
 <table border="0">
 	<tr section="MIT"><td>52</td><td>MIT</td><td><img src="/static/img/fb/1.jpg"><img src="/static/img/fb/2.jpg"><img src="/static/img/fb/3.jpg"><img src="/static/img/fb/4.jpg"><img src="/static/img/fb/5.jpg"> ... and 6 more</td></tr>
-	<tr section="reddit"><td>1534</td><td>reddit</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
+	<tr section="reddit 4"><td>1534</td><td>reddit 4</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
 	<tr section="Google"><td>178</td><td>Google</td><td><img src="/static/img/fb/8.jpg"></td></tr>
 	<tr section="Cambridge"><td>35</td><td>Cambridge</td><td><img src="/static/img/fb/9.jpg"></td></tr>
 </table>

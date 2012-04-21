@@ -52,14 +52,15 @@ if(program.model) {
 // GLOBALS
 var numConnectedUsers = 0;
 
+// Will need to swap these out for soccer, too.
 var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
-    "General Chat 4", "General Chat 5", "General Chat 6", "General Chat 7",
-    "Team Liquid 1", "Team Liquid 2", "Team Liquid 3", "Team Liquid 4",
-    "Reddit 1", "Reddit 2", "Reddit 3", "Reddit 4",
-    "Wellplayed.org 1", "Wellplayed.org 2", "Wellplayed.org 3",
+    "General Chat 4",
+    "Team Liquid 1", "Team Liquid 2",
+    "reddit 1", "reddit 2",
     "MC Fans", "Thorzain fans", "Zerg Players",
-    "Terran Players", "Protoss Players",
-    "Francais", "Deutch", "Espangol"];
+    "Terran Players", "Protoss Players", "EG", "fnatic",
+    "france", "deutchland", "espana",
+    "MIT", "Google", "Cambridge"];
 
 
 var model = {};
@@ -1251,8 +1252,7 @@ function _processPulse() {
                         io.sockets.emit('pulse', {"words":dict,
                             "activity":{"total":totalActivity, "window":windowActivity,
                             "relative":relativeActivity,
-                            "messages-per-min-instant":messagesPerMin},
-                            "total-population":numConnectedUsers+_.keys(bots).length});
+                            "messages-per-min-instant":messagesPerMin}});
                     });
                 });
             });
