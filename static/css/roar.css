@@ -570,6 +570,8 @@
 		}
 		
 		#pulse h1 {
+		    position: relative;
+		    
 		    width: 100%;
 		    margin: 0px;
 		    z-index: 1000000;

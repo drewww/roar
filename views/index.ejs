@@ -845,6 +845,11 @@
 				return;
 			}
 			
+			if(chat.textElement.val()=="/start") {
+				startVideo();
+				return;
+			}
+			
 			socket.emit("chat", {"text":chatTextElement.val()});
 			messagesSent.push({"text":chatTextElement.val(), "timestamp":new Date().getTime()});
 			chatTextElement.val("");
@@ -2026,7 +2031,7 @@ shout
 
 
 <div id="pulse">
-<h1>PULSE<div>v</div></h1>
+<h1>PULSE</h1>
 <div id="pulse-container">
 </div>
 </div>
