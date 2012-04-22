@@ -45,9 +45,11 @@ if(program.disableheartbeats) {
     io.set("heartbeats", false)
 }
 
-var modelFilename = __dirname + "/chat_model.json";
+var modelBaseDirectory = __dirname + "/chat_model/";
 if(program.model) {
-    modelFilename = program.model;
+    modelBaseDirectory = modelBaseDirectory+program.model +"/";
+} else {
+    modelBaseDirectory = modelBaseDirectory+"starcraft_old/";
 }
 // GLOBALS
 var numConnectedUsers = 0;
@@ -81,10 +83,10 @@ var botsMuted = false;
 if(program.bots) {
     // Load in the model file. When it's done, kick off bot setup callbacks.
     
-    model.index = JSON.parse(fs.readFileSync("chat_model/index.json"));
-    model.names = JSON.parse(fs.readFileSync("chat_model/names.json"));
-    model.messages = JSON.parse(fs.readFileSync("chat_model/messages.json"));
-    model.keywords = JSON.parse(fs.readFileSync("chat_model/keywords.json"));
+    model.index = JSON.parse(fs.readFileSync(modelBaseDirectory + "index.json"));
+    model.names = JSON.parse(fs.readFileSync(modelBaseDirectory + "names.json"));
+    model.messages = JSON.parse(fs.readFileSync(modelBaseDirectory + "messages.json"));
+    model.keywords = JSON.parse(fs.readFileSync(modelBaseDirectory + "keywords.json"));
     console.log("Loaded model. " + model.messages.length + " messages available.");
     
     setupBots(program.bots);
