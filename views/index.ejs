@@ -845,8 +845,10 @@
 				return;
 			}
 			
-			if(chat.textElement.val()=="/start") {
+			if(chatTextElement.val()=="/start") {
+				chatTextElement.val("");
 				startVideo();
+				if(event!=null) event.preventDefault();
 				return;
 			}
 			
@@ -1781,6 +1783,8 @@
 		var frameIndex = 0;
 		
 		function startVideo() {
+			
+			$("#container").hide();
 			var videoEl = document.getElementById("soccer_video");
 			
 			console.log("STARTING VIDEO");
@@ -1807,7 +1811,11 @@
 			}
 			
 			// drop out of the process if we're at the end.
-			if(frameIndex==keywordKeyFrames.length) return;
+			if(frameIndex==keywordKeyFrames.length) {
+				$("#container").show();
+				
+				return;
+			}
 			
 			setTimeout(videoTic, 1000);
 		}
@@ -1827,7 +1835,7 @@
 </div>
 
 <!-- <img id="stream-img" src="/static/img/sc2-stream.png"> -->
-<video id='soccer_video' controls src='/static/vid/chelsea_goal.webm'></video>
+<video id='soccer_video' src='/static/vid/chelsea_goal.webm'></video>
 
 <div id="container">
 	<div id="information">
