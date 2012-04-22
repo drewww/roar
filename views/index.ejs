@@ -66,6 +66,7 @@
 		// I'm lazy.
 		socket.on("room-population", function(data) {
 			$("#room-pop-value").text(data["population"]);
+			sectionPop = data["population"];
 		});
 		
 		socket.on('pulse', function (data) {
@@ -228,6 +229,7 @@
 			});
 			
 			$("#population").text(totalPop);
+			globalPop = totalPop;
 		});
 		
 		socket.on('shout', function(data) {
@@ -528,8 +530,91 @@
 			$("#invite-button").click(function() {
 				$("#invite").show();
 				$("#backdrop").show();
-			})
+			});
+			
+			// setup the voting buttons. 
+			$("#vote-left").click(handleVote);
+			$("#vote-right").click(handleVote);
+			
+			
+			$("#voting").hide();
+			
 		});
+		
+		var sectionVotes = [0, 0];
+		var globalVotes = [0, 0];
+		var sectionPop = 100;
+		var globalPop = 1000;
+		
+		var sectionVoteSplit = 0.5;
+		var globalVoteSplit = 0.5;
+		
+		function handleVote() {
+			var voteIndex = parseInt($(this).attr("voteIndex"));
+			
+			sectionVotes[voteIndex] = sectionVotes[voteIndex]+1;
+			globalVotes[voteIndex] = globalVotes[voteIndex]+1;
+			
+			updateVoteBars();
+		}
+		
+		function updateVoteBars() {
+			$("#section-results .opt2").text(sectionVotes[1]);
+			$("#section-results .opt1").text(sectionVotes[0]).css("width", (sectionVotes[0]/(sectionVotes[0]+sectionVotes[1]))*100 + "%");
+			
+			$("#global-results .opt2").text(globalVotes[1]);
+			$("#global-results .opt1").text(globalVotes[0]).css("width", (globalVotes[0]/(globalVotes[0]+globalVotes[1]))*100 + "%");
+		}
+		
+		function voteTick() {
+			var split;
+			var votesToEdit;
+			
+			var doneVoting = 0;
+			
+			if(sectionVotes[0] + sectionVotes[1] < sectionPop) {
+				for(var i=0; i<Math.floor(sectionPop/30); i++) {
+					sectionVotes = doVote(sectionVoteSplit, sectionVotes);
+				}
+			} else {
+				doneVoting++;
+			}
+			
+			
+			if(globalVotes[0] + globalVotes[1] < globalPop) {
+				for(var i=0; i<Math.floor(globalPop/30); i++) {
+					globalVotes = doVote(globalVoteSplit, globalVotes);
+				}
+			} else {
+				doneVoting++;
+			}
+			
+			updateVoteBars();
+			
+			if(doneVoting==2) {
+				
+				// hide the panel after 10 seconds.
+				setTimeout(function() {
+					$("#voting").slideUp(500);
+				}, 10000);
+				
+				return;
+			}
+			
+			
+			setTimeout(voteTick, 333);
+		}
+		
+		function doVote(split, votes) {
+			var rand = Math.random();
+			if(rand < split) {
+				votes[0]++;
+			} else {
+				votes[1]++;
+			}
+			
+			return votes;
+		}
 		
 		function setPulseType(type) {
 			
@@ -1643,6 +1728,20 @@
 			return roomItem;
 		}
 		
+		
+		function startVoting() {
+			// show the voting screen. 
+			$("#voting").slideDown(500);
+			// $("#voting").show();
+			
+			// set defaults
+			globalVoteSplit = Math.random();
+			sectionVoteSplit = globalVoteSplit + (Math.random()*0.5 - 0.5);
+			
+			// kick off voting.
+			voteTick();
+		}
+		
 		function setStream(streamId) {
 			
 			if(streamId==null) {
@@ -1764,13 +1863,13 @@
 
 
 <div id="voting">
-<div id="vote-left" class="vote-button btn btn-red"></div>
+<div id="vote-left" class="vote-button btn btn-red" voteIndex="0"></div>
 <div id="results">
 <div id="section-results" class="results-container"><div class="opt2">0</div><div class="opt1 bar">0</div></div>
 <div id="global-results" class="results-container"><div class="opt2">0</div><div class="opt1 bar">0</div></div>
 <br class="clear">
 </div>
-<div id="vote-right" class="vote-button btn btn-blue"></div>
+<div id="vote-right" class="vote-button btn btn-blue" voteIndex="1"></div>
 </div>
 
 

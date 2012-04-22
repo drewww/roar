@@ -1217,7 +1217,9 @@
             
             position: absolute;
             
-            top: 200px;
+            bottom: 50px;
+            left: 50%;
+            margin-left: -200px;
             background-color: white;
             
             font-family: Helvetica;
@@ -1230,12 +1232,10 @@
         
         #vote-left {
             float: left;
-/*            background-color: red;*/
         }
         
         #vote-right {
             float: right;
-/*            background-color: blue;*/
         }
         
         .results-container {
