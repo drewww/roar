@@ -42,12 +42,12 @@ if(program.args.length==1) {
         var messageText = messageNode.text();
         messageText = messageText.replace(/\n\r/g, " ");
         
-        console.log("text: " + messageText);
+        // console.log("text: " + messageText);
         
         messagesToWrite.push(datetime.getHours() + ":" + datetime.getMinutes() + " < " + senderNode.text() + "> " + messageText);
     }
     
-    fs.writeFileSync("out.log", messagesToWrite.join("\n"))
+    fs.writeFileSync(program.args[0] + ".log", messagesToWrite.join("\n"))
     
 } else {
     console.log("need a file name to process")

@@ -1,5 +1,10 @@
 // This script reads a Colloquey IRC chat log and generates a markov chat
 // model based on it, which can be easily deployed on the ROAR server-side.
+//
+// The traditional flow is:
+//      --processxml / --processlog
+//      --tfidf
+//      --index
 
 var libxml = require("libxmljs"),
     logger = require('util'),
@@ -11,6 +16,7 @@ var libxml = require("libxmljs"),
 
 // Set the window size in seconds to 3 minutes.
 var WINDOW_SIZE_MSECONDS = 60*10*1000;
+var WINDOW_SIZE_MESSAGES = 300;
 
 var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
@@ -34,16 +40,17 @@ var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all
 program.version('0.2')
     .option('-i, --index', 'Builds an index of chat messages using top keywords from the keywords file.')
     .option('-t, --tfidf', 'Performs TF-IDF on the corpus, generating a ranking of all terms in the corpus.')
-    .option('-p, --process <chatxml>', 'Turns chat xml into a javascript object with indicies assigned to messages and a list of unique names.')
+    .option('-p, --processxml <chatxml>', 'Turns chat xml into a javascript object with indicies assigned to messages and a list of unique names.')
+    .option('-P, --processlog <chatlog>', 'Turns chat log file into a javascript object with indicies assigned to messages and a list of unique names.')
     .option('-g, --generate [keyword]', 'Generate utterances for a keyword')
     .option('-l, --list', 'List statistics about the current model.')
     .parse(process.argv);
 
 
-if(program.process) {
-    chatxml = program.process;
+if(program.processxml) {
+    var chatxml = program.processxml;
     
-    console.log("Loading chat logs...");
+    console.log("Loading chat xml...");
 
     var chatlogXml = fs.readFileSync(chatxml, 'utf-8');
     var logDoc = libxml.parseXmlString(chatlogXml);
@@ -69,6 +76,47 @@ if(program.process) {
     }
     
     // now dump it.
+    fs.writeFileSync("messages.json", JSON.stringify(chatMessages));
+    fs.writeFileSync("names.json", JSON.stringify(namesSet.array()));
+} else if (program.processlog) {
+    var chatlog = program.processlog;
+    
+    console.log("Loading chat logs...");
+
+    var chatlog = fs.readFileSync(chatlog, 'utf-8').toString();
+    
+    // go through line by line.
+    var namesSet = new sets.Set([]);
+    var chatMessages = [];
+    chatlog.split("\n").forEach(function(line) {
+        // load the time in first.
+        
+        // skip any line with -!- in it - those are server messages.
+        if(line.indexOf("-!-")!=-1) return;
+        
+        // give up on timing - change tfidf to just message counts, since
+        // getting timing out of these logs is a bit of a nightmare. mostly
+        // because of the merged logs - pure irc logs or pure colloquey are
+        // both easy, but both together is annoying.
+        
+        if(line.indexOf("< ")!=-1 && line.indexOf(">")!=-1) {
+            // grab the name.
+            var name = line.split("< ")[1].split(">")[0];
+            namesSet.add(name);
+            
+            // now that we're on a line with a name, grab text.
+            var text = line.split("> ")[1];
+            
+            if(_.isUndefined(text)) return;
+            if(text=="") return;
+            if(text==" ") return;
+            if(text[0]=="!") return;
+            
+            chatMessages.push({"text":text});
+        }
+    });
+    
+    console.log("WRITING OUT");
     fs.writeFileSync("messages.json", JSON.stringify(chatMessages));
     fs.writeFileSync("names.json", JSON.stringify(namesSet.array()));
 } else if (program.tfidf) {
@@ -101,15 +149,18 @@ if(program.process) {
     
     // tracking window position
     var nextWindowThreshold = false;
+    var numMessagesInWindow = 0;
     
     var numDocs = 0;
     
     for (var messageIndex in messages) {
         var message = messages[messageIndex];
+        numMessagesInWindow++;
         // console.log(message.time);
-        if(nextWindowThreshold==false) {
-            nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
-        } else if (nextWindowThreshold < message.time) {
+        // if(nextWindowThreshold==false) {
+        //     nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
+        // } else if (nextWindowThreshold < message.time) {
+        if(numMessagesInWindow > WINDOW_SIZE_MESSAGES) {
             // handle the end of the window - push things into document
             // frequency.
             numDocs++;
@@ -149,14 +200,15 @@ if(program.process) {
             
             // console.log("ending document, term freq doc: " + JSON.stringify(termFrequencyDocument));
             termFrequencyDocument = {};
-            nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
+            // nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
+            numMessagesInWindow=0;
         }
         
         // otherwise, this is a normal message, so split it up and figure out
         // our terms. push them into term frequency global
         
         // do some simple in-advance replacement to split things up.
-        message.text = message.text.replace(/[\(\)!?,.\"\'\*\=;]/g, " ");
+        message.text = message.text.replace(/[\(\)!?,.\"\'\*\=;\[\]]/g, " ");
         message.text = message.text.replace(/\/\//g, " ");
         
         wordsInMessage = message.text.split(/[\s]+/);
