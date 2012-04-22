@@ -23,7 +23,7 @@
 		
 		// Keeps a list of lists. Each entry is a chat message with a 
 		// timestamp. 
-		var messagesSent = []
+		var messagesSent = [];
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -1757,6 +1757,14 @@
 				$("#stream-img").hide();
 			}
 		}
+		
+		function startVideo() {
+			var videoEl = document.getElementById("soccer_video");
+			
+			videoEl.currentTime = 0;
+			videoEl.play();
+		}
+		
 	</script>
 
 	<link rel="stylesheet" href="/static/css/roar.css" type="text/css" media="screen" charset="utf-8">
@@ -1771,7 +1779,8 @@
 <div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
 </div>
 
-<img id="stream-img" src="/static/img/sc2-stream.png">
+<!-- <img id="stream-img" src="/static/img/sc2-stream.png"> -->
+<video id='soccer_video' controls src='/static/vid/chelsea_goal.webm'></video>
 
 <div id="container">
 	<div id="information">
