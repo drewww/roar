@@ -57,11 +57,12 @@ var numConnectedUsers = 0;
 // Will need to swap these out for soccer, too.
 var baseRooms = ["General Chat 1","General Chat 2", "General Chat 3",
     "General Chat 4",
-    "Team Liquid 1", "Team Liquid 2",
+    "Chelsea 1", "Chelsea 2", "Chelsea 3", "Chelsea 4",
+    "Barcelona 1", "Barcelona 2", "Barcelona 3", "Barcelona 4", "Barcelona 5", "Barcelona 6",
+    "Arsenal 1", "Arsenal 2", "Reds 1", "Reds 2", "Reds 3", "Reds 4",
+    "City 1", "City 2", "City 3", "City 4",
     "reddit 1", "reddit 2",
-    "MC Fans", "Thorzain fans", "Zerg Players",
-    "Terran Players", "Protoss Players", "EG", "fnatic",
-    "france", "deutchland", "espana",
+    "france", "deutchland", "espana 1", "espana 2", "espana 3", "italia", "UK 1", "UK 2", "UK 3", "UK 4",
     "MIT", "Google", "Cambridge"];
 
 

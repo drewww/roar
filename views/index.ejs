@@ -1801,6 +1801,9 @@
 				frameIndex++;
 			}
 			
+			// drop out of the process if we're at the end.
+			if(frameIndex==keywordKeyFrames.length) return;
+			
 			setTimeout(videoTic, 1000);
 		}
 		
@@ -1878,7 +1881,7 @@
 <h2>Sections with Friends</h2>
 <table border="0">
 	<tr section="MIT"><td>52</td><td>MIT</td><td><img src="/static/img/fb/1.jpg"><img src="/static/img/fb/2.jpg"><img src="/static/img/fb/3.jpg"><img src="/static/img/fb/4.jpg"><img src="/static/img/fb/5.jpg"> ... and 6 more</td></tr>
-	<tr section="Reddit 4"><td>1534</td><td>Reddit 4</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
+	<tr section="Chelsea 3"><td>1534</td><td>Chelsea 3</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
 	<tr section="Google"><td>178</td><td>Google</td><td><img src="/static/img/fb/8.jpg"></td></tr>
 	<tr section="Andrea"><td>1</td><td>Andrea's Section</td><td><img src="/static/img/fb/9.jpg"></td></tr>
 </table>
@@ -1887,10 +1890,10 @@
 
 <h2>Popular Sections</h2>
 <table border="0" cellspacing="5" cellpadding="5">
-	<tr section="reddit"><td>1534</td><td>reddit</td></tr>
-	<tr section="TeamLiquid"><td>1390</td><td>TeamLiquid</td></tr>
-	<tr section="france"><td>1273</td><td>france</td></tr>
-	<tr section="EG"><td>1198</td><td>EG</td></tr>
+	<tr section="Barcelona 1"><td>1534</td><td>Barcelona</td></tr>
+	<tr section="Chelsea 1"><td>1390</td><td>Chelsea</td></tr>
+	<tr section="reddit 1"><td>1273</td><td>reddit</td></tr>
+	<tr section="Reds 1"><td>1198</td><td>Reds</td></tr>
 </table>
 </div>
 
