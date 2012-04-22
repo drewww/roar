@@ -361,11 +361,14 @@ io.sockets.on('connection', function(socket) {
     });
     
     socket.on("keyframe", function(data) {
+        
+        console.log("KEYFRAME: " + JSON.stringify(data));
+        
         autoKeywords = false;
         keywords = data.keywords;
         
         varyBotParticipation = false;
-        botChatOddsOffset = (1-(data.volume))* 2 * BASE_CHAT_ODDS
+        botChatOddsOffset = (1-(parseFloat(data.level)))* 2 * BASE_CHAT_ODDS
             - BASE_CHAT_ODDS;
     });
     

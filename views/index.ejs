@@ -1758,11 +1758,50 @@
 			}
 		}
 		
+		var keywordKeyFrames = [
+		{"time":0, "level":0.4, "keywords":[null, null, null, "dive", "dive", "dive", "dive", "dive", "messi"]},
+		{"time":17, "level":0.3, "keywords":[null, null, null, "dive", "dive", "dive", "messi", "messi", "messi", "messi"]},
+		{"time":27, "level":0.2, "keywords":[null, null, null, "chelsea", "chelsea", "barca", "barca", "barca", "barca", "barca"]},
+		{"time":36, "level":0.7, "keywords":[null, null, null, "torres", "torres", "torres", "torres", "torres", "kalou", "messi", "messi"]},
+		{"time":45, "level":0.9, "keywords":[null, null, null, "messi", "messi", "messi", "messi", "messi"]},
+		{"time":50, "level":0.1, "keywords":[null, null, null, "messi", "messi", "torres", "torres", "kalou", "drogba", "drogba", "kalou"]},
+		{"time":56, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba"]},
+		{"time":62, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba", "drogba", "chelsea", "chelsea", "chelsea", "chelsea"]},
+		{"time":73, "level":1.0, "keywords":[null, "drogba", "drogba", "mata", "mata", "mata", "chelsea", "chelsea", "chelsea"]},
+		{"time":86, "level":0.6, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "messi", "messi", "messi", "barca", "barca", "barca"]},
+		{"time":130, "level":0.4, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "chelsea", "chelsea", "chelsea"]},
+		{"time":144, "level":0.6, "keywords":[null, "messi", "messi", "messi", "messi", "drogba", "chelsea", "chelsea", "chelsea"]},
+		];
+		
+		var frameIndex = 0;
+		
 		function startVideo() {
 			var videoEl = document.getElementById("soccer_video");
 			
+			console.log("STARTING VIDEO");
+			
+			frameIndex = 0;
 			videoEl.currentTime = 0;
 			videoEl.play();
+			
+			videoTic();
+		}
+		
+		function videoTic() {
+			var videoEl = document.getElementById("soccer_video");
+
+			// console.log("time: " + videoEl.currentTime);
+			var currentFrame = keywordKeyFrames[frameIndex];
+			
+			if(videoEl.currentTime > currentFrame.time) {
+				console.log("frame: " + JSON.stringify(currentFrame));
+				//send the data to th server.
+				socket.emit("keyframe", currentFrame);
+				
+				frameIndex++;
+			}
+			
+			setTimeout(videoTic, 1000);
 		}
 		
 	</script>
