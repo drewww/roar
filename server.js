@@ -360,6 +360,15 @@ io.sockets.on('connection', function(socket) {
         });
     });
     
+    socket.on("keyframe", function(data) {
+        autoKeywords = false;
+        keywords = data.keywords;
+        
+        varyBotParticipation = false;
+        botChatOddsOffset = (1-(data.volume))* 2 * BASE_CHAT_ODDS
+            - BASE_CHAT_ODDS;
+    });
+    
     socket.on('disconnect', function(data) {
         // if(data) {
             // console.log("disconnect info: ", data);
