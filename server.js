@@ -133,44 +133,41 @@ io.sockets.on('connection', function(socket) {
                 
                 // if this is true, then the hash doesn't contain that name
                 // and it's free to be used.
-                if(res == 0) { 
-                    socket.set('nickname', data.username, function() {
+                // if(res == 0) { 
+                socket.set('nickname', data.username, function() {
                         
-                        var isRename = false;
-                        if(hasPrevNickname) isRename=true;
+                var isRename = false;
+                if(hasPrevNickname) isRename=true;
 
-                        socket.emit("identify", {state:"OK",
-                            username:data["username"], rename:isRename});
+                socket.emit("identify", {state:"OK",
+                    username:data["username"], rename:isRename});
 
-                        // Eventually, put a pointer to the user id in here, or something.
-                        client.hset("global:connectedUsers", data["username"], true);
+                // Eventually, put a pointer to the user id in here, or something.
+                client.hset("global:connectedUsers", data["username"], true);
 
-                        // Only send welcome messages if this is a logging-in
-                        // user, not if they're just changing their nick.
-                        if(!hasPrevNickname) {
-                            // TODO Need to fix this in light of the room model.
-                            // Either we're going to need to keep separate recent
-                            // lists for every room, or going to ditch this
-                            // feature.
-                            // client.lrange("messages.recent", -10, -1, function (err, res) {
-                            //     console.log("lrange returned");
-                            //     console.log(res);
-                            //     for(msgIndex in res) {
-                            //         console.log(res[msgIndex]);
-                            //         msgObj = JSON.parse(res[msgIndex]);
-                            //         msgObj["past"] = true;
-                            //         socket.emit('message', msgObj);
-                            //     }
-                            // Doing it here ensures that it appears after the past messages.
-                                socket.emit("chat", {text:"Welcome to ROAR!", admin:"true"});
-                            }
-                            
-                            // push an initial room state down.
-                            _updateRooms(socket);
-                        });
-                } else {
-                    socket.emit("identify", {state:"TAKEN", username:data["username"]});
-                }
+                // Only send welcome messages if this is a logging-in
+                // user, not if they're just changing their nick.
+                if(!hasPrevNickname) {
+                    // TODO Need to fix this in light of the room model.
+                    // Either we're going to need to keep separate recent
+                    // lists for every room, or going to ditch this
+                    // feature.
+                    // client.lrange("messages.recent", -10, -1, function (err, res) {
+                    //     console.log("lrange returned");
+                    //     console.log(res);
+                    //     for(msgIndex in res) {
+                    //         console.log(res[msgIndex]);
+                    //         msgObj = JSON.parse(res[msgIndex]);
+                    //         msgObj["past"] = true;
+                    //         socket.emit('message', msgObj);
+                    //     }
+                    // Doing it here ensures that it appears after the past messages.
+                        socket.emit("chat", {text:"Welcome to ROAR!", admin:"true"});
+                    }
+                    
+                    // push an initial room state down.
+                    _updateRooms(socket);
+                });
             });
         });
     });
@@ -1535,6 +1532,11 @@ function generateUtteranceForKeyword(keyword) {
         messageIndex = Math.floor(Math.random()*model.messages.length);
     } else {
         var messageIndicesForKeyword = model.index[keyword];
+        
+        if(_.isUndefined(messageIndicesForKeyword)) {
+            console.log("FOUND BAD KEYWORD: " + keyword);
+            return "bad keyword";
+        }
         var randomIndex = Math.floor(Math.random()*messageIndicesForKeyword.length);
         messageIndex = messageIndicesForKeyword[randomIndex];
     }
