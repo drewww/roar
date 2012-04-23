@@ -693,7 +693,7 @@
 			font-family: Helvetica, sans-serif;
 		}
 		
-		#information {
+		#information, #invite, #welcome {
 			background-color: #f0f0f0;
 			box-shadow: 8px 8px 8px black;
 			padding: 10px;
@@ -1139,7 +1139,7 @@
 		.overlay {
             position: absolute;
             
-            top: 200px;
+            top: 50px;
             left: 50%;
             
             background-color: white;
@@ -1159,12 +1159,14 @@
         
         #welcome {
             width: 600px;
-            height: 690px;
+            height: 508px;
             margin-left: -300px;
         }
         
         #welcome img {
             margin: 3px;
+            
+            width: 32px;
         }
         
         #welcome {
@@ -1187,7 +1189,7 @@
         }
         
         #welcome tr {
-            height: 60px;
+            height: 40px;
         }
         
         

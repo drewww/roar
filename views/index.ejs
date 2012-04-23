@@ -139,7 +139,7 @@
 		
 		socket.on('rooms', function(data) {
 			rooms = data;
-
+			
 			// The rooms data is a list sorted by population. It also has lots
 			// of sort of duplicate rooms. So we're going to do a first pass
 			// to combine all those rooms and hide them. When you select one,
@@ -223,8 +223,10 @@
 			
 			// hardcode the four friend rooms in manually.
 			$("#friends-rooms-list li").remove();
-			_.each(["MIT", "Reddit", "Google", "Cambridge"], function(roomName){
+			_.each(["MIT", "reddit", "Google", "Cambridge"], function(roomName){
 				var metaRoom = condensedList[roomName];
+			
+				// console.log("name: " + roomName + ", meta: " + JSON.stringify(metaRoom));
 				makeRoomItemFromRoom(metaRoom).appendTo($("#friends-rooms-list"));
 			});
 			
@@ -300,7 +302,6 @@
 		});
 
 		$(document).ready(function() {
-			
 			setPulseType("river+y");
 			
 			var isTested = false;
@@ -330,6 +331,9 @@
 			$("#backdrop").show();
 			$("#container").addClass("minimized");
 			$("#container").offset({top:-424}, 0);
+			
+			$("#container").hide();
+			
 			$("#hide").text("about this project");
 			
 			$("#search-results").hide();
