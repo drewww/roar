@@ -112,6 +112,10 @@ if(program.processxml) {
             if(text==" ") return;
             if(text[0]=="!") return;
             
+            if(text.indexOf("fuck")!=-1) return;
+            if(text.indexOf("rape")!=-1) return;
+            if(text.indexOf("fag")!=-1) return;
+            
             chatMessages.push({"text":text});
         }
     });
