@@ -324,7 +324,7 @@
 			$("#pulse-sect").hide();
 
 			
-			$("#demo-header").hide();
+			$("#demo-header").show();
 			
 			$(".callout").hide();
 			
@@ -858,6 +858,16 @@
 			
 			if (chatTextElement.val()=="/vote") {
 				startVoting();
+				chatTextElement.val("");
+				if(event!=null) event.preventDefault();
+				return;
+			}
+			
+			if (chatTextElement.val()=="/login") {
+				
+				$("#welcome").show();
+				$("#backdrop").show();
+				
 				chatTextElement.val("");
 				if(event!=null) event.preventDefault();
 				return;

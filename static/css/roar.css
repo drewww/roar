@@ -971,13 +971,15 @@
 			
 			font-family: helvetica, sans-serif;
 			padding-left: 50px;
+			
+			font-size: 80%;
 		}
 		
 		#demo-header .title {
 			float: left;
 
 			height: 100%;
-			width: 300px;
+			width: 20%;
 			
 			font-size: 6em;
 			font-weight: bold;
@@ -987,7 +989,8 @@
 		
 		#demo-header .subtitle, #demo-header .byline {
 			float: left;
-			height: 45%;
+			height: 40px;
+			width: 60%;
 		}
 		
 		#demo-header .subtitle {
