@@ -856,6 +856,14 @@
 				return;
 			}
 			
+			if (chatTextElement.val()=="/vote") {
+				startVoting();
+				chatTextElement.val("");
+				if(event!=null) event.preventDefault();
+				return;
+			}
+			
+			
 			socket.emit("chat", {"text":chatTextElement.val()});
 			messagesSent.push({"text":chatTextElement.val(), "timestamp":new Date().getTime()});
 			chatTextElement.val("");
@@ -1931,13 +1939,13 @@
 
 
 <div id="voting">
-<div id="vote-left" class="vote-button btn btn-red" voteIndex="0"></div>
+<div id="vote-left" class="vote-button btn btn-red" voteIndex="0">Barca Scores</div>
 <div id="results">
 <div id="section-results" class="results-container"><div class="opt2">0</div><div class="opt1 bar">0</div></div>
 <div id="global-results" class="results-container"><div class="opt2">0</div><div class="opt1 bar">0</div></div>
 <br class="clear">
 </div>
-<div id="vote-right" class="vote-button btn btn-blue" voteIndex="1"></div>
+<div id="vote-right" class="vote-button btn btn-blue" voteIndex="1">Chelsea Scores</div>
 </div>
 
 

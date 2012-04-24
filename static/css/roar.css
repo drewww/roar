@@ -1231,6 +1231,8 @@
             background-color: white;
             
             font-family: Helvetica;
+            
+            z-index: 1000000000;
         }
         
         .vote-button {
