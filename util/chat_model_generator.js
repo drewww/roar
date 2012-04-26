@@ -88,11 +88,32 @@ if(program.processxml) {
     // go through line by line.
     var namesSet = new sets.Set([]);
     var chatMessages = [];
+    
+    var baseDate = null;
+    
     chatlog.split("\n").forEach(function(line) {
         // load the time in first.
         
         // skip any line with -!- in it - those are server messages.
         if(line.indexOf("-!-")!=-1) return;
+        if(line.indexOf("---") == 0) {
+            // handle date changes
+            
+            // split the line on spaces.
+            var words = line.split(" ");
+            
+            // now drop the first 3, and join the rest.
+            var dateString = words.slice(3).join(" ");
+            
+            baseDate = new Date(dateString);
+            
+            return;
+        }
+        
+        if(baseDate==null) {
+            console.log("No base date found - can't move on.");
+            return;
+        }
         
         // give up on timing - change tfidf to just message counts, since
         // getting timing out of these logs is a bit of a nightmare. mostly
@@ -120,7 +141,12 @@ if(program.processxml) {
             if(text.indexOf("cunts")!=-1) return;
 
             
-            chatMessages.push({"text":text});
+            var time = line.split(" ")[0].split(":");
+            
+            baseDate.setHours(time[0]);
+            baseDate.setMinutes(time[1]);
+            
+            chatMessages.push({"text":text, "time":(new Date(baseDate)).getTime()});
         }
     });
     
