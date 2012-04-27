@@ -16,7 +16,7 @@ var libxml = require("libxmljs"),
 
 // Set the window size in seconds to 3 minutes.
 var WINDOW_SIZE_MSECONDS = 60*10*1000;
-var WINDOW_SIZE_MESSAGES = 300;
+var MIN_MESSAGES_IN_WINDOW = 60;
 
 var STOP_WORDS = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all":1,"am":1,"an":1
 ,"and":1,"any":1,"are":1,"aren't":1,"as":1,"at":1,"be":1,"because":1,"been":1,"before":1,"being":1,
@@ -115,11 +115,6 @@ if(program.processxml) {
             return;
         }
         
-        // give up on timing - change tfidf to just message counts, since
-        // getting timing out of these logs is a bit of a nightmare. mostly
-        // because of the merged logs - pure irc logs or pure colloquey are
-        // both easy, but both together is annoying.
-        
         if(line.indexOf("< ")!=-1 && line.indexOf(">")!=-1) {
             // grab the name.
             var name = line.split("< ")[1].split(">")[0];
@@ -187,45 +182,56 @@ if(program.processxml) {
     
     var numDocs = 0;
     
+    var logString = "";
+    
     for (var messageIndex in messages) {
         var message = messages[messageIndex];
         numMessagesInWindow++;
         // console.log(message.time);
-        // if(nextWindowThreshold==false) {
-        //     nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
-        // } else if (nextWindowThreshold < message.time) {
-        if(numMessagesInWindow > WINDOW_SIZE_MESSAGES) {
-            // handle the end of the window - push things into document
-            // frequency.
-            numDocs++;
+        if(nextWindowThreshold==false) {
+            nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
+        } else if (nextWindowThreshold < message.time) {
             
-            // two things:
-            // merge termFrequencyDocument into termFrequencyGlobal
-            for (var word in termFrequencyDocument) {
+            // see how many messages we have in the window. If it's below
+            // a certain threshold, throw out the document entirely because
+            // it's not helpful for us. 
+            // console.log("#msg in window: " + numMessagesInWindow);
+            
+            logString += nextWindowThreshold+","+numMessagesInWindow + "\n";
+            
+            if(numMessagesInWindow > MIN_MESSAGES_IN_WINDOW) {
+                // handle the end of the window - push things into document
+                // frequency.
+                numDocs++;
+            
+                // two things:
+                // merge termFrequencyDocument into termFrequencyGlobal
+                for (var word in termFrequencyDocument) {
                 
-                // avoid bad words
-                if(word.indexOf("fuck")!=-1 || 
-                   word.indexOf("shit")!=-1 ||
-                   word.indexOf("fap")!=-1) {
-                    continue;
-                }
+                    // avoid bad words
+                    if(word.indexOf("fuck")!=-1 || 
+                       word.indexOf("shit")!=-1 ||
+                       word.indexOf("fap")!=-1) {
+                        continue;
+                    }
                 
-                var frequency = termFrequencyDocument[word];
+                    var frequency = termFrequencyDocument[word];
                 
-                // increment global frequency by the actual total frequency
-                // in the document.
-                if(word in termFrequencyGlobal) {
-                    termFrequencyGlobal[word] = termFrequencyGlobal[word] + frequency;
-                } else {
-                    termFrequencyGlobal[word] = 1;
-                }
+                    // increment global frequency by the actual total frequency
+                    // in the document.
+                    if(word in termFrequencyGlobal) {
+                        termFrequencyGlobal[word] = termFrequencyGlobal[word] + frequency;
+                    } else {
+                        termFrequencyGlobal[word] = 1;
+                    }
                 
-                // increment document frequency by 1 for every word in our
-                // set.
-                if(word in documentFrequency) {
-                    documentFrequency[word] = documentFrequency[word] + 1;
-                } else {
-                    documentFrequency[word] = 1;
+                    // increment document frequency by 1 for every word in our
+                    // set.
+                    if(word in documentFrequency) {
+                        documentFrequency[word] = documentFrequency[word] + 1;
+                    } else {
+                        documentFrequency[word] = 1;
+                    }
                 }
             }
             
@@ -234,8 +240,8 @@ if(program.processxml) {
             
             // console.log("ending document, term freq doc: " + JSON.stringify(termFrequencyDocument));
             termFrequencyDocument = {};
-            // nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
-            numMessagesInWindow=0;
+            nextWindowThreshold = message.time + WINDOW_SIZE_MSECONDS;
+            numMessagesInWindow = 0;
         }
         
         // otherwise, this is a normal message, so split it up and figure out
@@ -279,6 +285,8 @@ if(program.processxml) {
     
     
     console.log("Ending TFIDF");
+    
+    fs.writeFileSync("messagesPerWindow.csv", logString);
     
     
     var tfidf = {};
