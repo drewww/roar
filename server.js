@@ -45,11 +45,14 @@ if(program.disableheartbeats) {
     io.set("heartbeats", false)
 }
 
+var modelName = "";
 var modelBaseDirectory = __dirname + "/chat_model/";
 if(program.model) {
     modelBaseDirectory = modelBaseDirectory+program.model +"/";
+    modelName = program.model;
 } else {
     modelBaseDirectory = modelBaseDirectory+"starcraft_old/";
+    modelName = "starcraft";
 }
 // GLOBALS
 var numConnectedUsers = 0;
@@ -96,7 +99,7 @@ app.listen(port);
 // Setup the index page.
 app.get('/', function(req, res) {
     res.render('index.ejs', {layout:false, locals:{"server":server,
-        "port":port}});
+        "port":port, "modelName":modelName}});
 });
 
 // Setup static serving from the static directory.

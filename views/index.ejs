@@ -12,6 +12,7 @@
 	<script type="text/javascript" charset="utf-8">
 		
 		var socket = io.connect("http://<%= server %>:<%= port %>");
+		var modelName = "<%=modelName%>";
 		var rooms = [];
 		var metaRooms = [];
 		var Enabled = true;
@@ -24,6 +25,39 @@
 		// Keeps a list of lists. Each entry is a chat message with a 
 		// timestamp. 
 		var messagesSent = [];
+		
+		
+		var soccerKeyframes = [
+		{"time":0, "level":0.4, "keywords":[null, null, null, "dive", "dive", "dive", "dive", "dive", "messi"]},
+		{"time":15, "level":0.3, "keywords":[null, null, null, "dive", "dive", "dive", "messi", "messi", "messi", "messi"]},
+		{"time":25, "level":0.2, "keywords":[null, null, null, "chelsea", "chelsea", "barca", "barca"]},
+		{"time":34, "level":0.3, "keywords":[null, null, null, "torres", "torres", "messi", "messi"]},
+		{"time":43, "level":0.2, "keywords":[null, null, null, "messi", "messi", "messi", "messi", "messi"]},
+		{"time":48, "level":0.1, "keywords":[null, null, null, "messi", "messi", "kalou", "kalou"]},
+		{"time":53, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba"]},
+		{"time":60, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba", "drogba", "chelsea", "chelsea", "chelsea", "chelsea"]},
+		{"time":72, "level":1.0, "keywords":[null, "drogba", "drogba", "mata", "mata", "mata", "chelsea", "chelsea", "chelsea"]},
+		{"time":85, "level":0.6, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "messi", "messi", "messi", "barca", "barca", "barca"]},
+		{"time":130, "level":0.4, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "chelsea", "chelsea", "chelsea"]},
+		{"time":144, "level":0.6, "keywords":[null, "messi", "messi", "messi", "messi", "drogba", "chelsea", "chelsea", "chelsea"]},
+		];
+		
+		var sc2KeyFrames = [
+		{"time":0, "level":0.8, "keywords":[null, null, null, "nani", "nani", "naniwa", "thorzain", "thorzain", "thorzain", "thorzain"]}
+		];
+		
+		var videoTypes = {
+		"starcraft":{
+			"src": "/static/vid/tsl3_final_moments.webm",
+			"keyframes": sc2KeyFrames
+		},
+		"soccer":{
+			"src":"/static/vid/chelsea_goal.webm",
+			"keyframes": soccerKeyframes
+		}};
+		
+		var keyframes;
+		
 		
 		socket.on('connect', function(data) {
 			console.log("Connected to server.");
@@ -543,6 +577,10 @@
 			
 			$("#voting").hide();
 			
+			// setup the video stuff.
+			keyframes = videoTypes[modelName].keyframes;
+			
+			$("#video").attr("src", videoTypes[modelName].src);
 		});
 		
 		var sectionVotes = [0, 0];
@@ -1790,39 +1828,6 @@
 				$("#stream-img").hide();
 			}
 		}
-
-
-		var soccerKeyframes = [
-		{"time":0, "level":0.4, "keywords":[null, null, null, "dive", "dive", "dive", "dive", "dive", "messi"]},
-		{"time":15, "level":0.3, "keywords":[null, null, null, "dive", "dive", "dive", "messi", "messi", "messi", "messi"]},
-		{"time":25, "level":0.2, "keywords":[null, null, null, "chelsea", "chelsea", "barca", "barca"]},
-		{"time":34, "level":0.3, "keywords":[null, null, null, "torres", "torres", "messi", "messi"]},
-		{"time":43, "level":0.2, "keywords":[null, null, null, "messi", "messi", "messi", "messi", "messi"]},
-		{"time":48, "level":0.1, "keywords":[null, null, null, "messi", "messi", "kalou", "kalou"]},
-		{"time":53, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba"]},
-		{"time":60, "level":1.0, "keywords":[null, "drogba", "drogba", "drogba", "drogba", "chelsea", "chelsea", "chelsea", "chelsea"]},
-		{"time":72, "level":1.0, "keywords":[null, "drogba", "drogba", "mata", "mata", "mata", "chelsea", "chelsea", "chelsea"]},
-		{"time":85, "level":0.6, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "messi", "messi", "messi", "barca", "barca", "barca"]},
-		{"time":130, "level":0.4, "keywords":[null, "drogba", "drogba", "mata", "drogba", "drogba", "chelsea", "chelsea", "chelsea"]},
-		{"time":144, "level":0.6, "keywords":[null, "messi", "messi", "messi", "messi", "drogba", "chelsea", "chelsea", "chelsea"]},
-		];
-		
-		var sc2KeyFrames = [
-		{"time":0, "level":0.8, "keywords":[null, null, null, "nani", "nani", "naniwa", "thorzain", "thorzain", "thorzain", "thorzain"]}
-		];
-		
-		var videoTypes = {
-		"sc2":{
-			"src": ""
-			"keyframes": sc2KeyFrames
-		},
-		"soccer":{
-			"src":"chelsea_goal.webm",
-			"keyframes": soccerKeyframes
-		}
-		}
-		
-		
 		
 		var frameIndex = 0;
 		
@@ -1878,7 +1883,7 @@
 <div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
 </div>
 
-<video id='video' src='/static/vid/chelsea_goal.webm'></video>
+<video id='video'></video>
 
 <div id="container">
 	<div id="information">
