@@ -44,12 +44,34 @@ if(program.verbose) {
 if(program.disableheartbeats) {
     io.set("heartbeats", false)
 }
+// Will need to swap these out for soccer, too.
+var baseRooms;
+    
+
+var roomOptions = {"soccer":["Chelsea 1", "Chelsea 2", "Chelsea 3", "Chelsea 4",
+        "Barcelona 1", "Barcelona 2", "Barcelona 3", "Barcelona 4",
+        "Arsenal 1", "Arsenal 2", "Reds 1", "Reds 2", "Reds 3", "Reds 4",
+        "City 1", "City 2", "City 3", "City 4",
+        "reddit 1", "reddit 2",
+        "france", "deutchland", "italia", "UK 1", "UK 2",
+        "MIT", "Google", "Cambridge"],
+        
+        "starcraft":["Thorzain 1", "Thorzain 2", "Thorzain 3",
+        "Naniwa 1", "Naniwa 2", "Naniwa 3",
+        "Team Liquid 1", "Team Liquid 2",
+        "EG 1", "EG 2",
+        "Day9",
+        "reddit 1", "reddit 2",
+        "france", "deutchland", "italia",
+        "MIT", "Google", "Cambridge"]}
 
 var modelName = "";
 var modelBaseDirectory = __dirname + "/chat_model/";
 if(program.model) {
     modelBaseDirectory = modelBaseDirectory+program.model +"/";
     modelName = program.model;
+    
+    baseRooms = roomOptions[program.model];
 } else {
     modelBaseDirectory = modelBaseDirectory+"starcraft_old/";
     modelName = "starcraft";
@@ -57,14 +79,7 @@ if(program.model) {
 // GLOBALS
 var numConnectedUsers = 0;
 
-// Will need to swap these out for soccer, too.
-var baseRooms = ["Chelsea 1", "Chelsea 2", "Chelsea 3", "Chelsea 4",
-    "Barcelona 1", "Barcelona 2", "Barcelona 3", "Barcelona 4",
-    "Arsenal 1", "Arsenal 2", "Reds 1", "Reds 2", "Reds 3", "Reds 4",
-    "City 1", "City 2", "City 3", "City 4",
-    "reddit 1", "reddit 2",
-    "france", "deutchland", "italia", "UK 1", "UK 2",
-    "MIT", "Google", "Cambridge"];
+
 
 
 var model = {};

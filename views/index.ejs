@@ -43,7 +43,19 @@
 		];
 		
 		var sc2KeyFrames = [
-		{"time":0, "level":0.8, "keywords":[null, null, null, "nani", "nani", "naniwa", "thorzain", "thorzain", "thorzain", "thorzain"]}
+		{"time":0, "level":0.4, "keywords":[null, null, null, "nani", "nani", "naniwa", "thorzain", "thorzain", "thorzain", "thorzain"]},
+		{"time":7, "level":0.5, "keywords":[null, null, null, "thorzain", "ghost", "ghost", "ghosts", "ghosts"]},
+		{"time":13, "level":0.5, "keywords":[null, null, null, "thorzain", "ghost", "emp", "emp", "emp"]},
+		{"time":23, "level":0.3, "keywords":[null, "day9", "day9", "day9", "day9"]},
+		{"time":39, "level":0.3, "keywords":[null, "ghost", "ghost", "emp", "ghosts", "ghosts", "thorzain", "thorzain", "nani", "naniwa", "naniwa"]},
+		{"time":47, "level":0.3, "keywords":[null, "marine", "viking", "viking", "collosus", "collosi", "collosi", "collosus", "thorzain", "nani", "naniwa", "naniwa"]},
+		{"time":52, "level":0.1, "keywords":[null, "viking", "viking", "collosus", "collosi", "collosi", "collosus", "thorzain", "nani", "naniwa", "naniwa"]},
+		{"time":56, "level":0.1, "keywords":[null, "viking", "viking", "viking", "collosi", "sentry", "sentry", "emp", "emp", "emp"]},
+		{"time":64, "level":0.4, "keywords":[null,"fight", "fight", "battle", "battle", "defend", "defend", "attack", "attack", "attack", "attack"]},
+		{"time":70, "level":1.0, "keywords":["thorzain", "thorzain", "thorzain", "thorzain", "gg", "gg", "gg", "gg", "gg", "gg", "gg"]},
+		{"time":78, "level":1.0, "keywords":["thorzain", "thorzain", "thorzain", "thorzain", "gg", "gg", "gg", "gg", "nani", "nani", "naniwa", "naniwa"]},
+		{"time":83, "level":1.0, "keywords":["thorzain", "thorzain", "thorzain", "thorzain", "gg", "gg", "ghost", "ghost", "ghosts", "terran", "terran"]},
+		{"time":88, "level":0.3, "keywords":[null]}
 		];
 		
 		var videoTypes = {
@@ -889,8 +901,9 @@
 			
 			if(chatTextElement.val()=="/start") {
 				chatTextElement.val("");
-				startVideo();
 				if(event!=null) event.preventDefault();
+				startVideo();
+
 				return;
 			}
 			
@@ -1839,17 +1852,17 @@
 			console.log("STARTING VIDEO");
 			
 			frameIndex = 0;
-			videoEl.currentTime = 0;
+			videoEl.currentTime = 3;
 			videoEl.play();
 			
 			videoTic();
 		}
 		
 		function videoTic() {
-			var videoEl = document.getElementById("soccer_video");
+			var videoEl = document.getElementById("video");
 
-			// console.log("time: " + videoEl.currentTime);
-			var currentFrame = keywordKeyFrames[frameIndex];
+			console.log("time: " + videoEl.currentTime);
+			var currentFrame = keyframes[frameIndex];
 			
 			if(videoEl.currentTime > currentFrame.time) {
 				console.log("frame: " + JSON.stringify(currentFrame));
@@ -1860,7 +1873,7 @@
 			}
 			
 			// drop out of the process if we're at the end.
-			if(frameIndex==keywordKeyFrames.length) {
+			if(frameIndex==keyframes.length) {
 				$("#container").show();
 				
 				return;
@@ -1942,7 +1955,7 @@
 <h2>Sections with Friends</h2>
 <table border="0">
 	<tr section="MIT"><td class="pop">52</td><td>MIT</td><td><img src="/static/img/fb/1.jpg"><img src="/static/img/fb/2.jpg"><img src="/static/img/fb/3.jpg"><img src="/static/img/fb/4.jpg"><img src="/static/img/fb/5.jpg"> ... and 6 more</td></tr>
-	<tr section="Chelsea 3"><td class="pop">1534</td><td>Chelsea 3</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
+	<tr section="Chelsea 3"><td class="pop">1534</td><td>Thorzain 3</td><td><img src="/static/img/fb/6.jpg"><img src="/static/img/fb/7.jpg"></td></tr>
 	<tr section="Google"><td class="pop">178</td><td>Google</td><td><img src="/static/img/fb/8.jpg"></td></tr>
 	<tr section="Andrea"><td class="pop">1</td><td>Andrea's Section</td><td><img src="/static/img/fb/9.jpg"></td></tr>
 </table>
@@ -1951,10 +1964,10 @@
 
 <h2>Popular Sections</h2>
 <table border="0" cellspacing="5" cellpadding="5">
-	<tr section="Barcelona 1"><td class="pop">1534</td><td>Barcelona</td></tr>
-	<tr section="Chelsea 1"><td class="pop">1390</td><td>Chelsea</td></tr>
+	<tr section="Barcelona 1"><td class="pop">1534</td><td>Thorzain</td></tr>
+	<tr section="Chelsea 1"><td class="pop">1390</td><td>Naniwa</td></tr>
 	<tr section="reddit 1"><td class="pop">1273</td><td>reddit</td></tr>
-	<tr section="Reds 1"><td class="pop">1198</td><td>Reds</td></tr>
+	<tr section="Reds 1"><td class="pop">1198</td><td>Team Liquid</td></tr>
 </table>
 </div>
 

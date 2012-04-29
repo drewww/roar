@@ -341,7 +341,7 @@ if(program.processxml) {
     
     // load in messages + keywords
     var messages = JSON.parse(fs.readFileSync("messages.json"));
-    var keywords = JSON.parse(fs.readFileSync("keywords.json")).slice(0, 30);
+    var keywords = JSON.parse(fs.readFileSync("keywords.json")).slice(0, 4000);
     
     // console.log(JSON.stringify(keywords));
     // run through every message and create an index object that is 
