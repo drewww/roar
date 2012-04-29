@@ -1590,4 +1590,4 @@ var stopWords = {"a":1,"about":1,"above":1,"after":1,"again":1,"against":1,"all"
 "we'd":1,"we'll":1,"we're":1,"we've":1,"were":1,"weren't":1,"what":1,"what's":1,"when":1,
 "when's":1,"where":1,"where's":1,"which":1,"while":1,"who":1,"who's":1,"whom":1,"why":1,"why's":1,
 "with":1,"won't":1,"would":1,"wouldn't":1,"you":1,"you'd":1,"you'll":1,"you're":1,"you've":1,
-"your":1,"yours":1,"yourself":1,"yourselves":1};
+"your":1,"yours":1,"yourself":1,"yourselves":1, "keyword":1, "keywords":1};

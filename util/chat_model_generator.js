@@ -132,7 +132,7 @@ if(program.processxml) {
             
             var bannedWords = ["fuck", "rape", "fag", "cock", "fap", "cunts",
             "shit", "shitty", "ass", "nigger", "nude", "nudes", "dick", "penis",
-            "keyword", "retard"];
+            "keyword", "retard", "keywords", "gay", "faggot"];
             
             for(var i in bannedWords) {
                 var word = bannedWords[i];
