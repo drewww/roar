@@ -1293,7 +1293,7 @@
 /*            float: left;*/
         }
         
-        #soccer_video {
+        #soccer_video, #sc2_video {
             position: absolute;
 			display: block;
 			

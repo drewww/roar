@@ -1790,8 +1790,9 @@
 				$("#stream-img").hide();
 			}
 		}
-		
-		var keywordKeyFrames = [
+
+
+		var soccerKeyframes = [
 		{"time":0, "level":0.4, "keywords":[null, null, null, "dive", "dive", "dive", "dive", "dive", "messi"]},
 		{"time":15, "level":0.3, "keywords":[null, null, null, "dive", "dive", "dive", "messi", "messi", "messi", "messi"]},
 		{"time":25, "level":0.2, "keywords":[null, null, null, "chelsea", "chelsea", "barca", "barca"]},
@@ -1806,12 +1807,29 @@
 		{"time":144, "level":0.6, "keywords":[null, "messi", "messi", "messi", "messi", "drogba", "chelsea", "chelsea", "chelsea"]},
 		];
 		
+		var sc2KeyFrames = [
+		{"time":0, "level":0.8, "keywords":[null, null, null, "nani", "nani", "naniwa", "thorzain", "thorzain", "thorzain", "thorzain"]}
+		];
+		
+		var videoTypes = {
+		"sc2":{
+			"src": ""
+			"keyframes": sc2KeyFrames
+		},
+		"soccer":{
+			"src":"chelsea_goal.webm",
+			"keyframes": soccerKeyframes
+		}
+		}
+		
+		
+		
 		var frameIndex = 0;
 		
 		function startVideo() {
 			
 			$("#container").hide();
-			var videoEl = document.getElementById("soccer_video");
+			var videoEl = document.getElementById("video");
 			
 			console.log("STARTING VIDEO");
 			
@@ -1860,8 +1878,7 @@
 <div class="title">ROAR</div><div class="subtitle">super scale chat for online crowds</div><div class="byline"> Drew Harry, Speech + Mobility</div>
 </div>
 
-<!-- <img id="stream-img" src="/static/img/sc2-stream.png"> -->
-<video id='soccer_video' src='/static/vid/chelsea_goal.webm'></video>
+<video id='video' src='/static/vid/chelsea_goal.webm'></video>
 
 <div id="container">
 	<div id="information">
