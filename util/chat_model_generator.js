@@ -128,13 +128,17 @@ if(program.processxml) {
             if(text==" ") return;
             if(text[0]=="!") return;
             
-            if(text.indexOf("fuck")!=-1) return;
-            if(text.indexOf("rape")!=-1) return;
-            if(text.indexOf("fag")!=-1) return;
-            if(text.indexOf("cock")!=-1) return;
-            if(text.indexOf("fap")!=-1) return;
-            if(text.indexOf("cunts")!=-1) return;
-
+            
+            
+            var bannedWords = ["fuck", "rape", "fag", "cock", "fap", "cunts",
+            "shit", "shitty", "ass", "nigger", "nude", "nudes", "dick", "penis",
+            "keyword", "retard"];
+            
+            for(var i in bannedWords) {
+                var word = bannedWords[i];
+                
+                if(text.indexOf(word)!=-1) return;
+            }
             
             var time = line.split(" ")[0].split(":");
             
