@@ -63,7 +63,8 @@ var roomOptions = {"soccer":["Chelsea 1", "Chelsea 2", "Chelsea 3", "Chelsea 4",
         "Day9",
         "reddit 1", "reddit 2",
         "france", "deutchland", "italia",
-        "MIT", "Google", "Cambridge"]}
+        "MIT", "Google", "Cambridge",
+        "dummy1", "dummy2", "dummy3", "dummy4", "dummy5", "dummy6", "dummy7"]}
 
 var modelName = "";
 var modelBaseDirectory = __dirname + "/chat_model/";
