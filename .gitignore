@@ -1,3 +1,6 @@
 node_modules/
 misc/
 .DS_Store
+util/*.json
+util/*.log
+util/chat_logs
