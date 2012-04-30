@@ -286,10 +286,14 @@
 		}
 		
 		#chat-live {
-			color: #EDECC8;
+			color: white;
 			text-shadow: 1px 1px 0px #111;
 			width: 100%;
 			float: left;
+			
+/*          font-weight: bold;*/
+
+            background-color: rgba(0, 0, 0, 0.5);
 		}
 
 		#shout-live {

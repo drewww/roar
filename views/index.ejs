@@ -1403,6 +1403,9 @@
 		
 		function animateRiverElement(element, axis) {
 			
+			// check if the element is held.
+			if(element.hasClass("held")) return;
+			
 			var size = parseInt(element.css("font-size"));
 			
 			var position;
