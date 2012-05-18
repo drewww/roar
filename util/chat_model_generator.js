@@ -44,6 +44,7 @@ program.version('0.2')
     .option('-P, --processlog <chatlog>', 'Turns chat log file into a javascript object with indicies assigned to messages and a list of unique names.')
     .option('-g, --generate [keyword]', 'Generate utterances for a keyword')
     .option('-l, --list', 'List statistics about the current model.')
+    .option('-s, --stats', 'Report summary statistics about chatting rates per user.')
     .parse(process.argv);
 
 
@@ -57,8 +58,12 @@ if(program.processxml) {
 
     var namesSet = new sets.Set([]);
     var nameNodes = logDoc.find("//envelope/sender");
+    var nameNode = null;
     for(var nameNodeIndex in nameNodes) {
-        var nameNode = nameNodes[nameNodeIndex];
+        
+        if(nameNode!=null) console.log("DOUBLE NAME NODE ISSUE");
+        
+        nameNode = nameNodes[nameNodeIndex];
 
         namesSet.add(nameNode.text());
     }
@@ -72,7 +77,7 @@ if(program.processxml) {
         
         var datetime = new Date(messageNode.attr("received").value());
         
-        chatMessages.push({"text":messageNode.text(), "time":datetime.getTime()});
+        chatMessages.push({"text":messageNode.text(), "time":datetime.getTime(), "name":nameNode.text()});
     }
     
     // now dump it.
@@ -145,7 +150,7 @@ if(program.processxml) {
             baseDate.setHours(time[0]);
             baseDate.setMinutes(time[1]);
             
-            chatMessages.push({"text":text, "time":(new Date(baseDate)).getTime()});
+            chatMessages.push({"text":text, "time":(new Date(baseDate)).getTime(), "name":name});
         }
     });
     
@@ -424,6 +429,77 @@ if(program.processxml) {
         console.log(keyword["score"] + "\t" + keyword["word"]);
     }
     
+} else if(program.stats) {
+    
+    var messages = JSON.parse(fs.readFileSync("messages.json"));
+    
+    
+    var messageTimestampsPerName = {};
+    
+    for(var id in messages) {
+        var message = messages[id];
+        
+        // first pass, just make a hash that counts messages per person. 
+        var messageTimestamps;
+        if(message.name in messageTimestampsPerName) {
+            messageTimestamps = messageTimestampsPerName[message.name];
+        } else {
+            messageTimestamps = [];
+        }
+        
+        messageTimestamps.push(message.time);
+        
+        messageTimestampsPerName[message.name] = messageTimestamps;
+    }
+    
+    // now cycle through users and report total message counts
+    var totalMessages = messages.length;
+    var uniqueNames = Object.keys(messageTimestampsPerName).length;
+    
+    console.log("GLOBAL msgs / user: " + totalMessages + "/" + uniqueNames + " = " + totalMessages/uniqueNames);
+    
+    // now do a per-user analysis
+    var numMessages = _.map(_.values(messageTimestampsPerName), function(timestampList) {
+        return timestampList.length;
+    });
+    
+    fs.writeFileSync("messagesPerUser.csv", numMessages.join("\n"));
+    
+    // now do a more subtle analysis. loop through each user and do hour-long 
+    // windows. 
+    
+    var totalMessagesPerHour = 0;
+    
+    for(var name in messageTimestampsPerName) {
+        var messageTimestamps = messageTimestampsPerName[name];
+        
+        var currentWindowStart = -1;
+
+        
+        // var windowMessages = 0;
+        var currentMessageTotal = 0;
+        var numWindowsWithMessages = 0;
+        
+        for(var timestampIndex in messageTimestamps) {
+            var timestamp = messageTimestamps[timestampIndex];
+            
+            
+            // if it's been more than an hour, it's another hour in which 
+            // there's a message, so increment the window counter too.
+            if(timestamp-currentWindowStart > 1000*60*60) {
+                numWindowsWithMessages++;
+                currentWindowStart = timestamp;
+            } 
+            
+            // otherwise, just increment the total total. 
+            currentMessageTotal++;
+        }
+        
+        totalMessagesPerHour += currentMessageTotal / numWindowsWithMessages;
+        // console.log("\t " + currentMessageTotal / numWindowsWithMessages + " ("+currentMessageTotal + "/" + numWindowsWithMessages + ")");
+    }
+    
+    console.log("average messages per hour with a message: " + totalMessagesPerHour / uniqueNames);
 }
 
 function generateUtterance(model) {
