@@ -436,8 +436,36 @@ if(program.processxml) {
     
     var messageTimestampsPerName = {};
     
+    // count up the hour-long windows where there is a message at all
+    var windowsWithMessage = 0;
+    var uniquePerWindow = [];
+    
+    
+    // sum up the number of unique users who were active in that window.
+    var windowStart = 0;
+    var uniqueAuthors = [];
+    
     for(var id in messages) {
         var message = messages[id];
+        
+        if(windowStart==0) {
+            windowStart = message.time;
+        } else if(message.time - windowStart > 1000*60*60) {
+
+            if(uniqueAuthors.length != 0) {
+                uniquePerWindow.push(uniqueAuthors.length);
+                windowsWithMessage++;
+            }
+            
+            console.log("\t" + uniqueAuthors.length);
+            
+            windowStart = message.time;
+            uniqueAuthors = [];
+        }
+        
+        if(uniqueAuthors.indexOf(message.name)==-1) {
+            uniqueAuthors.push(message.name);
+        }
         
         // first pass, just make a hash that counts messages per person. 
         var messageTimestamps;
@@ -451,6 +479,10 @@ if(program.processxml) {
         
         messageTimestampsPerName[message.name] = messageTimestamps;
     }
+    
+    // console.log("average active users per hour: " + totalUniquePerWindow / windowsWithMessage);
+    
+    console.log("activeUsersPerHour: " + JSON.stringify(basicStats(uniquePerWindow)));
     
     // now cycle through users and report total message counts
     var totalMessages = messages.length;
@@ -468,16 +500,21 @@ if(program.processxml) {
     // now do a more subtle analysis. loop through each user and do hour-long 
     // windows. 
     
+    var messagesPerHourPerUser = [];
+    var messagesPerHour = [];
     var totalMessagesPerHour = 0;
-    
+    var minTimestamp = 1000000000000000;
+    var maxTimestamp = 0;
+
     for(var name in messageTimestampsPerName) {
         var messageTimestamps = messageTimestampsPerName[name];
         
         var currentWindowStart = -1;
-
+        
         
         // var windowMessages = 0;
-        var currentMessageTotal = 0;
+        var userMessageTotal = 0;
+        var messagesInWindow = 0;
         var numWindowsWithMessages = 0;
         
         for(var timestampIndex in messageTimestamps) {
@@ -489,17 +526,29 @@ if(program.processxml) {
             if(timestamp-currentWindowStart > 1000*60*60) {
                 numWindowsWithMessages++;
                 currentWindowStart = timestamp;
+                
+                messagesPerHour.push(messagesInWindow)
+                messagesInWindow=0;
             } 
             
             // otherwise, just increment the total total. 
-            currentMessageTotal++;
+            userMessageTotal++;
+            messagesInWindow++;
+            
+            if(timestamp > maxTimestamp) maxTimestamp = timestamp;
+            if(timestamp < minTimestamp) minTimestamp = timestamp;
         }
         
-        totalMessagesPerHour += currentMessageTotal / numWindowsWithMessages;
+        totalMessagesPerHour += userMessageTotal / numWindowsWithMessages;
+        messagesPerHourPerUser.push(userMessageTotal/numWindowsWithMessages);
         // console.log("\t " + currentMessageTotal / numWindowsWithMessages + " ("+currentMessageTotal + "/" + numWindowsWithMessages + ")");
     }
-    
+
+    console.log("messages per active hour: " + JSON.stringify(basicStats(messagesPerHour)));
+    // console.log("messages per active hour per user: " + JSON.stringify(basicStats(messagesPerHourPerUser)));
     console.log("average messages per hour with a message: " + totalMessagesPerHour / uniqueNames);
+    console.log("duration (days): " + ((maxTimestamp - minTimestamp)/(1000*60*60*24)));
+    console.log("max: " + maxTimestamp + "; min: " + minTimestamp);
 }
 
 function generateUtterance(model) {
@@ -567,5 +616,15 @@ function pickWordFromList(wordList) {
             // console.log("prevScore=", prevScore);
         }
     }
+}
+
+function basicStats(values) {
+    var sum = _.reduce(values, function(memo, num) {return memo+num;}, 0);
+    var mean = sum/values.length;
+    
+    var stdev = Math.sqrt(_.reduce(values, function(memo, num) {return memo + Math.pow(num-mean, 2)/values.length;}, 0));
+    
+    
+    return {"stdev":stdev, "sum":sum, "mean":mean};
 }
 
